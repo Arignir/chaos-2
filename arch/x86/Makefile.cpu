@@ -18,4 +18,5 @@ CFLAGS += \
 	-isystem "$(INCLUDE_DIR)/arch/x86/"
 
 LDFLAGS += \
-	-melf_i386
+	-melf_i386 \
+	-T arch/$(ARCH)/linker.ld

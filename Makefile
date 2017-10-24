@@ -76,7 +76,7 @@ iso: print_building check_up $(ISO)
 
 $(KERNEL): arch/arch.a kernel/kernel.a
 	$(Q)printf "  LD\t $(notdir $(KERNEL))\n"
-	$(Q)$(LD) $(LDFLAGS) -T arch/$(ARCH)/linker.ld -o "$(KERNEL)" arch/arch.a kernel/kernel.a
+	$(Q)$(LD) $(LDFLAGS) -o "$(KERNEL)" arch/arch.a kernel/kernel.a
 
 $(ISO): $(KERNEL)
 	$(Q)./scripts/chaos-iso.sh -b "$(BOOT_FLAGS)"
