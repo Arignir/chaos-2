@@ -21,4 +21,13 @@ if [ ! -f "$PROJECT_DIR/kconfig" ]; then
 	exit 1
 fi
 
-sed 's/\#/\/\//g' "$PROJECT_DIR/kconfig" | sed 's/KCONFIG\[/#define /g' | sed 's/\]=/ /g' > "$PROJECT_DIR/include/kconfig.h"
+declare kconfig_h="$PROJECT_DIR/include/kconfig.h"
+
+head -n 7 "$PROJECT_DIR/kconfig" > "$kconfig_h"
+echo "#ifndef KCONFIG_H" >> "$kconfig_h"
+echo "# define KCONFIG_H" >> "$kconfig_h"
+
+tail -n +7 "$PROJECT_DIR/kconfig" | sed 's/\#/\/\//g' | sed 's/KCONFIG\[/# define /g' | sed 's/\]=/ /g' >> "$PROJECT_DIR/include/kconfig.h"
+
+echo "" >> "$kconfig_h"
+echo "#endif /* !KCONFIG_H */" >> "$kconfig_h"

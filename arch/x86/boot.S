@@ -7,9 +7,8 @@
 **
 \* ------------------------------------------------------------------------ */
 
-.extern kmain
-
 .global start
+.extern kmain
 
 .section .header
 
