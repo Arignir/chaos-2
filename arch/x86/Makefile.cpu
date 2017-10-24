@@ -1,0 +1,21 @@
+##############################################################################
+##
+##  This file is part of the Chaos Kernel, and is made available under
+##  the terms of the GNU General Public License version 2.
+##
+##  Copyright (C) 2017 - Benjamin Grange <benjamin.grange@epitech.eu>
+##
+##############################################################################
+
+CFLAGS += \
+	-m32 \
+	-mno-sse \
+	-mno-sse2 \
+	-mno-sse3 \
+	-mno-sse4 \
+	-mno-sse4.1 \
+	-mno-sse4.2 \
+	-isystem "$(INCLUDE_DIR)/arch/x86/"
+
+LDFLAGS += \
+	-melf_i386

@@ -1,0 +1,34 @@
+##############################################################################
+##
+##  This file is part of the Chaos Kernel, and is made available under
+##  the terms of the GNU General Public License version 2.
+##
+##  Copyright (C) 2017 - Benjamin Grange <benjamin.grange@epitech.eu>
+##
+##############################################################################
+
+# Outputs
+build/
+*.iso
+*.bin
+*.gch
+*.o
+*.d
+*.a
+*.so
+*.img
+
+# Kernel configuration
+kconfig
+include/kconfig.h
+
+# Userspace programs
+userspace/cat
+userspace/touch
+
+# Editor
+*~
+*.swp
+*#
+*.vim
+.syntastic_c_config
