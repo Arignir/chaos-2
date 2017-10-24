@@ -7,28 +7,18 @@
 ##
 ##############################################################################
 
-# Outputs
-/build/
-*.iso
-*.bin
-*.gch
-*.o
-*.d
-*.a
-*.so
-*.img
+set -u
 
-# Kernel configuration
-/kconfig
-/include/kconfig.h
+#
+# Each menu within the ChaOS configuration
+#
 
-# Userspace programs
-/userspace/cat
-/userspace/touch
+function main_menu() {
+	menu_link "Main Menu" \
+		"Processor" menu_cpu \
+			"Couple of options to help you tune your processor as you wish" \
 
-# Editor
-*~
-*.swp
-*#
-*.vim
-.syntastic_c_config
+}
+
+# Load arch-dependent kconfig
+source "$PROJECT_DIR/arch/$ARCH/kconfig.sh"
