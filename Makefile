@@ -20,6 +20,7 @@ export ISO = chaos_$(ARCH)-$(MAJOR).$(MINOR).$(PATCH)$(EXTRA).iso
 export Q =
 export V ?= 0
 ifeq ($(V), 0)
+	MAKEFLAGS += --silent
 	Q = @
 endif
 
@@ -28,7 +29,6 @@ arch ?= x86
 export ARCH ?= $(arch)
 
 export PROJECT_DIR = $(shell pwd)
-export BUILD_DIR ?= $(PROJECT_DIR)/build
 export INCLUDE_DIR = $(PROJECT_DIR)/include
 
 # Flags
@@ -49,8 +49,8 @@ export LDFLAGS =
 # Import arch flags
 include arch/$(ARCH)/Makefile.cpu
 
-# Do not print "Entering directory ..." nor "Nothing to be done for 'all'"
-MAKEFLAGS += --no-print-directory --silent
+# Do not print "Entering directory ..."
+MAKEFLAGS += --no-print-directory
 
 .PHONY: all
 all: kernel
