@@ -42,6 +42,7 @@ export CFLAGS += \
 	-O2 \
 	--std=gnu11 \
 	-fno-builtin \
+	-fno-stack-protector \
 	-isystem "$(INCLUDE_DIR)" \
 	-isystem "$(INCLUDE_DIR)/lib/libc/"
 

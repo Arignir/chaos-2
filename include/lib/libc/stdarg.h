@@ -7,19 +7,15 @@
 **
 \* ------------------------------------------------------------------------ */
 
-#include <drivers/vga.h>
-#include <stdio.h>
+#ifndef _LIBC_STDARG_H_
+# define _LIBC_STDARG_H_
 
-/*
-** Kernel main entry point
-*/
-void
-kmain(void)
-{
-	vga_set_color(VGA_BLACK, VGA_WHITE);
-	vga_clear();
-	printf("Hello Kernel World!");
+# define __NEED_VA_LIST
+# include <bits/types.h>
 
-	/* Halt */
-	while (42);
-}
+# define va_start(v, l)		__builtin_va_start(v, l)
+# define va_arg(v, t)		__builtin_va_arg(v, t)
+# define va_copy(v1, v2)	__builtin_va_copy(v1, v2)
+# define va_end(v)		__builtin_va_end(v)
+
+#endif /* !_LIBC_STDARG_H_ */

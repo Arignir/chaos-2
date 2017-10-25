@@ -7,19 +7,12 @@
 **
 \* ------------------------------------------------------------------------ */
 
-#include <drivers/vga.h>
-#include <stdio.h>
+#ifndef _LIBC_STDBOOL_H_
+# define _LIBC_STDBOOL_H_
 
-/*
-** Kernel main entry point
-*/
-void
-kmain(void)
-{
-	vga_set_color(VGA_BLACK, VGA_WHITE);
-	vga_clear();
-	printf("Hello Kernel World!");
+# define true		1u
+# define false		0u
 
-	/* Halt */
-	while (42);
-}
+typedef _Bool		bool;
+
+#endif /* !_LIBC_STDBOOL_H_ */
