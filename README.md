@@ -50,8 +50,6 @@ make run
 
 # Roadmap
 
-These are all the features that i'd like to implement by the end of 2017's summer vacations. I probably won't have the time to implement everything, but eh, challenge accepted! :D
-
 - [X] Kernel options
 - [ ] Kernel architecture
 - [ ] High-address Kernel
