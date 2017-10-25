@@ -135,6 +135,9 @@ vga_naked_putchar(int c)
 	return (1);
 }
 
+/*
+** Prints a character on the screen
+*/
 int
 vga_putchar(int c)
 {
