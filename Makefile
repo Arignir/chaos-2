@@ -104,7 +104,7 @@ kvm: iso
 clean:
 	$(Q)$(MAKE) -C arch clean
 	$(Q)$(MAKE) -C kernel clean
-	$(Q)$(RM) chaos.iso "$(KERNEL)"
+	$(Q)$(RM) "$(ISO)" "$(KERNEL)"
 
 .PHONY: re
 re: clean all
