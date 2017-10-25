@@ -7,18 +7,17 @@
 **
 \* ------------------------------------------------------------------------ */
 
-#include <chaosdef.h>
-#include <platform/pc/vga.h>
+#ifndef _LIBC_STDDEF_H_
+# define _LIBC_STDDEF_H_
 
-/*
-** Kernel main entry point
-*/
-void
-kmain(void)
-{
-	vga_set_color(VGA_BLACK, VGA_WHITE);
-	vga_clear();
-	vga_puts("Hello, Kernel World!");
-	/* Halt */
-	while (42);
-}
+# define NULL			((void *)0u)
+# define PAGE_SIZE		(4096u)
+
+# define __NEED_SIZE_T
+# define __NEED_PTRDIFF_T
+
+# include <bits/types.h>
+
+# define offsetof(t, m)		__builtin_offsetof(t, m)
+
+#endif /* !_LIBC_STDDEF_H_ */

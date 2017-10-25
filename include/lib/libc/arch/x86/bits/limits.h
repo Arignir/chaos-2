@@ -7,18 +7,14 @@
 **
 \* ------------------------------------------------------------------------ */
 
-#include <chaosdef.h>
-#include <platform/pc/vga.h>
+#ifndef __LIBC_BITS_LIMITS_H_
+# define __LIBC_BITS_LIMITS_H_
 
-/*
-** Kernel main entry point
-*/
-void
-kmain(void)
-{
-	vga_set_color(VGA_BLACK, VGA_WHITE);
-	vga_clear();
-	vga_puts("Hello, Kernel World!");
-	/* Halt */
-	while (42);
-}
+# define LONG_MAX	(0x7fffffffL)
+# define LLONG_MAX	(0x7fffffffffffffffLL)
+
+# define INTPTR_MIN	(INT_MIN)
+# define INTPTR_MAX	(INT_MAX)
+# define UINTPTR_MAX	(UINT_MAX)
+
+#endif /* !__LIBC_BITS_LIMITS_H_ */

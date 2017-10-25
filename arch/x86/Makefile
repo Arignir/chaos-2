@@ -24,7 +24,7 @@ $(ARCHIVE): $(OBJS)
 
 .PHONY: clean
 clean:
-	$(Q)$(RM) $(ARCH).a $(OBJS)
+	$(Q)$(RM) $(ARCH).a $(OBJS) $(DEPS)
 
 -include $(DEPS)
 %.o: %.c

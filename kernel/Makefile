@@ -24,7 +24,7 @@ $(ARCHIVE): $(OBJS)
 
 .PHONY: clean
 clean:
-	$(Q)$(RM) kernel.a $(OBJS)
+	$(Q)$(RM) kernel.a $(OBJS) $(DEPS)
 
 -include $(DEPS)
 %.o: %.c

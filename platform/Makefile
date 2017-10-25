@@ -7,20 +7,20 @@
 ##
 ##############################################################################
 
-ARCHIVE = arch.a
+ARCHIVE = platform.a
 
 .PHONY: all
 all: check_up | $(ARCHIVE)
 
 .PHONY: check_up
 check_up:
-	$(Q)$(MAKE) -C $(ARCH) all
+	$(Q)$(MAKE) -C pc all
 
-$(ARCHIVE): $(ARCH)/$(ARCH).a
+$(ARCHIVE): pc/pc.a
 	$(Q)printf "  AR\t $(ARCHIVE)\n"
-	$(Q)$(AR) -rcT $(ARCHIVE) $(ARCH)/$(ARCH).a
+	$(Q)$(AR) -rcT $(ARCHIVE) pc/pc.a
 
 .PHONY: clean
 clean:
-	$(Q)$(MAKE) -C $(ARCH) clean
+	$(Q)$(MAKE) -C pc clean
 	$(Q)$(RM) $(ARCHIVE)

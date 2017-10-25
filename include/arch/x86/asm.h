@@ -7,18 +7,25 @@
 **
 \* ------------------------------------------------------------------------ */
 
-#include <chaosdef.h>
-#include <platform/pc/vga.h>
+#ifndef _ARCH_X86_ASM_H_
+# define _ARCH_X86_ASM_H_
 
-/*
-** Kernel main entry point
-*/
-void
-kmain(void)
+# include <chaosdef.h>
+
+static inline void
+outb(ushort port, uchar data)
 {
-	vga_set_color(VGA_BLACK, VGA_WHITE);
-	vga_clear();
-	vga_puts("Hello, Kernel World!");
-	/* Halt */
-	while (42);
+	asm volatile("out %0, %1" :: "a"(data), "d"(port));
 }
+
+static inline uchar
+inb(ushort port)
+{
+	uchar data;
+
+	asm volatile("in %1, %0" : "=a"(data) : "d"(port));
+	return (data);
+}
+
+
+#endif /* !_ARCH_X86_ASM_H_ */

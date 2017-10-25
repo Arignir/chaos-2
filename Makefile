@@ -42,7 +42,8 @@ export CFLAGS += \
 	-O2 \
 	--std=gnu11 \
 	-fno-builtin \
-	-isystem "$(INCLUDE_DIR)"
+	-isystem "$(INCLUDE_DIR)" \
+	-isystem "$(INCLUDE_DIR)/lib/libc/"
 
 export LDFLAGS =
 
@@ -67,6 +68,8 @@ print_building:
 check_up:
 	$(Q)$(MAKE) -C arch all
 	$(Q)$(MAKE) -C kernel all
+	$(Q)$(MAKE) -C lib all
+	$(Q)$(MAKE) -C platform all
 
 .PHONY: kernel
 kernel: print_building check_up $(KERNEL)
@@ -74,9 +77,9 @@ kernel: print_building check_up $(KERNEL)
 .PHONY: iso
 iso: print_building check_up $(ISO)
 
-$(KERNEL): arch/arch.a kernel/kernel.a
+$(KERNEL): arch/arch.a kernel/kernel.a lib/lib.a
 	$(Q)printf "  LD\t $(notdir $(KERNEL))\n"
-	$(Q)$(LD) $(LDFLAGS) -o "$(KERNEL)" arch/arch.a kernel/kernel.a
+	$(Q)$(LD) $(LDFLAGS) -o "$(KERNEL)" "-(" arch/arch.a kernel/kernel.a lib/lib.a platform/platform.a "-)"
 
 $(ISO): $(KERNEL)
 	$(Q)./scripts/chaos-iso.sh -b "$(BOOT_FLAGS)"
@@ -104,6 +107,8 @@ kvm: iso
 clean:
 	$(Q)$(MAKE) -C arch clean
 	$(Q)$(MAKE) -C kernel clean
+	$(Q)$(MAKE) -C lib clean
+	$(Q)$(MAKE) -C platform clean
 	$(Q)$(RM) "$(ISO)" "$(KERNEL)"
 
 .PHONY: re
