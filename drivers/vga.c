@@ -8,7 +8,7 @@
 \* ------------------------------------------------------------------------ */
 
 #include <arch/x86/asm.h>
-#include <platform/pc/vga.h>
+#include <drivers/vga.h>
 #include <string.h>
 
 /* Global definitions */

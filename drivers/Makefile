@@ -7,20 +7,31 @@
 ##
 ##############################################################################
 
-ARCHIVE = platform.a
+SRC_C += $(wildcard *.c)
+SRC_ASM += $(wildcard *.S)
+
+OBJS += $(SRC_C:.c=.o) $(SRC_ASM:.S=.o)
+DEPS = $(OBJS:.o=.d)
+
+ARCHIVE = drivers.a
 
 .PHONY: all
-all: check_up | $(ARCHIVE)
+all: $(ARCHIVE)
 
-.PHONY: check_up
-check_up:
-	$(Q)$(MAKE) -C pc all
-
-$(ARCHIVE): pc/pc.a
+$(ARCHIVE): $(OBJS)
 	$(Q)printf "  AR\t $(ARCHIVE)\n"
-	$(Q)$(AR) -rcT $(ARCHIVE) pc/pc.a
+	$(Q)$(AR) -rcT $(ARCHIVE) $(OBJS)
 
 .PHONY: clean
 clean:
-	$(Q)$(MAKE) -C pc clean
-	$(Q)$(RM) $(ARCHIVE)
+	$(Q)$(RM) $(ARCHIVE) $(OBJS) $(DEPS)
+
+-include $(DEPS)
+%.o: %.c
+	$(Q)printf "  CC\t $<\n"
+	$(Q)$(CC) $(CFLAGS) -c $< -o $@
+
+-include $(DEPS)
+%.o: %.S
+	$(Q)printf "  AS\t $<\n"
+	$(Q)$(CC) $(CFLAGS) -c $< -o $@

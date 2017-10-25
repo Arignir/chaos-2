@@ -68,8 +68,8 @@ print_building:
 check_up:
 	$(Q)$(MAKE) -C arch all
 	$(Q)$(MAKE) -C kernel all
+	$(Q)$(MAKE) -C drivers all
 	$(Q)$(MAKE) -C lib all
-	$(Q)$(MAKE) -C platform all
 
 .PHONY: kernel
 kernel: print_building check_up $(KERNEL)
@@ -79,7 +79,7 @@ iso: print_building check_up $(ISO)
 
 $(KERNEL): arch/arch.a kernel/kernel.a lib/lib.a
 	$(Q)printf "  LD\t $(notdir $(KERNEL))\n"
-	$(Q)$(LD) $(LDFLAGS) -o "$(KERNEL)" "-(" arch/arch.a kernel/kernel.a lib/lib.a platform/platform.a "-)"
+	$(Q)$(LD) $(LDFLAGS) -o "$(KERNEL)" "-(" arch/arch.a kernel/kernel.a lib/lib.a drivers/drivers.a "-)"
 
 $(ISO): $(KERNEL)
 	$(Q)./scripts/chaos-iso.sh -b "$(BOOT_FLAGS)"
@@ -107,8 +107,8 @@ kvm: iso
 clean:
 	$(Q)$(MAKE) -C arch clean
 	$(Q)$(MAKE) -C kernel clean
+	$(Q)$(MAKE) -C drivers clean
 	$(Q)$(MAKE) -C lib clean
-	$(Q)$(MAKE) -C platform clean
 	$(Q)$(RM) "$(ISO)" "$(KERNEL)"
 
 .PHONY: re

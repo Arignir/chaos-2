@@ -8,7 +8,7 @@
 \* ------------------------------------------------------------------------ */
 
 #include <chaosdef.h>
-#include <platform/pc/vga.h>
+#include <drivers/vga.h>
 
 /*
 ** Kernel main entry point
