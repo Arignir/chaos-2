@@ -1,0 +1,3 @@
+[submodule "challocator"]
+	path = challocator
+	url = ./challocator/
