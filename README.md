@@ -51,16 +51,17 @@ make run
 # Roadmap
 
 - [X] Kernel options
-- [ ] Kernel architecture
+- [X] Kernel architecture
 - [ ] High-address Kernel
 - [ ] Boot
-  - [ ] Multiboot
+  - [X] Multiboot
   - [ ] Paging setup
-  - [ ] GDT setup
+  - [X] GDT setup
   - [ ] IDT setup
   - [ ] TSS setup
+  - [ ] SMP setup
 - [ ] Pc drivers
-  - [ ] VGA
+  - [X] VGA
   - [ ] Serial
 - [ ] Memory
   - [ ] PMM
