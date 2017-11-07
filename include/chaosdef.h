@@ -57,7 +57,7 @@ typedef uint64_t		uint64;
 typedef uintptr_t		uintptr;
 
 /* Print a message and halt the computer. */
-void				kernel_panic(char const *fmt, ...) __noreturn;
+void				panic(char const *fmt, ...) __noreturn;
 
 # define static_assert(e)	extern char (*__static_assert(void)) [sizeof(char[1 - 2 * !(e)])]
 

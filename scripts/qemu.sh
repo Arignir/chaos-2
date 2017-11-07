@@ -21,6 +21,7 @@ function print_usage {
 	printf "\t-t			monitor mode\n"
 	printf "\t-k			enables kvm (if available)\n"
 	printf "\t-m <MB> 		memory (in MB) (Default: 512MB)\n"
+	printf "\t-s <SMP>		number of cores (Default: 1)\n"
 	printf "\t-h			print this help menu\n"
 	exit 1
 }
@@ -30,13 +31,15 @@ KVM=0
 MONITOR=0
 MEMORY=512
 ARCH="x86"
+SMP=1
 
-while getopts dtkhm:a: FLAG; do
+while getopts dtkhm:a:s: FLAG; do
 	case $FLAG in
 		d) DEBUG=1;;
 		k) KVM=1;;
 		t) MONITOR=1;;
 		m) MEMORY="$OPTARG";;
+		s) SMP="$OPTARG";;
 		a) ARCH="$OPTARG";;
 		h) print_usage;;
 		\?)
@@ -62,7 +65,7 @@ if [ ! -f "$ISO" ]; then
 	make -C "$PROJECT_DIR" --no-print-directory $RULES
 fi
 
-ARGS="-m $MEMORY -cdrom $ISO"
+ARGS="-m $MEMORY -cdrom $ISO -smp $SMP"
 
 if [ $DEBUG == 1 ]; then
 	ARGS+=" -s -d int,cpu_reset,guest_errors,unimp --no-reboot"
@@ -84,4 +87,4 @@ if ! which "$QEMU" &> /dev/null; then
 fi
 
 printf "  QEMU\t $ISO\n"
-$QEMU $ARGS $@
+$QEMU $ARGS

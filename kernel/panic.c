@@ -7,27 +7,24 @@
 **
 \* ------------------------------------------------------------------------ */
 
-#include <kconfig.h> /* TODO */
-#include <arch/x86/smp.h> /* TODO */
-#include <drivers/vga.h>
 #include <stdio.h>
-#include <string.h>
+#include <stdarg.h>
 
 /*
-** Kernel main entry point
+** Produces a kernel panic, printing the given error message and some debug
+** informations.
+** Never returns.
 */
 void
-kmain(void)
+panic(char const *fmt, ...)
 {
-	vga_set_color(VGA_BLACK, VGA_WHITE);
-	vga_clear();
-	printf("Hello Kernel World!\n");
+	va_list va;
 
-#if KCONFIG_ENABLE_SMP
-	mp_init();
-	printf("Nb cpu(s): %u\n", ncpu);
-#endif /* KCONFIG_ENABLE_SMP */
+	// TODO: Disable interrupts
+	va_start(va, fmt);
+	printf("\nKernel panicked: ");
+	vprintf(fmt, va);
+	va_end(va);
 
-	/* Halt */
 	while (42);
 }

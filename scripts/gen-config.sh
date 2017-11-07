@@ -23,7 +23,7 @@ fi
 
 declare kconfig_h="$PROJECT_DIR/include/kconfig.h"
 
-head -n 7 "$PROJECT_DIR/kconfig" > "$kconfig_h"
+head -n 7 "$PROJECT_DIR/kconfig" | sed 's/\#/\/\//g' > "$kconfig_h"
 echo "#ifndef KCONFIG_H" >> "$kconfig_h"
 echo "# define KCONFIG_H" >> "$kconfig_h"
 

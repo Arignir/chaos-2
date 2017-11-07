@@ -1,14 +1,17 @@
 /* ------------------------------------------------------------------------ *\
- **
- **  This file is part of the Chaos Kernel, and is made available under
- **  the terms of the GNU General Public License version 2.
- **
- **  Copyright (C) 2017 - Benjamin Grange <benjamin.grange@epitech.eu>
- **
- \* ------------------------------------------------------------------------ */
+**
+**  This file is part of the Chaos Kernel, and is made available under
+**  the terms of the GNU General Public License version 2.
+**
+**  Copyright (C) 2017 - Benjamin Grange <benjamin.grange@epitech.eu>
+**
+\* ------------------------------------------------------------------------ */
 
 .global start
 .extern kmain
+.extern gdtptr
+
+#include "arch/x86/x86.h"
 
 /* Multiboot's magic number */
 #define MULTIBOOT_MAGIC		0xe85250d6
@@ -32,7 +35,27 @@ mb_header_end:
 
 .section .text
 start:
-	mov boot_stack_top, %esp	/* Set boot stack */
+	/* Set up boot stack */
+	mov $boot_stack_top, %esp
+
+	/* Load the new GDT */
+	mov $gdtptr, %eax
+	lgdt (%eax)
+
+	/* Load all data segment selectors */
+	movw $KERNEL_DATA_SELECTOR, %ax
+	movw %ax, %ds
+	movw %ax, %es
+	movw %ax, %fs
+	movw %ax, %gs
+	movw %ax, %ss
+
+	/* Do a far jump to update code selector */
+	pushl $KERNEL_CODE_SELECTOR
+	pushl $.far_jump
+	lret
+
+.far_jump:
 	call kmain
 .catch_fire:
 	hlt				/* And catch fire */

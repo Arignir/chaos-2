@@ -13,7 +13,7 @@
 
 /* Global definitions */
 static uint const VGA_WIDTH = 80u;
-static uint const VGA_HEIGHT = 80u;
+static uint const VGA_HEIGHT = 25u;
 static struct vga vga =
 {
 	.vga_attrib = 0,

@@ -12,11 +12,11 @@
 set -u
 
 # Main menu variables
-new_kconfig_var KCONFIG_ENABLE_FPU 0
+new_kconfig_var KCONFIG_ENABLE_SMP 1
 
 function menu_cpu() {
 	menu_checklist "Processor" \
-		"Enable FPU" KCONFIG_ENABLE_FPU \
-			"This enables support for the floating point unit." \
+		"Enable SMP" KCONFIG_ENABLE_SMP \
+			"This enables support Symmetric Multiprocessing, which let you have multiple processors running in one system." \
 
 }

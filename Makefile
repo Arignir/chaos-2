@@ -24,6 +24,9 @@ ifeq ($(V), 0)
 	Q = @
 endif
 
+# Number of cores (QEMU)
+export SMP ?= 1
+
 # Arch
 arch ?= x86
 export ARCH ?= $(arch)
@@ -43,10 +46,11 @@ export CFLAGS += \
 	--std=gnu11 \
 	-fno-builtin \
 	-fno-stack-protector \
+	-fno-omit-frame-pointer \
 	-isystem "$(INCLUDE_DIR)" \
 	-isystem "$(INCLUDE_DIR)/lib/libc/"
 
-export LDFLAGS =
+export LDFLAGS = "-(" arch/arch.a kernel/kernel.a lib/lib.a drivers/drivers.a "-)"
 
 # Import arch flags
 include arch/$(ARCH)/Makefile.cpu
@@ -80,7 +84,7 @@ iso: print_building check_up $(ISO)
 
 $(KERNEL): arch/arch.a kernel/kernel.a lib/lib.a
 	$(Q)printf "  LD\t $(notdir $(KERNEL))\n"
-	$(Q)$(LD) $(LDFLAGS) -o "$(KERNEL)" "-(" arch/arch.a kernel/kernel.a lib/lib.a drivers/drivers.a "-)"
+	$(Q)$(LD) $(LDFLAGS) -o "$(KERNEL)"
 
 $(ISO): $(KERNEL)
 	$(Q)./scripts/chaos-iso.sh -b "$(BOOT_FLAGS)"
@@ -94,15 +98,19 @@ config:
 
 .PHONY: run
 run: iso
-	$(Q)./scripts/qemu.sh -m 1G -a "$(ARCH)"
+	$(Q)./scripts/qemu.sh -m 1G -a "$(ARCH)" -s "$(SMP)"
 
 .PHONY: monitor
 monitor: iso
-	./scripts/qemu.sh -t -m 1G -a "$(ARCH)"
+	./scripts/qemu.sh -t -m 1G -a "$(ARCH)" -s "$(SMP)"
+
+.PHONY: debug
+debug: iso
+	./scripts/qemu.sh -d -m 1G -a "$(ARCH)" -s "$(SMP)"
 
 .PHONY: run
 kvm: iso
-	$(Q)./scripts/qemu.sh -d -k -m 1G -a "$(ARCH)"
+	$(Q)./scripts/qemu.sh -d -k -m 1G -a "$(ARCH)" -s "$(SMP)"
 
 .PHONY: clean
 clean:
