@@ -1,0 +1,3 @@
+[submodule "allocator/challocator"]
+	path = allocator/challocator
+	url = git@github.com:Gaspard--/challocator.git
