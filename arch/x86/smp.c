@@ -11,6 +11,7 @@
 #include <kernel/memory.h>
 #include <kernel/checksum.h>
 #include <arch/x86/smp.h>
+#include <arch/x86/asm.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -104,31 +105,35 @@ mp_init(void)
 	uchar *type;
 
 	conf = mp_config(&mp);
-	if (conf)
+	if (!conf)
+		return ;
+	type = (uchar *)(conf + 1);
+	while (type < (uchar *)conf + conf->length)
 	{
-		type = (uchar *)(conf + 1);
-		while (type < (uchar *)conf + conf->length)
+		switch (*type)
 		{
-			switch (*type)
-			{
-			case MP_PROCESSOR:
-				proc = (struct mp_proc *)type;
-				++ncpu;
-				type += sizeof(*proc);
-				break;
-			case MP_BUS:
-			case MP_IO_APIC:
-			case MP_IO_INTERRUPT:
-			case MP_LOCAL_INTERRUPT:
-				type += 8;
-				break;
-			default:
-				/* Unknown entries type have their length just after */
-				printf("Type: %i, size: %i\n", *type, (*type + 1));
-				type += *(type + 1);
-				break;
-			}
+		case MP_PROCESSOR:
+			proc = (struct mp_proc *)type;
+			++ncpu;
+			type += sizeof(*proc);
+			break;
+		case MP_BUS:
+		case MP_IO_APIC:
+		case MP_IO_INTERRUPT:
+		case MP_LOCAL_INTERRUPT:
+			type += 8;
+			break;
+		default:
+			/* Unknown entries type have their length following */
+			printf("Type: %i, size: %i\n", *type, (*type + 1));
+			type += *(type + 1);
+			break;
 		}
+	}
+	/* If IMCRP bit is set, IMCR is present and PIC Modeis implemented. */
+	if (mp->imcrp) {
+		outb(IO_IMCR_ADDRESS, 0x70);	/* Select IMCR */
+		outb(IO_IMCR_DATA, 0x01);	/* Enable APIC */
 	}
 }
 
