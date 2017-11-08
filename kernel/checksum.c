@@ -10,11 +10,11 @@
 #include <kernel/checksum.h>
 
 uint8
-checksum8(void *s, size_t l)
+checksum8(void const *s, size_t l)
 {
 	uint8 r;
-	unsigned char *c;
-	unsigned char *e;
+	unsigned char const *c;
+	unsigned char const *e;
 
 	r = 0;
 	c = s;
@@ -27,11 +27,11 @@ checksum8(void *s, size_t l)
 }
 
 uint16
-checksum16(void *s, size_t l)
+checksum16(void const *s, size_t l)
 {
 	uint16 r;
-	unsigned char *c;
-	unsigned char *e;
+	unsigned char const *c;
+	unsigned char const *e;
 
 	r = 0;
 	c = s;
@@ -44,11 +44,11 @@ checksum16(void *s, size_t l)
 }
 
 uint32
-checksum32(void *s, size_t l)
+checksum32(void const *s, size_t l)
 {
 	uint32 r;
-	unsigned char *c;
-	unsigned char *e;
+	unsigned char const *c;
+	unsigned char const *e;
 
 	r = 0;
 	c = s;
