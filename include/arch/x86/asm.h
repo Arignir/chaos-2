@@ -27,5 +27,4 @@ inb(ushort port)
 	return (data);
 }
 
-
 #endif /* !_ARCH_X86_ASM_H_ */

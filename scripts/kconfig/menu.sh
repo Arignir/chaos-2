@@ -62,28 +62,37 @@ function menu_save() {
 	fi
 }
 
-# menu_link <title> [<name> <func> <help>]...
+# menu_link <title> [if VAR] [<name> <func> <help>]...
 function menu_link() {
-	declare -A links
-	declare -A help
-	declare -a args
-	declare -a dialog_flags
-	declare default
-
-	args=( "${@:2}" )
-	default=""
-	for ((i = 0, j = 0; i < ${#args[*]}; i+=3, ++j)); do
-		declare name
-
-		name="${args[$i]} --->"
-		links["$name"]="${args[$(($i + 1))]}"
-		help["$name"]="${args[$(($i + 2))]}"
-		dialog_flags[$j]="$name"
-	done
+	declare default=""
+	declare -a args=( "${@:2}" )
 
 	while :; do
+		declare -A links=()
+		declare -A help=()
+		declare -a dialog_flags=()
 		declare -i retval
 		declare choice
+
+		for ((i = 0, j = 0; i < ${#args[*]}; i+=1, ++j)); do
+			declare name
+
+			if [[ "${args[$i]}" == "if" ]]; then
+				declare var
+
+				i=$(($i + 1))
+				var="${args[$i]}"
+				if [[ $(get_kconfig_value "$var") -eq 0 ]]; then
+					i=$(($i + 3))
+				fi
+				continue
+			fi
+			name="${args[$i]} --->"
+			links["$name"]="${args[$(($i + 1))]}"
+			help["$name"]="${args[$(($i + 2))]}"
+			dialog_flags[$j]="$name"
+			i=$(($i + 2))
+		done
 
 		$DIALOG "${COMMON_FLAGS[@]}" \
 			--title "ChaOS/$ARCH $1" \
@@ -125,14 +134,12 @@ function menu_link() {
 
 # menu_checklist <title> [<name> <var> <help>]...
 function menu_checklist() {
-	declare -a args
-	declare -A kvar
-	declare -A help
-	declare -a dialog_flags
-	declare default
+	declare -a args=( "${@:2}" )
+	declare -A kvar=()
+	declare -A help=()
+	declare -a dialog_flags=()
+	declare default=""
 
-	args=( "${@:2}" )
-	default=""
 	while :; do
 		declare -i retval
 		declare choice

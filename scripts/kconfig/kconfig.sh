@@ -26,6 +26,16 @@ function set_kconfig_bool() {
 	fi
 }
 
+# set_kconfig_value <name> <value>
+function set_kconfig_value() {
+	KCONFIG["$1"]="$2"
+}
+
+# get_kconfig_value <name>
+function get_kconfig_value() {
+	echo "${KCONFIG["$1"]}"
+}
+
 # get_kconfig_status <name>
 function get_kconfig_status() {
 	if [[ "${KCONFIG["$1"]}" -eq 0 ]]; then
