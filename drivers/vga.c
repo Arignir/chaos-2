@@ -7,6 +7,7 @@
 **
 \* ------------------------------------------------------------------------ */
 
+#include <kernel/init.h>
 #include <arch/x86/asm.h>
 #include <drivers/vga.h>
 #include <string.h>
@@ -178,4 +179,16 @@ vga_putsn(char const *str, size_t n)
 	}
 	move_cursor();
 	return (n);
+}
+
+/*
+** Initializes the vga driver
+** Called early by the arch_XXX_setup() function for
+** debugging
+*/
+void
+vga_init(void)
+{
+	vga_set_color(VGA_BLACK, VGA_WHITE);
+	vga_clear();
 }

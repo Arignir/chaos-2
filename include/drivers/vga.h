@@ -48,5 +48,6 @@ void	vga_clear(void);
 int	vga_putchar(int);
 int	vga_puts(char const *str);
 int	vga_putsn(char const *str, size_t n);
+void	vga_init(void);
 
 #endif /* !_PLATFORM_PC_VGA_H_ */

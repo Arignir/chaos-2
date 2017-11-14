@@ -12,6 +12,7 @@
 
 # include <stddef.h>
 # include <stdint.h>
+# include <stdbool.h>
 
 /*
 ** A useful set of macros that act like keywords that are not available otherwise in C11.

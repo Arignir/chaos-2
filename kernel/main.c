@@ -7,13 +7,11 @@
 **
 \* ------------------------------------------------------------------------ */
 
-#include <kconfig.h> /* TODO */
-#include <arch/x86/smp.h> /* TODO */
-
+#include <kernel/init.h>
 #include <kernel/multiboot2.h>
-#include <drivers/vga.h>
 #include <stdio.h>
-#include <string.h>
+
+#include <drivers/vga.h>
 
 /*
 ** Kernel main entry point
@@ -21,19 +19,14 @@
 void
 kmain(uint32 mb_magic, uintptr mb_ptr __unused) /* TODO: use mb_ptr */
 {
-	vga_set_color(VGA_BLACK, VGA_WHITE);
-	vga_clear();
-
 	/* Ensure that we have been booted via a multiboot-compliant bootloader */
 	assert_eq(mb_magic, MULTIBOOT2_BOOTLOADER_MAGIC);
 
-	printf("Hello Kernel World!\n");
+	/* Trigger all init levels */
+	trigger_init_levels(INIT_LEVEL_EARLIEST, INIT_LEVEL_LATEST);
 
-#if KCONFIG_ENABLE_SMP
-	mp_init();
-	printf("Nb cpu(s): %u\n", ncpu);
-#endif /* KCONFIG_ENABLE_SMP */
+	printf("Welcome to ChaOS\n");
 
-	/* Halt */
+	/* Halt (and catch fire) */
 	while (42);
 }

@@ -82,9 +82,9 @@ $(KERNEL): arch/arch.o drivers/drivers.o kernel/kernel.o lib/lib.o
 	$(Q)$(LD) $(LDFLAGS) -o $@ -T $(LINKER_SCRIPT) $^
 
 .PHONY: iso
-iso: kernel $(ISO)
+iso: $(ISO)
 
-$(ISO): $(KERNEL)
+$(ISO): kernel
 	$(Q)./scripts/chaos-iso.sh -b "$(BOOT_FLAGS)"
 
 .PHONY: config
