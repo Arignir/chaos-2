@@ -7,20 +7,21 @@
 ##
 ##############################################################################
 
-ARCHIVE = arch.a
+OBJ = arch.o
 
 .PHONY: all
-all: check_up | $(ARCHIVE)
+all: check_up
 
 .PHONY: check_up
 check_up:
 	$(Q)$(MAKE) -C $(ARCH) all
+	$(Q)$(MAKE) $(OBJ)
 
-$(ARCHIVE): $(ARCH)/$(ARCH).a
-	$(Q)printf "  AR\t $(ARCHIVE)\n"
-	$(Q)$(AR) -rcT $(ARCHIVE) $(ARCH)/$(ARCH).a
+$(OBJ): $(ARCH)/$(ARCH).o
+	$(Q)printf "  LD\t $@\n"
+	$(Q)$(LD) $(LDFLAGS) -o $@ -r $^
 
 .PHONY: clean
 clean:
 	$(Q)$(MAKE) -C $(ARCH) clean
-	$(Q)$(RM) $(ARCHIVE)
+	$(Q)$(RM) $(OBJ)

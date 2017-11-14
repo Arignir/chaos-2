@@ -50,7 +50,7 @@ export CFLAGS += \
 	-isystem "$(INCLUDE_DIR)" \
 	-isystem "$(INCLUDE_DIR)/lib/libc/"
 
-export LDFLAGS = "-(" arch/arch.a kernel/kernel.a lib/lib.a drivers/drivers.a "-)"
+export LDFLAGS = -nostdlib
 
 # Import arch flags
 include arch/$(ARCH)/Makefile.cpu
@@ -68,23 +68,21 @@ print_building:
 	$(Q)echo "*  Building $(notdir $(KERNEL))"
 	$(Q)echo " *"
 	$(Q)echo
-
-.PHONY: check_up
-check_up:
 	$(Q)$(MAKE) -C arch all
 	$(Q)$(MAKE) -C kernel all
 	$(Q)$(MAKE) -C drivers all
 	$(Q)$(MAKE) -C lib all
+	$(Q)$(MAKE) $(KERNEL)
 
 .PHONY: kernel
-kernel: print_building check_up $(KERNEL)
+kernel: print_building
+
+$(KERNEL): arch/arch.o drivers/drivers.o kernel/kernel.o lib/lib.o
+	$(Q)printf "  LD\t $(notdir $@)\n"
+	$(Q)$(LD) $(LDFLAGS) -o $@ -T $(LINKER_SCRIPT) $^
 
 .PHONY: iso
-iso: print_building check_up $(ISO)
-
-$(KERNEL): arch/arch.a kernel/kernel.a lib/lib.a
-	$(Q)printf "  LD\t $(notdir $(KERNEL))\n"
-	$(Q)$(LD) $(LDFLAGS) -o "$(KERNEL)"
+iso: kernel $(ISO)
 
 $(ISO): $(KERNEL)
 	$(Q)./scripts/chaos-iso.sh -b "$(BOOT_FLAGS)"

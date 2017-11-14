@@ -13,25 +13,25 @@ SRC_ASM += $(wildcard *.S)
 OBJS += $(SRC_C:.c=.o) $(SRC_ASM:.S=.o)
 DEPS = $(OBJS:.o=.d)
 
-ARCHIVE = drivers.a
+DRIVER_OBJ = drivers.o
 
 .PHONY: all
-all: $(ARCHIVE)
+all: $(DRIVER_OBJ)
 
-$(ARCHIVE): $(OBJS)
-	$(Q)printf "  AR\t $(ARCHIVE)\n"
-	$(Q)$(AR) -rcT $(ARCHIVE) $(OBJS)
+$(DRIVER_OBJ): $(OBJS)
+	$(Q)printf "  LD\t $@\n"
+	$(Q)$(LD) $(LDFLAGS) -o $@ -r $^
 
 .PHONY: clean
 clean:
-	$(Q)$(RM) $(ARCHIVE) $(OBJS) $(DEPS)
+	$(Q)$(RM) $(DRIVER_OBJ) $(OBJS) $(DEPS)
 
 -include $(DEPS)
 %.o: %.c
-	$(Q)printf "  CC\t $<\n"
-	$(Q)$(CC) $(CFLAGS) -c $< -o $@
+	$(Q)printf "  CC\t $^\n"
+	$(Q)$(CC) $(CFLAGS) -c $^ -o $@
 
 -include $(DEPS)
 %.o: %.S
-	$(Q)printf "  AS\t $<\n"
-	$(Q)$(CC) $(CFLAGS) -c $< -o $@
+	$(Q)printf "  AS\t $^\n"
+	$(Q)$(CC) $(CFLAGS) -c $^ -o $@

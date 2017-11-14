@@ -18,5 +18,7 @@ CFLAGS += \
 	-isystem "$(INCLUDE_DIR)/lib/libc/arch/x86/"
 
 LDFLAGS += \
-	-melf_i386 \
-	-T arch/$(ARCH)/linker.ld
+	-melf_i386
+
+LINKER_SCRIPT = \
+	arch/$(ARCH)/linker.ld

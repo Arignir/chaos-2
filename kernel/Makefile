@@ -13,25 +13,25 @@ SRC_ASM += $(wildcard *.S)
 OBJS += $(SRC_C:.c=.o) $(SRC_ASM:.S=.o)
 DEPS = $(OBJS:.o=.d)
 
-ARCHIVE = kernel.a
+KERNEL_OBJ = kernel.o
 
 .PHONY: all
-all: $(ARCHIVE)
+all: $(KERNEL_OBJ)
 
-$(ARCHIVE): $(OBJS)
-	$(Q)printf "  AR\t $(ARCHIVE)\n"
-	$(Q)$(AR) -rcT $(ARCHIVE) $(OBJS)
+$(KERNEL_OBJ): $(OBJS)
+	$(Q)printf "  LD\t $@\n"
+	$(Q)$(LD) $(LDFLAGS) -o $@ -r $^
 
 .PHONY: clean
 clean:
-	$(Q)$(RM) kernel.a $(OBJS) $(DEPS)
+	$(Q)$(RM) $(KERNEL_OBJ) $(OBJS) $(DEPS)
 
 -include $(DEPS)
 %.o: %.c
-	$(Q)printf "  CC\t $<\n"
-	$(Q)$(CC) $(CFLAGS) -c $< -o $@
+	$(Q)printf "  CC\t $^\n"
+	$(Q)$(CC) $(CFLAGS) -c $^ -o $@
 
 -include $(DEPS)
 %.o: %.S
-	$(Q)printf "  AS\t $<\n"
-	$(Q)$(CC) $(CFLAGS) -c $< -o $@
+	$(Q)printf "  AS\t $^\n"
+	$(Q)$(CC) $(CFLAGS) -c $^ -o $@

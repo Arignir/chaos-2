@@ -7,20 +7,21 @@
 ##
 ##############################################################################
 
-ARCHIVE = lib.a
+LIB_OBJ = lib.o
 
 .PHONY: all
-all: check_up | $(ARCHIVE)
+all: check_up
 
 .PHONY: check_up
 check_up:
 	$(Q)$(MAKE) -C libc all
+	$(Q)$(MAKE) $(LIB_OBJ)
 
-$(ARCHIVE): libc/libc.a
-	$(Q)printf "  AR\t $(ARCHIVE)\n"
-	$(Q)$(AR) -rcT $(ARCHIVE) libc/libc.a
+$(LIB_OBJ): libc/libc.o
+	$(Q)printf "  LD\t $@\n"
+	$(Q)$(LD) $(LDFLAGS) -o $@ -r $^
 
 .PHONY: clean
 clean:
 	$(Q)$(MAKE) -C libc clean
-	$(Q)$(RM) $(ARCHIVE)
+	$(Q)$(RM) $(LIB_OBJ)
