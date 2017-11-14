@@ -36,6 +36,15 @@ start:
 	/* Set up boot stack */
 	mov $boot_stack_top, %esp
 
+	/*
+	** We store kmain parameters now, in case these registers get modified afterward
+	** eax should contain MULTIBOOT2_BOOTLOADER_MAGIC if we have been booted via a
+	** multiboot compliant bootloader. In that case, ebx contains the address of the
+	** multiboot structure.
+	*/
+	push %ebx
+	push %eax
+
 	/* Load the new GDT */
 	mov $gdtptr, %eax
 	lgdt (%eax)
