@@ -94,7 +94,7 @@ static_assert(sizeof(struct mp_bus) == 8);
 struct mp_ioapic
 {
 	uchar const type;		/* Entry type (2) */
-	uchar id;			/* I/O APIC Id */
+	uchar const id;			/* I/O APIC Id */
 	uchar const version;		/* I/O APIC Version number */
 	uchar const flags;		/* I/O APIC Flags */
 	physaddr_t const addr;		/* I/O APIC address */

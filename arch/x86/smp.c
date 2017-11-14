@@ -102,11 +102,8 @@ mp_init(void)
 	struct mp *mp;
 	struct mp_conf *conf;
 	struct mp_proc *proc;
-	struct mp_ioapic *ioapic;
 	uchar *type;
-	uchar ioapic_id;
 
-	ioapic_id = 0;
 	conf = mp_config(&mp);
 	if (!conf)
 		return ;
@@ -121,10 +118,6 @@ mp_init(void)
 			type += sizeof(*proc);
 			break;
 		case MP_IO_APIC:
-			ioapic = (struct mp_ioapic *)type;
-			ioapic->id = ioapic_id++;
-			type += sizeof(*ioapic);
-			break;
 		case MP_BUS:
 		case MP_IO_INTERRUPT:
 		case MP_LOCAL_INTERRUPT:

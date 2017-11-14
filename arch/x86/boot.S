@@ -12,15 +12,13 @@
 .extern gdtptr
 
 #include "arch/x86/x86.h"
-
-/* Multiboot's magic number */
-#define MULTIBOOT_MAGIC		0xe85250d6
+#include "kernel/multiboot2.h"
 
 /* Multiboot header - Must be at the very beginning of the binary */
 .section .header
 .align 8
 mb_header_start:
-	.int MULTIBOOT_MAGIC			/* magic number (multiboot 2)			*/
+	.int MULTIBOOT2_HEADER_MAGIC		/* magic number (multiboot 2)			*/
 	.int 0					/* architecture 0 (protected mode of i386)	*/
 	.int mb_header_end - mb_header_start	/* header length				*/
 
