@@ -28,10 +28,10 @@ clean:
 
 -include $(DEPS)
 %.o: %.c
-	$(Q)printf "  CC\t $^\n"
-	$(Q)$(CC) $(CFLAGS) -c $^ -o $@
+	$(Q)printf "  CC\t $<\n"
+	$(Q)$(CC) $(CFLAGS) -c $< -o $@
 
 -include $(DEPS)
 %.o: %.S
-	$(Q)printf "  AS\t $^\n"
-	$(Q)$(CC) $(CFLAGS) -c $^ -o $@
+	$(Q)printf "  AS\t $<\n"
+	$(Q)$(CC) $(CFLAGS) -c $< -o $@
