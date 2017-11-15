@@ -173,7 +173,7 @@ format:
 		case 's':
 			s = va_arg(va, char const *);
 			if (s == NULL) {
-				s = "<null>";
+				s = "(null)";
 			}
 			flags &= ~PRINTF_LEAD_ZEROS;
 			goto print_output;

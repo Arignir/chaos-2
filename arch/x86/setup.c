@@ -13,6 +13,8 @@
 #include <drivers/vga.h>
 #include <stdio.h>
 
+int detect_cpuid(void);
+
 /*
 ** Early Setup the x86 architecture
 */
@@ -21,6 +23,11 @@ arch_x86_early_setup(void)
 {
 	/* Initialize the vga driver early to let us */
 	vga_init();
+
+	/* Ensure we have CPUID enable */
+	if (!detect_cpuid()) {
+		panic("Your CPU must support the CPUID instruction to run ChaOS.");
+	}
 }
 
 /*
@@ -32,7 +39,7 @@ arch_x86_setup(void)
 	/* Enable SMP if it's available */
 #if KCONFIG_ENABLE_SMP
 	mp_init();
-	printf("Nb cpu(s): %u\n", ncpu);
+	printf("Nb cpu(s): %s\n", "a");
 #endif /* KCONFIG_ENABLE_SMP */
 }
 
