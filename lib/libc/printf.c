@@ -124,6 +124,7 @@ printf_formatter(char const *fmt, va_list va, printf_output_func out, void *para
 	ulong nb;
 	uint base;
 	uint formatw;
+	bool precision;
 	char sign;
 
 	for (;;) {
@@ -134,6 +135,7 @@ printf_formatter(char const *fmt, va_list va, printf_output_func out, void *para
 		base = 10;
 		formatw = 0;
 		sign = '\0';
+		precision = false;
 		while ((c = *fmt++) != '\0') {
 			if (c == '%') {
 				break;
@@ -154,6 +156,9 @@ format:
 			}
 			formatw *= 10;
 			formatw += c - '0';
+			goto format;
+		case '.':
+			precision = true;
 			goto format;
 		case '%':
 			out("%", 1, params);
@@ -258,6 +263,10 @@ print_unsigned:
 		/* Formats join here to print their output */
 print_output:
 		string_len = strlen(s);
+		if (precision && string_len > formatw) {
+			string_len = formatw;
+		}
+		formatw *= !precision;
 		if (flags & PRINTF_LEFT_FORMAT) {
 			formatw -= (sign != '\0' && formatw > 0);
 			if (sign != '\0') {

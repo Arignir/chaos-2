@@ -9,7 +9,9 @@
 
 #include <kconfig.h>
 #include <kernel/init.h>
+#include <arch/x86/cpu.h>
 #include <arch/x86/smp.h>
+#include <arch/x86/asm.h>
 #include <drivers/vga.h>
 #include <stdio.h>
 
@@ -36,11 +38,36 @@ arch_x86_early_setup(void)
 void
 arch_x86_setup(void)
 {
+	struct cpu *cpu;
+	bool smp_enabled;
+
 	/* Enable SMP if it's available */
 #if KCONFIG_ENABLE_SMP
-	mp_init();
-	printf("Nb cpu(s): %s\n", "a");
+	smp_enabled = mp_init();
+#else
+	smp_enabled = false;
 #endif /* KCONFIG_ENABLE_SMP */
+
+	/* Else, set the only processor to default values */
+	if (!smp_enabled) {
+		ncpu = 1;
+		cpus[0].conf = NULL;
+	}
+
+	printf("Nb cpu(s): %u\n\n", ncpu);
+	for (uint i = 0; i < ncpu; ++i)
+	{
+		cpu = cpus + i;
+
+		/* Gather informations and features of selected cpu */
+		cpuid_string(0x0, cpu->vendor_id);
+		cpu->vendor_id[12] = '\0';
+
+		/* Print these informations */
+		printf("processor: %u\n", i);
+		printf("vendor_id: %s\n", cpu->vendor_id);
+		printf("\n");
+	}
 }
 
 NEW_INIT_HOOK(arch_x86_setup, &arch_x86_setup, INIT_LEVEL_ARCH);

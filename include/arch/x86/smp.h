@@ -148,9 +148,6 @@ enum MP_ENTRY_TYPE
 	MP_LOCAL_INTERRUPT	= 0x4,
 };
 
-/* Number of CPUs enabled. */
-extern uint ncpu;
-
-void	mp_init(void);
+bool	mp_init(void);
 
 #endif /* !_ARCH_X86_SMP_H_ */

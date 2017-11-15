@@ -11,14 +11,16 @@
 #include <kernel/memory.h>
 #include <kernel/checksum.h>
 #include <arch/x86/smp.h>
+#include <arch/x86/cpu.h>
 #include <arch/x86/asm.h>
 #include <string.h>
 #include <stdio.h>
 
-#if KCONFIG_ENABLE_SMP
-
 /* Number of CPUs enabled. */
 uint ncpu = 0;
+struct cpu cpus[KCONFIG_MAX_CORE];
+
+#if KCONFIG_ENABLE_SMP
 
 /*
 ** Looks for the MP Floating Pointer Structure from [start; start + len[.
@@ -96,7 +98,7 @@ mp_config(struct mp **mp_ptr)
 /*
 ** Tests if SMP is available. If it's the case, setup and start the other processors.
 */
-void
+bool
 mp_init(void)
 {
 	struct mp *mp;
@@ -106,7 +108,7 @@ mp_init(void)
 
 	conf = mp_config(&mp);
 	if (!conf)
-		return ;
+		return (false);
 	type = (uchar *)(conf + 1);
 	while (type < (uchar *)conf + conf->length)
 	{
@@ -114,7 +116,10 @@ mp_init(void)
 		{
 		case MP_PROCESSOR:
 			proc = (struct mp_proc *)type;
-			++ncpu;
+			if (ncpu < KCONFIG_MAX_CORE) {
+				cpus[ncpu].conf = proc;
+				++ncpu;
+			}
 			type += sizeof(*proc);
 			break;
 		case MP_IO_APIC:
@@ -134,6 +139,7 @@ mp_init(void)
 		outb(IO_IMCR_ADDRESS, 0x70);	/* Select IMCR */
 		outb(IO_IMCR_DATA, 0x01);	/* Enable APIC */
 	}
+	return (true);
 }
 
 #endif /* KCONFIG_ENABLE_SMP */

@@ -11,8 +11,6 @@
 #include <kernel/multiboot2.h>
 #include <stdio.h>
 
-#include <drivers/vga.h>
-
 /*
 ** Kernel main entry point
 */

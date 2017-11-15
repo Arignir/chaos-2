@@ -27,4 +27,16 @@ inb(ushort port)
 	return (data);
 }
 
+static inline void
+cpuid(int code, uint32_t *eax, uint32_t *edx)
+{
+	asm volatile("cpuid" : "=a"(*eax), "=d"(*edx) : "a"(code) : "ecx", "ebx");
+}
+
+static inline void
+cpuid_string(int code, uchar str[12])
+{
+	asm volatile("cpuid" : "=b"(*(uint32 *)str), "=d"(*(uint32 *)(str + 4)), "=c"(*(uint32 *)(str + 8)) : "a"(code));
+}
+
 #endif /* !_ARCH_X86_ASM_H_ */
