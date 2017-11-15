@@ -69,6 +69,10 @@ start:
 	hlt				/* And catch fire */
 	jmp .catch_fire
 
+/*
+** Detects for the CPUID instruction.
+** Returns false if it's available, true otherwise.
+*/
 detect_cpuid:
 	pushfl				/* Save EFLAGS */
 	pushfl				/* Store EFLAGS */
