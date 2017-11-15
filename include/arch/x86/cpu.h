@@ -14,15 +14,19 @@
 # include <kconfig.h>
 # include <arch/x86/smp.h>
 
-struct cpu_features
-{
-
+enum cpuid_features {
+	/* EDX */
+	CPUID_EDX_X87		= 1 << 0, /* x87 FPU on chip */
+	CPUID_EDX_APIC		= 1 << 9, /* Local APIC on chip */
+	CPUID_EDX_SSE		= 1 << 25, /* Streaming SIMD extensions (SSE) */
+	CPUID_EDX_SSE2		= 1 << 26, /* Streaming SIMD extensions 2 (SSE2) */
 };
 
 struct cpu
 {
-	struct cpu_features features;
 	uchar vendor_id[13];
+	uint32 signature; /* eax value of cpuid.01h */
+	uint32 features; /* edx value of cpuid.01h - see 'enum cpuid_features' */
 	struct mp_proc *conf;
 };
 

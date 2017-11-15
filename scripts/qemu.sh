@@ -21,6 +21,7 @@ function print_usage {
 	printf "\t-t			monitor mode\n"
 	printf "\t-k			enables kvm (if available)\n"
 	printf "\t-m <MB> 		memory (in MB) (Default: 512MB)\n"
+	printf "\t-c <CPU> 		cpu to emulate\n"
 	printf "\t-s <SMP>		number of cores (Default: 1)\n"
 	printf "\t-h			print this help menu\n"
 	exit 1
@@ -32,8 +33,9 @@ MONITOR=0
 MEMORY=512
 ARCH="x86"
 SMP=1
+CPU=""
 
-while getopts dtkhm:a:s: FLAG; do
+while getopts dtkhm:a:c:s: FLAG; do
 	case $FLAG in
 		d) DEBUG=1;;
 		k) KVM=1;;
@@ -41,6 +43,7 @@ while getopts dtkhm:a:s: FLAG; do
 		m) MEMORY="$OPTARG";;
 		s) SMP="$OPTARG";;
 		a) ARCH="$OPTARG";;
+		c) CPU="$OPTARG";;
 		h) print_usage;;
 		\?)
 			printf "Unknown option\n"
@@ -73,6 +76,10 @@ fi
 
 if [ $KVM == 1 ]; then
 	ARGS+=" --enable-kvm"
+fi
+
+if [ "$CPU" != "" ]; then
+	ARGS+=" -cpu $CPU"
 fi
 
 if [ $MONITOR == 1 ]; then

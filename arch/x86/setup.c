@@ -14,6 +14,7 @@
 #include <arch/x86/asm.h>
 #include <drivers/vga.h>
 #include <stdio.h>
+#include <string.h>
 
 int detect_cpuid(void);
 
@@ -62,10 +63,15 @@ arch_x86_setup(void)
 		/* Gather informations and features of selected cpu */
 		cpuid_string(0x0, cpu->vendor_id);
 		cpu->vendor_id[12] = '\0';
+		cpuid(0x1, &cpu->signature, &cpu->features);
 
 		/* Print these informations */
 		printf("processor: %u\n", i);
 		printf("vendor_id: %s\n", cpu->vendor_id);
+		printf("fpu: %y\n", cpu->features & CPUID_EDX_X87);
+		printf("sse: %y\n", cpu->features & CPUID_EDX_SSE);
+		printf("apic: %y\n", cpu->features & CPUID_EDX_APIC);
+		printf("sse2: %y\n", cpu->features & CPUID_EDX_SSE2);
 		printf("\n");
 	}
 }

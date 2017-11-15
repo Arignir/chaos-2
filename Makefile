@@ -27,6 +27,9 @@ endif
 # Number of cores (QEMU)
 export SMP ?= 1
 
+# CPU to emulate (QEMU)
+export CPU ?= qemu32
+
 # Arch
 arch ?= x86
 export ARCH ?= $(arch)
@@ -96,19 +99,19 @@ config:
 
 .PHONY: run
 run: iso
-	$(Q)./scripts/qemu.sh -m 1G -a "$(ARCH)" -s "$(SMP)"
+	$(Q)./scripts/qemu.sh -m 1G -a "$(ARCH)" -s "$(SMP)" -c "$(CPU)"
 
 .PHONY: monitor
 monitor: iso
-	./scripts/qemu.sh -t -m 1G -a "$(ARCH)" -s "$(SMP)"
+	./scripts/qemu.sh -t -m 1G -a "$(ARCH)" -s "$(SMP)" -c "$(CPU)"
 
 .PHONY: debug
 debug: iso
-	./scripts/qemu.sh -d -m 1G -a "$(ARCH)" -s "$(SMP)"
+	./scripts/qemu.sh -d -m 1G -a "$(ARCH)" -s "$(SMP)" -c "$(CPU)"
 
 .PHONY: run
 kvm: iso
-	$(Q)./scripts/qemu.sh -d -k -m 1G -a "$(ARCH)" -s "$(SMP)"
+	$(Q)./scripts/qemu.sh -d -k -m 1G -a "$(ARCH)" -s "$(SMP)" -c "$(CPU)"
 
 .PHONY: clean
 clean:
