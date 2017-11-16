@@ -12,6 +12,19 @@
 
 # include <chaosdef.h>
 
+/*
+** An enum to associate a label for each MSRs.
+*/
+enum msr_id
+{
+	IA32_APIC_BASE		= 0x1B,
+};
+
+/*
+** For a description of the following functions,
+** please refer to Intel's Instruction Set Reference.
+*/
+
 static inline void
 outb(ushort port, uchar data)
 {
@@ -28,15 +41,36 @@ inb(ushort port)
 }
 
 static inline void
-cpuid(int code, uint32_t *eax, uint32_t *edx)
+cpuid(uint32 code, uint32 *eax, uint32 *edx)
 {
-	asm volatile("cpuid" : "=a"(*eax), "=d"(*edx) : "a"(code) : "ecx", "ebx");
+	asm volatile("cpuid" : "=a"(*eax), "=d"(*edx) : "a"(code) : "ebx", "ecx");
 }
 
 static inline void
-cpuid_string(int code, uchar str[12])
+cpuid_string(uint32 code, uchar str[12])
 {
 	asm volatile("cpuid" : "=b"(*(uint32 *)str), "=d"(*(uint32 *)(str + 4)), "=c"(*(uint32 *)(str + 8)) : "a"(code));
+}
+
+static inline uint64
+read_msr(enum msr_id msr)
+{
+	uint32 low;
+	uint32 high;
+
+	asm volatile("rdmsr" : "=a"(low), "=d"(high) : "c"((uint32)msr));
+	return (((uint64)high << 32u) | (uint64)low);
+}
+
+static inline void
+write_msr(enum msr_id msr, uint64 val)
+{
+	uint32 low;
+	uint32 high;
+
+	low = (uint32)val;
+	high = (uint32)(val >> 32u);
+	asm volatile("wrmsr" : : "a"(low), "d"(high), "c"((uint32)msr));
 }
 
 #endif /* !_ARCH_X86_ASM_H_ */

@@ -11,29 +11,32 @@
 # define _ARCH_X86_CPU_H_
 
 # include <chaosdef.h>
-# include <kconfig.h>
-# include <arch/x86/smp.h>
 
+/*
+** CPUID features bitfield
+*/
 enum cpuid_features {
 	/* EDX */
 	CPUID_EDX_X87		= 1 << 0, /* x87 FPU on chip */
+	CPUID_EDX_MSR		= 1 << 5, /* RDMSR/WRMSR */
 	CPUID_EDX_APIC		= 1 << 9, /* Local APIC on chip */
 	CPUID_EDX_SSE		= 1 << 25, /* Streaming SIMD extensions (SSE) */
 	CPUID_EDX_SSE2		= 1 << 26, /* Streaming SIMD extensions 2 (SSE2) */
 };
 
+/*
+** A structure representing a single CPU
+*/
 struct cpu
 {
 	uchar vendor_id[13];
 	uint32 signature; /* eax value of cpuid.01h */
 	uint32 features; /* edx value of cpuid.01h - see 'enum cpuid_features' */
-	struct mp_proc *conf;
+	uint32 lapic_id; /* Local APIC id */
 };
 
-/* Number of CPUs enabled. */
-extern uint ncpu;
+void	detect_cpu_features(void);
 
-/* An array for all possible cpus. */
-extern struct cpu cpus[KCONFIG_MAX_CORE];
+# include <kernel/cpu.h>
 
 #endif /* !_ARCH_X86_CPU_H_ */

@@ -7,16 +7,24 @@
 **
 \* ------------------------------------------------------------------------ */
 
-#ifndef _KERNEL_MEMORY_H_
-# define _KERNEL_MEMORY_H_
+#ifndef _ARCH_X86_LAPIC_H_
+# define _ARCH_X86_LAPIC_H_
 
 # include <chaosdef.h>
+# include <kernel/memory.h>
 
-typedef uintptr		physaddr_t;
-typedef void		*virtaddr_t;
+/*
+** Local APIC registers offset
+*/
+enum lapic_reg
+{
+	LAPIC_ID		= 0x20,
+	LAPIC_VERSION		= 0x30,
+};
 
-# define P2V(phys) ((virtaddr_t)phys)
+extern physaddr_t lapic_paddr;
 
-# define NULL_FRAME	((physaddr_t)0u)
+void	lapic_init(void);
+uint32	get_lapic_id(void);
 
-#endif /* !_KERNEL_MEMORY_H_ */
+#endif /* !_ARCH_X86_LAPIC_H_ */
