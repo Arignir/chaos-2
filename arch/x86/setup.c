@@ -27,12 +27,21 @@ static void common_setup(void);
 static void
 arch_x86_early_setup(void)
 {
+	uint32 eax;
+	uint32 edx;
+
 	/* Initialize the vga driver early to let us */
 	vga_init();
 
 	/* Ensure we have CPUID enable */
 	if (!detect_cpuid()) {
 		panic("Your CPU must support the CPUID instruction to run ChaOS.");
+	}
+
+	/* Ensure the system supports APIC */
+	cpuid(0x1, &eax, &edx);
+	if (!(edx & CPUID_EDX_APIC)) {
+		panic("Your CPU must support APIC");
 	}
 }
 
