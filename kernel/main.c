@@ -11,6 +11,8 @@
 #include <kernel/multiboot2.h>
 #include <stdio.h>
 
+# include <drivers/vga.h> /* TODO */
+
 /*
 ** Kernel main entry point
 */
@@ -24,6 +26,7 @@ kmain(uint32 mb_magic, uintptr mb_ptr __unused) /* TODO: use mb_ptr */
 	trigger_init_levels(INIT_LEVEL_EARLIEST, INIT_LEVEL_LATEST);
 
 	printf("Welcome to ChaOS\n");
+
 
 	/* Halt (and catch fire) */
 	while (42);

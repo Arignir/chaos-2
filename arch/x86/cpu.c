@@ -33,7 +33,7 @@ current_cpu(void)
 {
 	uint32 apic_id;
 
-	apic_id = get_lapic_id();
+	apic_id = lapic_get_id();
 	for (struct cpu *cpu = cpus; cpu < cpus + ncpu; ++cpu)
 	{
 		if (cpu->lapic_id == apic_id)

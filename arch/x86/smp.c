@@ -109,7 +109,7 @@ mp_init(void)
 	conf = mp_config(&mp);
 	if (!conf)
 		return (false);
-	lapic_paddr = conf->lapic_paddr;
+	lapic_map(conf->lapic_paddr);
 	type = (uchar *)(conf + 1);
 	while (type < (uchar *)conf + conf->length)
 	{

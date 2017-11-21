@@ -63,10 +63,11 @@ arch_x86_setup(void)
 	/* Else, set the only processor to default values */
 	if (!smp_enabled) {
 		ncpu = 1;
-		lapic_paddr = (uint32)read_msr(IA32_APIC_BASE);
-		lapic_paddr &= 0xFFFFF000;
-		cpus[0].lapic_id = get_lapic_id();
+		lapic_map((uint32)read_msr(IA32_APIC_BASE) & 0xFFFFF000);
+		cpus[0].lapic_id = lapic_get_id();
 	}
+
+	printf("Number of cpus: %u\n", ncpu);
 
 	lapic_init(); /* Enable local APIC */
 	common_setup(); /* Finish the processor's setup */

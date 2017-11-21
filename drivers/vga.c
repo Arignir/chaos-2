@@ -191,4 +191,11 @@ vga_init(void)
 {
 	vga_set_color(VGA_BLACK, VGA_WHITE);
 	vga_clear();
+	vga_puts("VGA Enabled:");
+	for (int i = 0; i <= 0xF; ++i) {
+		vga_set_color(i, i);
+		vga_putchar(' ');
+	}
+	vga_set_color(VGA_BLACK, VGA_WHITE);
+	vga_putchar('\n');
 }
