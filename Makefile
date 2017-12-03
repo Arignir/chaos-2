@@ -39,19 +39,23 @@ export INCLUDE_DIR = $(PROJECT_DIR)/include
 
 # Flags
 export CFLAGS += \
-	-MD \
-	-nostdlib \
-	-nostdinc \
 	-W \
 	-Wall \
 	-Wextra \
+	-MD \
 	-O2 \
 	--std=gnu11 \
 	-fno-builtin \
+	-nostdinc \
+	-nostdlib \
 	-fno-stack-protector \
 	-fno-omit-frame-pointer \
 	-isystem "$(INCLUDE_DIR)" \
 	-isystem "$(INCLUDE_DIR)/lib/libc/"
+
+export NASM := nasm
+export NASMFLAGS += \
+	-I "$(INCLUDE_DIR)/"
 
 export LDFLAGS = -nostdlib
 
@@ -111,7 +115,7 @@ debug: iso
 
 .PHONY: run
 kvm: iso
-	$(Q)./scripts/qemu.sh -d -k -m 1G -a "$(ARCH)" -s "$(SMP)" -c "$(CPU)"
+	$(Q)./scripts/qemu.sh -t -k -m 1G -a "$(ARCH)" -s "$(SMP)" -c "$(CPU)"
 
 .PHONY: clean
 clean:

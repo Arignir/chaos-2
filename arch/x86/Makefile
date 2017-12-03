@@ -8,9 +8,9 @@
 ##############################################################################
 
 SRC_C += $(wildcard *.c)
-SRC_ASM += $(wildcard *.S)
+SRC_ASM += $(wildcard *.asm)
 
-OBJS += $(SRC_C:.c=.o) $(SRC_ASM:.S=.o)
+OBJS += $(SRC_C:.c=.o) $(SRC_ASM:.asm=.o)
 DEPS = $(OBJS:.o=.d)
 
 ARCH_OBJ = $(ARCH).o
@@ -32,6 +32,6 @@ clean:
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@
 
 -include $(DEPS)
-%.o: %.S
-	$(Q)printf "  AS\t $<\n"
-	$(Q)$(CC) $(CFLAGS) -c $< -o $@
+%.o: %.asm
+	$(Q)printf "  NASM\t $<\n"
+	$(Q)$(NASM) $(NASMFLAGS) $< -o $@

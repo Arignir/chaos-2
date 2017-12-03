@@ -32,3 +32,7 @@
 *#
 *.vim
 .syntastic_c_config
+
+# Debug
+peda*
+.gdb*

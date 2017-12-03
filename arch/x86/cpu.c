@@ -9,7 +9,7 @@
 
 #include <arch/x86/cpu.h>
 #include <arch/x86/asm.h>
-#include <arch/x86/lapic.h>
+#include <arch/x86/apic.h>
 
 /*
 ** Detects current cpu features, by calling the cpuid instruction.
@@ -33,7 +33,7 @@ current_cpu(void)
 {
 	uint32 apic_id;
 
-	apic_id = lapic_get_id();
+	apic_id = apic_get_id();
 	for (struct cpu *cpu = cpus; cpu < cpus + ncpu; ++cpu)
 	{
 		if (cpu->lapic_id == apic_id)

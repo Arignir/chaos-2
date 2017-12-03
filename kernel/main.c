@@ -9,9 +9,8 @@
 
 #include <kernel/init.h>
 #include <kernel/multiboot2.h>
+#include <kernel/interrupts.h>
 #include <stdio.h>
-
-# include <drivers/vga.h> /* TODO */
 
 /*
 ** Kernel main entry point
@@ -27,6 +26,7 @@ kmain(uint32 mb_magic, uintptr mb_ptr __unused) /* TODO: use mb_ptr */
 
 	printf("Welcome to ChaOS\n");
 
+	enable_interrupts();
 
 	/* Halt (and catch fire) */
 	while (42);

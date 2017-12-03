@@ -8,9 +8,8 @@
 ##############################################################################
 
 SRC_C += $(wildcard *.c)
-SRC_ASM += $(wildcard *.S)
 
-OBJS += $(SRC_C:.c=.o) $(SRC_ASM:.S=.o)
+OBJS += $(SRC_C:.c=.o)
 DEPS = $(OBJS:.o=.d)
 
 LIBC_OBJ = libc.o
@@ -29,9 +28,4 @@ clean:
 -include $(DEPS)
 %.o: %.c
 	$(Q)printf "  CC\t $<\n"
-	$(Q)$(CC) $(CFLAGS) -c $< -o $@
-
--include $(DEPS)
-%.o: %.S
-	$(Q)printf "  AS\t $<\n"
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@

@@ -12,7 +12,10 @@
 #include <arch/x86/cpu.h>
 #include <arch/x86/smp.h>
 #include <arch/x86/asm.h>
-#include <arch/x86/lapic.h>
+#include <arch/x86/pic.h>
+#include <arch/x86/apic.h>
+#include <arch/x86/ioapic.h>
+#include <arch/x86/interrupts.h>
 #include <drivers/vga.h>
 #include <stdio.h>
 #include <string.h>
@@ -30,8 +33,11 @@ arch_x86_early_setup(void)
 	uint32 eax;
 	uint32 edx;
 
-	/* Initialize the vga driver early to let us */
+	/* Initialize the vga driver early to let us print some debug informations */
 	vga_init();
+
+	/* Load the default IDT */
+	idt_init();
 
 	/* Ensure we have CPUID enable */
 	if (!detect_cpuid()) {
@@ -63,14 +69,34 @@ arch_x86_setup(void)
 	/* Else, set the only processor to default values */
 	if (!smp_enabled) {
 		ncpu = 1;
-		lapic_map((uint32)read_msr(IA32_APIC_BASE) & 0xFFFFF000);
-		cpus[0].lapic_id = lapic_get_id();
+		ioapic_map(IOAPIC_BASE_ADDR);
+		apic_map(APIC_BASE_ADDR);
+		cpus[0].lapic_id = apic_get_id();
 	}
 
 	printf("Number of cpus: %u\n", ncpu);
 
-	lapic_init(); /* Enable local APIC */
-	common_setup(); /* Finish the processor's setup */
+	pic_init();
+	ioapic_init();	/* Enable I/O APIC */
+	apic_init();	/* Enable local APIC */
+
+#if KCONFIG_ENABLE_SMP
+	mp_start_aps();	/* Start other processors */
+#endif /* KCONFIG_ENABLE_SMP */
+
+	common_setup();	/* Finish the processor's setup */
+}
+
+/*
+** AP setup point (after beeing booted in boot_ap())
+*/
+void
+ap_setup(void)
+{
+	apic_init();
+	common_setup();
+
+	while (42);
 }
 
 /*
@@ -95,6 +121,7 @@ common_setup(void)
 		cpu->features & CPUID_EDX_APIC,
 		cpu->features & CPUID_EDX_SSE2
 	);
+	xchg((uint *)&cpu->started, true);
 }
 
 NEW_INIT_HOOK(arch_x86_setup, &arch_x86_setup, INIT_LEVEL_ARCH);

@@ -12,6 +12,8 @@ ENTRY(start)
 
 SECTIONS
 {
+	. = 1M;
+
 	.text ALIGN(0x1000) : AT(ADDR(.text))
 	{
 		KEEP(*(.header))
@@ -28,11 +30,14 @@ SECTIONS
 		*(.data)
 	}
 
+	. = ALIGN(0x1000);
+	PROVIDE(__start_bss = .);
 	.bss ALIGN(0x1000) : AT(ADDR(.bss))
 	{
 		*(COMMON)
 		*(.bss)
 	}
+	PROVIDE(__stop_bss = .);
 
 	. = ALIGN(0x1000);
 }

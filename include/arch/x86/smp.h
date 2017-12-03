@@ -7,17 +7,17 @@
 **
 \* ------------------------------------------------------------------------ */
 
-#ifndef _ARCH_X86_SMP_H_
+#include <kconfig.h>
+
+#if !defined(_ARCH_X86_SMP_H_) && KCONFIG_ENABLE_SMP
 # define _ARCH_X86_SMP_H_
 
 # include <chaosdef.h>
 # include <kernel/memory.h>
 
-/* See MultiProcessor Specification v1.4 */
+# define TRAMPOLINE_START		(0x10000)
 
-/* IMCR I/O Ports*/
-# define IO_IMCR_ADDRESS		(0x22)
-# define IO_IMCR_DATA			(0x23)
+/* See MultiProcessor Specification v1.4 */
 
 /*
 ** MP Floating Pointer Structure
@@ -149,5 +149,6 @@ enum MP_ENTRY_TYPE
 };
 
 bool	mp_init(void);
+void	mp_start_aps(void);
 
 #endif /* !_ARCH_X86_SMP_H_ */

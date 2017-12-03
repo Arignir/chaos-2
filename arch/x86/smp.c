@@ -12,15 +12,20 @@
 #include <arch/x86/smp.h>
 #include <arch/x86/cpu.h>
 #include <arch/x86/asm.h>
-#include <arch/x86/lapic.h>
+#include <arch/x86/apic.h>
+#include <arch/x86/ioapic.h>
 #include <string.h>
 #include <stdio.h>
 
 /* Number of CPUs enabled. */
 uint ncpu = 0;
-struct cpu cpus[KCONFIG_MAX_CORE] = { 0 };
+struct cpu cpus[KCONFIG_MAX_CPUS] = { 0 };
 
 #if KCONFIG_ENABLE_SMP
+
+/* Defined in boot_ap.S */
+extern void boot_ap(void);
+extern void boot_ap_end(void);
 
 /*
 ** Looks for the MP Floating Pointer Structure from [start; start + len[.
@@ -96,7 +101,7 @@ mp_config(struct mp **mp_ptr)
 }
 
 /*
-** Tests if SMP is available. If it's the case, setup and start the other processors.
+** Tests if SMP is available.
 */
 bool
 mp_init(void)
@@ -104,12 +109,13 @@ mp_init(void)
 	struct mp *mp;
 	struct mp_proc *proc;
 	struct mp_conf *conf;
+	struct mp_ioapic *ioapic;
 	uchar *type;
 
 	conf = mp_config(&mp);
 	if (!conf)
 		return (false);
-	lapic_map(conf->lapic_paddr);
+	apic_map(conf->lapic_paddr);
 	type = (uchar *)(conf + 1);
 	while (type < (uchar *)conf + conf->length)
 	{
@@ -117,13 +123,17 @@ mp_init(void)
 		{
 		case MP_PROCESSOR:
 			proc = (struct mp_proc *)type;
-			if (ncpu < KCONFIG_MAX_CORE) {
+			if (ncpu < KCONFIG_MAX_CPUS) {
 				cpus[ncpu].lapic_id = proc->lapic_id;
 				++ncpu;
 			}
 			type += sizeof(*proc);
 			break;
 		case MP_IO_APIC:
+			ioapic = (struct mp_ioapic *)type;
+			ioapic_map(ioapic->addr);
+			type += sizeof(*ioapic);
+			break;
 		case MP_BUS:
 		case MP_IO_INTERRUPT:
 		case MP_LOCAL_INTERRUPT:
@@ -135,12 +145,31 @@ mp_init(void)
 			break;
 		}
 	}
-	/* If IMCRP bit is set, IMCR is present and PIC Mode is implemented. */
-	if (mp->imcrp) {
-		outb(IO_IMCR_ADDRESS, 0x70);	/* Select IMCR */
-		outb(IO_IMCR_DATA, 0x01);	/* Enable APIC */
-	}
 	return (true);
+}
+
+/*
+** Start the other processors
+*/
+void
+mp_start_aps(void)
+{
+	struct cpu *cpu;
+	struct cpu *current;
+
+	current = current_cpu();
+	/* TODO Update this when paging will be enable */
+	*(uchar *)(TRAMPOLINE_START) = 0xEA; /* Far jump */
+	*(ushort *)(TRAMPOLINE_START + 1) = (uint16)(uintptr)&boot_ap + 0x10; /* IP */
+	*(ushort *)(TRAMPOLINE_START + 3) = 0xFFFF; /* CS */
+
+	for (cpu = cpus; cpu < cpus + ncpu; ++cpu)
+	{
+		if (cpu == current)
+			continue;
+		apic_start_ap(cpu->lapic_id, (uintptr)TRAMPOLINE_START);
+		while (!cpu->started);
+	}
 }
 
 #endif /* KCONFIG_ENABLE_SMP */
