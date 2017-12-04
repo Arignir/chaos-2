@@ -100,7 +100,7 @@ apic_eoi(void)
 void
 apic_timer_ihandler(struct iframe *iframe __unused)
 {
-	printf(".");
+	printf("%i", apic_get_id());
 	apic_eoi();
 }
 
@@ -190,8 +190,6 @@ apic_start_ap(uint32 lapic_id, uintptr addr)
 
 	apic_send_ipi(lapic_id, APIC_ICR_STARTUP | (addr >> 12));
 	assert(apic_ipi_acked());
-	for (int i = 0; i < 100000; ++i)
-		printf("");
 	apic_send_ipi(lapic_id, APIC_ICR_STARTUP | (addr >> 12));
 	assert(apic_ipi_acked());
 	for (int i = 0; i < 100000; ++i)

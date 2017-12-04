@@ -36,8 +36,8 @@ arch_x86_early_setup(void)
 	/* Initialize the vga driver early to let us print some debug informations */
 	vga_init();
 
-	/* Load the default IDT */
-	idt_init();
+	/* Set up the default IDT */
+	idt_setup();
 
 	/* Ensure we have CPUID enable */
 	if (!detect_cpuid()) {
@@ -112,6 +112,9 @@ common_setup(void)
 	/* Detect cpu features */
 	detect_cpu_features();
 
+	/* Loads the IDT */
+	idt_load();
+
 	/* Print informations about this CPU */
 	printf("Processor %u started.\n", cpu->lapic_id);
 	printf("\tvendor_id: %s\n", cpu->vendor_id);
@@ -121,7 +124,12 @@ common_setup(void)
 		cpu->features & CPUID_EDX_APIC,
 		cpu->features & CPUID_EDX_SSE2
 	);
+
+	/* Mark this cpu as started */
 	xchg((uint *)&cpu->started, true);
+
+	/* Enable the interrupts */
+	enable_interrupts();
 }
 
 NEW_INIT_HOOK(arch_x86_setup, &arch_x86_setup, INIT_LEVEL_ARCH);

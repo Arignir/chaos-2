@@ -169,4 +169,14 @@ xchg(volatile uint *addr, uint newval)
 	return (res);
 }
 
+static inline uint64
+rdtsc(void)
+{
+	uint32 a;
+	uint32 d;
+
+	asm volatile("rdtsc" : "=a"(a), "=d"(d));
+	return ((uint64)d << 32u | a);
+}
+
 #endif /* !_ARCH_X86_ASM_H_ */

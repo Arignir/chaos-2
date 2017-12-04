@@ -102,6 +102,7 @@ struct idt_entry
 
 static_assert(sizeof(struct idt_entry) == 2 * sizeof(uint32));
 
-void	idt_init(void);
+void	idt_setup(void);
+void	idt_load(void);
 
 #endif /* !_ARCH_X86_INTERRUPTS_H_ */

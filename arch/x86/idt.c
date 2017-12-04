@@ -14,7 +14,7 @@
 #include <string.h>
 
 /* Interrupt Descriptor Table */
-struct idt_entry idt[X86_INT_MAX] = { 0 };
+static struct idt_entry idt[X86_INT_MAX] = { 0 };
 
 /* Generated in idt_handler.S */
 extern void x86_division_by_zero_ihandler(struct iframe *);
@@ -129,10 +129,10 @@ pop_interrupt_state(void *save)
 }
 
 /*
-** Sets up the default idt
+** Sets up the idt
 */
 void
-idt_init(void)
+idt_setup(void)
 {
 	size_t i;
 
@@ -190,7 +190,13 @@ idt_init(void)
 	idt_set_callback(idt + INT_APIC_TIMER, (uintptr)&x86_apic_timer_ihandler);
 	idt_set_callback(idt + INT_APIC_ERROR, (uintptr)&x86_apic_error_ihandler);
 	idt_set_callback(idt + INT_APIC_SPURIOUS, (uintptr)&x86_apic_spurious_ihandler);
+}
 
-	/* Load Interrupt Descriptor Table */
+/*
+** Loads the Interrupt Descriptor Table
+*/
+void
+idt_load(void)
+{
 	lidt(idt, sizeof(idt) - 1);
 }
