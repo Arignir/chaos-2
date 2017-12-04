@@ -47,7 +47,8 @@ enum x86_interrupts
 
 	INT_APIC_SPURIOUS		= 0xFF,
 
-	X86_INT_MAX			= 0x100,
+	X86_INT_MAX			= 0xFF,
+	X86_INT_NB			= 0x100,
 };
 
 /*
@@ -77,32 +78,9 @@ struct iframe
 	uintptr ss;
 };
 
-enum idt_entry_type
-{
-	IDT_TASK_GATE_32		= 0x5,
-	IDT_INTERRUPT_GATE_16		= 0x6,
-	IDT_TRAP_GATE_16		= 0x7,
-	IDT_INTERRUPT_GATE_32		= 0xE,
-	IDT_TRAP_GATE_32		= 0xF,
-};
-
-/*
-** An entry within the Interrupt Descriptor Table
-*/
-struct idt_entry
-{
-	uint16 callback_low;	/* Bits 0..15 of callback */
-	uint16 selector;
-	uint8 __zero;		/* Reserved */
-	uint type		: 5; /* Gate type and storage segment */
-	uint dpl		: 2; /* Descriptor Privilege Level */
-	uint present		: 1; /* Present bit */
-	uint16 callback_high;	/* Bits 16..31 of callback */
-} __packed;
-
-static_assert(sizeof(struct idt_entry) == 2 * sizeof(uint32));
-
 void	idt_setup(void);
 void	idt_load(void);
+
+typedef void(*ihandler_t)(struct iframe *);
 
 #endif /* !_ARCH_X86_INTERRUPTS_H_ */

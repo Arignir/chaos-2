@@ -33,18 +33,23 @@ apic_init(void)
 
 	assert(apic);
 
-	/* Set up apic Timer */
-	apic_write(APIC_TIMER_DCR, APIC_TIMER_X1);
-	apic_write(APIC_LVT_TIMER, APIC_TIMER_PERIODIC | INT_APIC_TIMER);
-	apic_write(APIC_TIMER_ICR, 10000000);
-
 	/* Mask unused/unsupported interrupts */
 	apic_write(APIC_LVT_LINT0, APIC_LVT_MASKED);
 	apic_write(APIC_LVT_LINT1, APIC_LVT_MASKED);
 	apic_write(APIC_LVT_PERFCOUNT, APIC_LVT_MASKED);
 
+	/* Set up apic Timer */
+	apic_write(APIC_TIMER_DCR, APIC_TIMER_X1);
+	apic_write(APIC_LVT_TIMER, APIC_TIMER_PERIODIC | INT_APIC_TIMER);
+	apic_write(APIC_TIMER_ICR, 10000000);
+
 	/* Map error interrupt */
 	apic_write(APIC_LVT_ERROR, INT_APIC_ERROR);
+
+	/* IRQs */
+	register_int_handler(INT_APIC_TIMER, &apic_timer_ihandler);
+	register_int_handler(INT_APIC_ERROR, &apic_error_ihandler);
+	register_int_handler(INT_APIC_SPURIOUS, &apic_spurious_ihandler);
 
 	/* Clear Error Status Register */
 	apic_write(APIC_ESR, 0x0);
@@ -100,7 +105,6 @@ apic_eoi(void)
 void
 apic_timer_ihandler(struct iframe *iframe __unused)
 {
-	printf("%i", apic_get_id());
 	apic_eoi();
 }
 

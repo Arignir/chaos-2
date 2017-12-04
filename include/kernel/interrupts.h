@@ -18,5 +18,7 @@ void	enable_interrupts(void);
 void	disable_interrupts(void);
 void	push_interrupts_state(void *save);
 void	pop_interrupts_state(void *save);
+void	register_int_handler(uint vector, void *handler);
+void	unregister_int_handler(uint vector);
 
 #endif /* !_KERNEL_INTERRUPTS_H_ */
