@@ -40,6 +40,7 @@ typedef unsigned char		uchar;
 typedef unsigned short		ushort;
 typedef unsigned int		uint;
 typedef unsigned long		ulong;
+typedef unsigned long long	ulonglong;
 typedef intmax_t		intmax;
 typedef uintmax_t		uintmax;
 

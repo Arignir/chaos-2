@@ -21,7 +21,7 @@ static char const digits_upp[16] = "0123456789ABCDEF";
 ** by this function. `buff[0]` may be undefined.
 */
 static char *
-long_to_string(char *buff, size_t pos, ulong nb, uint base, uint flags, char *sign)
+long_to_string(char *buff, size_t pos, ulonglong nb, uint base, uint flags, char *sign)
 {
 	bool neg;
 	int digit;
@@ -80,7 +80,7 @@ static char const* const units[] =
 ** As weird as long_to_string().
 */
 static char *
-long_to_readable(char *buff, size_t buffsize, ulong nb, uint base, uint flags, char *sign)
+long_to_readable(char *buff, size_t buffsize, ulonglong nb, uint base, uint flags, char *sign)
 {
 	uint i;
 	size_t c;
@@ -121,7 +121,7 @@ printf_formatter(char const *fmt, va_list va, printf_output_func out, void *para
 	char c_str[2];
 	char c;
 	uint flags;
-	ulong nb;
+	ulonglong nb;
 	uint base;
 	uint formatw;
 	bool precision;
@@ -189,6 +189,9 @@ format:
 			flags &= ~PRINTF_LEAD_ZEROS;
 			goto print_output;
 		case 'l':
+			if (flags & PRINTF_LONG) {
+				flags |= PRINTF_LONGLONG;
+			}
 			flags |= PRINTF_LONG;
 			goto format;
 		case 'h':
@@ -212,6 +215,7 @@ format:
 		case 'i':
 			nb = (flags & PRINTF_HALFHALF) ? (signed char)va_arg(va, int) :
 				(flags & PRINTF_HALF) ? (short)va_arg(va, int) :
+				(flags & PRINTF_LONGLONG) ? va_arg(va, long long) :
 				(flags & PRINTF_LONG) ? va_arg(va, long) :
 				(flags & PRINTF_PTRDIFF_T) ? va_arg(va, ptrdiff_t) :
 				va_arg(va, int);
@@ -221,6 +225,7 @@ format:
 		case 'r':
 			nb = (flags & PRINTF_HALFHALF) ? (signed char)va_arg(va, int) :
 				(flags & PRINTF_HALF) ? (short)va_arg(va, int) :
+				(flags & PRINTF_LONGLONG) ? va_arg(va, long long) :
 				(flags & PRINTF_LONG) ? va_arg(va, long) :
 				(flags & PRINTF_PTRDIFF_T) ? va_arg(va, ptrdiff_t) :
 				va_arg(va, int);
@@ -246,6 +251,7 @@ print_unsigned:
 		case 'u':
 			nb = (flags & PRINTF_HALFHALF) ? (uchar)va_arg(va, int) :
 				(flags & PRINTF_HALF) ? (ushort)va_arg(va, int) :
+				(flags & PRINTF_LONGLONG) ? va_arg(va, ulonglong) :
 				(flags & PRINTF_LONG) ? va_arg(va, ulong) :
 				(flags & PRINTF_SIZE_T) ? va_arg(va, size_t) :
 				(flags & PRINTF_PTRDIFF_T) ? (uintptr)va_arg(va, ptrdiff_t) :

@@ -61,7 +61,8 @@ pop_interrupts_state(void *save)
 /*
 ** Registers a handler for the given interrupt vector
 */
-void	register_int_handler(uint vector, void *handler)
+void
+register_int_handler(uint vector, void *handler)
 {
 	assert(vector < X86_INT_NB);
 	irqhandlers[vector] = handler;
@@ -70,10 +71,17 @@ void	register_int_handler(uint vector, void *handler)
 /*
 ** UnRegisters the handler for the given interrupt vector
 */
-void	unregister_int_handler(uint vector)
+void
+unregister_int_handler(uint vector)
 {
 	assert(vector < X86_INT_NB);
 	irqhandlers[vector] = NULL;
+}
+
+void
+halt()
+{
+	hlt();
 }
 
 /*

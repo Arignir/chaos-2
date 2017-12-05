@@ -96,7 +96,8 @@ ap_setup(void)
 	apic_init();
 	common_setup();
 
-	while (42);
+	while (42)
+		halt();
 }
 
 /*

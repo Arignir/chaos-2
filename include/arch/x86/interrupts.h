@@ -42,7 +42,8 @@ enum x86_interrupts
 	INT_MAX_INTEL			= 0x1F,
 	INT_IRQ0			= 0x20,
 
-	INT_APIC_TIMER			= 0x20,
+	INT_PIT				= 0x20,
+	INT_APIC_TIMER			= 0x32,
 	INT_APIC_ERROR			= 0x33,
 
 	INT_APIC_SPURIOUS		= 0xFF,

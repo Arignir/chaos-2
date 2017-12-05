@@ -10,7 +10,6 @@
 #include <arch/x86/asm.h>
 #include <arch/x86/interrupts.h>
 #include <arch/x86/apic.h>
-#include <arch/x86/timer.h>
 #include <stdio.h> // TODO For Debug
 
 static volatile uchar *apic = NULL;
@@ -44,7 +43,7 @@ apic_init(void)
 	apic_write(APIC_LVT_PERFCOUNT, APIC_LVT_MASKED);
 
 	/* Set up apic Timer */
-	apic_write(APIC_TIMER_DCR, APIC_TIMER_X1);
+	apic_write(APIC_TIMER_DCR, APIC_TIMER_X8);
 	apic_write(APIC_LVT_TIMER, APIC_TIMER_PERIODIC | INT_APIC_TIMER);
 	apic_write(APIC_TIMER_ICR, 10000000);
 
@@ -110,7 +109,7 @@ apic_eoi(void)
 void
 apic_timer_ihandler(struct iframe *iframe __unused)
 {
-	timer_ihandler();
+	printf(".");
 	apic_eoi();
 }
 
@@ -168,6 +167,18 @@ apic_ipi_acked(void)
 #if KCONFIG_ENABLE_SMP
 
 /*
+** Waits for a couple of cpu clocks
+*/
+static void
+micro_wait(void)
+{
+	uint64 tsc;
+
+	tsc = rdtsc();
+	while (rdtsc() < tsc + 300000000ull);
+}
+
+/*
 ** Starts the AP with the given apic id and makes it jump at given address.
 */
 void
@@ -194,18 +205,12 @@ apic_start_ap(uint32 lapic_id, uintptr addr)
 
 	apic_send_ipi(lapic_id, APIC_ICR_INIT);
 	assert(apic_ipi_acked());
+	micro_wait();
 
-	for (int i = 0; i < 100000; ++i)
-		printf("");
-
-	apic_send_ipi(lapic_id, APIC_ICR_STARTUP | (addr >> 12));
-	assert(apic_ipi_acked());
-	apic_send_ipi(lapic_id, APIC_ICR_STARTUP | (addr >> 12));
-	assert(apic_ipi_acked());
-	for (int i = 0; i < 100000; ++i)
-		printf("");
-	apic_send_ipi(lapic_id, APIC_ICR_STARTUP | (addr >> 12));
-	assert(apic_ipi_acked());
+	for (int i = 0; i < 2; ++i) {
+		apic_send_ipi(lapic_id, APIC_ICR_STARTUP | (addr >> 12));
+		micro_wait();
+	}
 }
 
 #endif /* KCONFIG_ENABLE_SMP */

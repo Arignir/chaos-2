@@ -179,4 +179,10 @@ rdtsc(void)
 	return ((uint64)d << 32u | a);
 }
 
+static inline void
+hlt(void)
+{
+	asm volatile("hlt");
+}
+
 #endif /* !_ARCH_X86_ASM_H_ */
