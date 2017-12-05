@@ -150,5 +150,6 @@ enum MP_ENTRY_TYPE
 
 bool	mp_init(void);
 void	mp_start_aps(void);
+void	ap_setup(void);
 
 #endif /* !_ARCH_X86_SMP_H_ */

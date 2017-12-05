@@ -80,6 +80,7 @@ struct iframe
 
 void	idt_setup(void);
 void	idt_load(void);
+void	interrupts_handler(struct iframe *iframe);
 
 typedef void(*ihandler_t)(struct iframe *);
 

@@ -40,7 +40,7 @@ disable_interrupts(void)
 ** Stores in 'save' the current interrupt state
 */
 void
-push_interrupt_state(void *save)
+push_interrupts_state(void *save)
 {
 	*(bool *)save = get_eflags().IF;
 }
@@ -49,7 +49,7 @@ push_interrupt_state(void *save)
 ** Restores the current interrupt state
 */
 void
-pop_interrupt_state(void *save)
+pop_interrupts_state(void *save)
 {
 	union eflags e;
 

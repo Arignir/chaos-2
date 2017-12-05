@@ -10,9 +10,14 @@
 #include <arch/x86/asm.h>
 #include <arch/x86/interrupts.h>
 #include <arch/x86/apic.h>
+#include <arch/x86/timer.h>
 #include <stdio.h> // TODO For Debug
 
 static volatile uchar *apic = NULL;
+
+static void	apic_timer_ihandler(struct iframe *iframe);
+static void	apic_error_ihandler(struct iframe *iframe);
+static void	apic_spurious_ihandler(struct iframe *iframe);
 
 /*
 ** Writes to a local APIC register
@@ -93,7 +98,7 @@ apic_map(physaddr_t pa)
 ** Issue an end-of-interrupt signal so that the apic can process the next
 ** interrupt.
 */
-void
+static void
 apic_eoi(void)
 {
 	apic_write(APIC_EOI, 0x0);
@@ -105,6 +110,7 @@ apic_eoi(void)
 void
 apic_timer_ihandler(struct iframe *iframe __unused)
 {
+	timer_ihandler();
 	apic_eoi();
 }
 

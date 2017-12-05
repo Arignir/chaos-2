@@ -42,12 +42,24 @@ export CFLAGS += \
 	-W \
 	-Wall \
 	-Wextra \
+	-Wstrict-prototypes \
+	-Wshadow \
+	-Wpointer-arith \
+	-Wcast-align \
+	-Wwrite-strings \
+	-Wmissing-prototypes \
+	-Wmissing-declarations \
+	-Wredundant-decls \
+	-Wnested-externs \
+	-Winline \
+	-Wuninitialized \
 	-MD \
 	-O2 \
 	--std=gnu11 \
 	-fno-builtin \
 	-nostdinc \
 	-nostdlib \
+	-ffreestanding \
 	-fno-stack-protector \
 	-fno-omit-frame-pointer \
 	-isystem "$(INCLUDE_DIR)" \
@@ -58,6 +70,7 @@ export NASMFLAGS += \
 	-I "$(INCLUDE_DIR)/"
 
 export LDFLAGS = -nostdlib
+KERNEL_LDFLAGS = $(LDFLAGS) $(shell $(CC) -print-libgcc-file-name $(CFLAGS))
 
 # Import arch flags
 include arch/$(ARCH)/Makefile.cpu
@@ -86,7 +99,7 @@ kernel: print_building
 
 $(KERNEL): arch/arch.o drivers/drivers.o kernel/kernel.o lib/lib.o
 	$(Q)printf "  LD\t $(notdir $@)\n"
-	$(Q)$(LD) $(LDFLAGS) -o $@ -T $(LINKER_SCRIPT) $^
+	$(Q)$(LD) -T $(LINKER_SCRIPT) -o $@ $^ $(KERNEL_LDFLAGS)
 
 .PHONY: iso
 iso: $(ISO)
@@ -107,11 +120,11 @@ run: iso
 
 .PHONY: monitor
 monitor: iso
-	./scripts/qemu.sh -t -m 1G -a "$(ARCH)" -s "$(SMP)" -c "$(CPU)"
+	$(Q)./scripts/qemu.sh -t -m 1G -a "$(ARCH)" -s "$(SMP)" -c "$(CPU)"
 
 .PHONY: debug
 debug: iso
-	./scripts/qemu.sh -d -m 1G -a "$(ARCH)" -s "$(SMP)" -c "$(CPU)"
+	$(Q)./scripts/qemu.sh -d -m 1G -a "$(ARCH)" -s "$(SMP)" -c "$(CPU)"
 
 .PHONY: run
 kvm: iso

@@ -7,16 +7,14 @@
 **
 \* ------------------------------------------------------------------------ */
 
-#ifndef _KERNEL_MEMORY_H_
-# define _KERNEL_MEMORY_H_
+#ifndef _ARCH_X86_TIMER_H_
+# define _ARCH_X86_TIMER_H_
 
 # include <chaosdef.h>
+# include <arch/x86/interrupts.h>
 
-typedef uintptr		physaddr_t;
-typedef void		*virtaddr_t;
+uint64	now(void);
 
-# define P2V(phys) ((virtaddr_t)(phys))
+void	timer_ihandler(void);
 
-# define NULL_FRAME	((physaddr_t)0u)
-
-#endif /* !_KERNEL_MEMORY_H_ */
+#endif /* !_ARCH_X86_TIMER_H_ */

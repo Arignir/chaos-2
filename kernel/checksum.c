@@ -18,7 +18,7 @@ checksum8(void const *s, size_t l)
 
 	r = 0;
 	c = s;
-	e = s + l;
+	e = c + l;
 	while (c < e) {
 		r += *c;
 		++c;
@@ -35,7 +35,7 @@ checksum16(void const *s, size_t l)
 
 	r = 0;
 	c = s;
-	e = s + l;
+	e = c + l;
 	while (c < e) {
 		r += *c;
 		++c;
@@ -52,7 +52,7 @@ checksum32(void const *s, size_t l)
 
 	r = 0;
 	c = s;
-	e = s + l;
+	e = c + l;
 	while (c < e) {
 		r += *c;
 		++c;

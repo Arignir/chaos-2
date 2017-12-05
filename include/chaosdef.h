@@ -90,4 +90,6 @@ void				panic(char const *fmt, ...) __noreturn;
 /* Panics if the first operand is greater or equal to the other one. */
 # define assert_ge(a, b)	assert((a) > (b))
 
+void	kmain(uint32 mb_magic, uintptr mb_ptr);
+
 #endif /* !_CHAOSDEF_H_ */

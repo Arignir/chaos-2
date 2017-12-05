@@ -87,9 +87,6 @@ enum apic_timer_mode
 void	apic_init(void);
 uint32	apic_get_id(void);
 void	apic_map(physaddr_t);
-void	apic_timer_ihandler(struct iframe *iframe);
-void	apic_error_ihandler(struct iframe *iframe);
-void	apic_spurious_ihandler(struct iframe *iframe);
 void	apic_send_ipi(uint32 dest, uint32 flags);
 bool	apic_ipi_acked(void);
 
