@@ -34,4 +34,5 @@ clean:
 -include $(DEPS)
 %.o: %.asm
 	$(Q)printf "  NASM\t $<\n"
-	$(Q)$(NASM) $< $(NASMFLAGS) -o $@
+	$(Q)$(NASM) $(NASMFLAGS) -M $< -o $@ > $(patsubst %.o,%.d, $@)
+	$(Q)$(NASM) $(NASMFLAGS) $< -o $@
