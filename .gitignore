@@ -20,7 +20,7 @@
 
 # Kernel configuration
 /kconfig
-/include/kconfig.h
+/include/kconfig.*
 
 # Userspace programs
 /userspace/cat

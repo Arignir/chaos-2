@@ -22,12 +22,24 @@ if [ ! -f "$PROJECT_DIR/kconfig" ]; then
 fi
 
 declare kconfig_h="$PROJECT_DIR/include/kconfig.h"
+declare kconfig_inc="$PROJECT_DIR/include/kconfig.inc"
 
+## Create the C-header file
 head -n 7 "$PROJECT_DIR/kconfig" | sed 's/\#/\/\//g' > "$kconfig_h"
 echo "#ifndef KCONFIG_H" >> "$kconfig_h"
 echo "# define KCONFIG_H" >> "$kconfig_h"
 
-tail -n +7 "$PROJECT_DIR/kconfig" | sed 's/\#/\/\//g' | sed 's/KCONFIG\[/# define /g' | sed 's/\]=/ /g' >> "$PROJECT_DIR/include/kconfig.h"
+tail -n +7 "$PROJECT_DIR/kconfig" | sed 's/\#/\/\//g' | sed 's/KCONFIG\[/# define /g' | sed 's/\]=/ /g' >> "$kconfig_h"
 
 echo "" >> "$kconfig_h"
 echo "#endif /* !KCONFIG_H */" >> "$kconfig_h"
+
+## Create the ASM-header file
+head -n 7 "$PROJECT_DIR/kconfig" | sed 's/\#/;/g' > "$kconfig_inc"
+echo "%ifndef KCONFIG_H" >> "$kconfig_inc"
+echo "%define KCONFIG_H" >> "$kconfig_inc"
+
+tail -n +7 "$PROJECT_DIR/kconfig" | sed 's/\#/;/g' | sed 's/KCONFIG\[/%define /g' | sed 's/\]=/ /g' >> "$kconfig_inc"
+
+echo "" >> "$kconfig_inc"
+echo "%endif" >> "$kconfig_inc"

@@ -87,6 +87,8 @@ arch_x86_setup(void)
 	common_setup();	/* Finish the processor's setup */
 }
 
+#if KCONFIG_ENABLE_SMP
+
 /*
 ** AP setup point (after beeing booted in boot_ap())
 */
@@ -99,6 +101,8 @@ ap_setup(void)
 	while (42)
 		halt();
 }
+
+#endif /* KCONFIG_ENABLE_SMP */
 
 /*
 ** Common CPU setup point.

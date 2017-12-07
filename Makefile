@@ -66,8 +66,7 @@ export CFLAGS += \
 	-isystem "$(INCLUDE_DIR)/lib/libc/"
 
 export NASM := nasm
-export NASMFLAGS += \
-	-I "$(INCLUDE_DIR)/"
+export NASMFLAGS += -I "$(INCLUDE_DIR)/"
 
 export LDFLAGS = -nostdlib
 KERNEL_LDFLAGS = $(LDFLAGS) $(shell $(CC) -print-libgcc-file-name $(CFLAGS))
@@ -82,7 +81,7 @@ MAKEFLAGS += --no-print-directory
 all: kernel
 
 .PHONY: print_building
-print_building:
+print_building: kconfig
 	$(Q)echo
 	$(Q)echo " *"
 	$(Q)echo "*  Building $(notdir $(KERNEL))"
@@ -106,6 +105,10 @@ iso: $(ISO)
 
 $(ISO): kernel
 	$(Q)./scripts/chaos-iso.sh -b "$(BOOT_FLAGS)"
+
+kconfig:
+	$(Q)printf "  SHELL\t check_config\n"
+	$(Q)./scripts/check_config.sh
 
 .PHONY: config
 config:

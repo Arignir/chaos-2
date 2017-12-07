@@ -7,6 +7,10 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+%include "kconfig.inc"
+
+%if KCONFIG_ENABLE_SMP
+
 [global boot_ap]
 [extern ap_setup]
 [extern gdt]
@@ -61,3 +65,5 @@ align 4096
 boot2_stack_bottom:
 	resb 4096 * 16
 boot2_stack_top:
+
+%endif

@@ -29,5 +29,8 @@ if [[ -f "$KCONFIG_DEFAULT_PATH" ]]; then
 	source "$KCONFIG_DEFAULT_PATH"
 fi
 
-# Go to main menu
-main_menu
+if [[ $# -eq 1 && "$1" == "gen-default" ]]; then
+	save_config "$KCONFIG_DEFAULT_PATH"
+else
+	main_menu
+fi

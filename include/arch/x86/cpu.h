@@ -38,6 +38,10 @@ struct cpu
 
 void	detect_cpu_features(void);
 
+#if KCONFIG_ENABLE_SMP
+void	ap_setup(void);
+#endif /* KCONFIG_ENABLE_SMP */
+
 # include <kernel/cpu.h>
 
 #endif /* !_ARCH_X86_CPU_H_ */
