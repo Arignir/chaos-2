@@ -113,7 +113,6 @@ apic_eoi(void)
 void
 apic_timer_ihandler(struct iframe *iframe __unused)
 {
-	printf(".");
 	apic_eoi();
 }
 
