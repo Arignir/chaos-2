@@ -13,11 +13,14 @@ set -u
 # Each menu within the ChaOS configuration
 #
 
+new_kconfig_var KCONFIG_DEBUG_MULTIBOOT 0
 new_kconfig_var KCONFIG_DEBUG_PMM 0
 new_kconfig_var KCONFIG_DEBUG_VMM 0
 
 function menu_debug() {
 	menu_checklist "Debug Options" \
+		"Enable Multiboot Debug" KCONFIG_DEBUG_MULTIBOOT \
+			"This options enables debugging outputs and assertions for the Multiboot's tables parser" \
 		"Enable PMM Debug" KCONFIG_DEBUG_PMM \
 			"This options enables debugging outputs and assertions for the Physical Memory Manager" \
 		"Enable VMM Debug" KCONFIG_DEBUG_VMM \

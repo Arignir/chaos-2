@@ -13,9 +13,10 @@
 [extern gdtptr]
 [extern __start_bss]
 [extern __stop_bss]
+[extern mb_tag]
 
 %include "arch/x86/asm.inc"
-%include "kernel/multiboot.inc"
+%include "multiboot.inc"
 
 ; Multiboot header - Must be at the very beginning of the binary
 [section .header]
@@ -39,9 +40,13 @@ start:
 	; Set up boot stack
 	mov esp, boot_stack_top
 
-	; Save multiboots information in other registers
-	mov ecx, eax
-	mov edx, ebx
+	; Check we have been booted using multiboot
+	cmp eax, MULTIBOOT2_BOOTLOADER_MAGIC
+	jne 0				; Crash if it's not the case
+
+	; Save ebx value now in a scratch register, so that we can use it after bss's reset
+	add ebx, 8
+	mov ecx, ebx
 
 	; Load the new GDT
 	lgdt [gdtptr]
@@ -58,6 +63,7 @@ start:
 	jmp KERNEL_CODE_SELECTOR:.far_jump
 
 .far_jump:
+
 	; Clear BSS section
 	mov eax, __start_bss
 	.loop:
@@ -68,9 +74,12 @@ start:
 	jmp .loop
 	.endloop:
 
+	; TODO This will need to be updated when virtual memory will be available
+	; Save multiboot's structure
+	mov edx, mb_tag
+	mov dword [edx], ecx
+
 	; Call kernel main and common entry point
-	push edx
-	push ecx
 	call kmain
 
 .catch_fire:

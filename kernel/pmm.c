@@ -171,7 +171,7 @@ pmm_init(void)
 	{
 #if KCONFIG_DEBUG_PMM
 		printf("Marking area \"%s\" as allocated (%p - %p)\n",
-				pra->name, pra->start, pra->end);
+				pra->name, (void *)pra->start, (void *)pra->end);
 #endif /* KCONFIG_DEBUG_PMM */
 		mark_range_as_allocated(pra->start, pra->end);
 	}

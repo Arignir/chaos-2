@@ -92,7 +92,7 @@ void				panic(char const *fmt, ...) __noreturn;
 # define assert_ge(a, b)	assert((a) > (b))
 
 /* Main entry point of the kernel. Called by assembly bootstrap code */
-void	kmain(uint32 mb_magic, uintptr mb_ptr);
+void	kmain(void);
 
 /* Mask to test if an address is page-aligned */
 # define PAGE_SIZE_MASK		((PAGE_SIZE) - 1u)

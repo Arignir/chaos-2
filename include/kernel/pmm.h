@@ -32,19 +32,4 @@ void		free_frame(physaddr_t frame);
 void		mark_range_as_allocated(physaddr_t start, physaddr_t end);
 void		mark_range_as_free(physaddr_t start, physaddr_t end);
 
-struct pmm_reserved_area
-{
-	char const *name;
-	physaddr_t start;
-	physaddr_t end;
-};
-
-# define NEW_PMM_RESERVED_AREA(n, s, e) \
-	__aligned(sizeof(void *)) __used __section("pmm_reserved_area")	\
-	static struct pmm_reserved_area const _pmm_reserved_area_##n = {	\
-		.name = #n,							\
-		.start = (s),							\
-		.end = (e),							\
-	}
-
 #endif /* !_KERNEL_PMM_H_ */

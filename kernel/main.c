@@ -8,21 +8,17 @@
 \* ------------------------------------------------------------------------ */
 
 #include <kernel/init.h>
-#include <kernel/multiboot2.h>
 #include <kernel/interrupts.h>
 #include <kernel/linker.h>
-#include <kernel/pmm.h>
+#include <kernel/memory.h>
 #include <stdio.h>
 
 /*
 ** Kernel main entry point
 */
 void
-kmain(uint32 mb_magic, uintptr mb_ptr __unused) /* TODO: use mb_ptr */
+kmain(void)
 {
-	/* Ensure that we have been booted via a multiboot-compliant bootloader */
-	assert_eq(mb_magic, MULTIBOOT2_BOOTLOADER_MAGIC);
-
 	/* Trigger all init levels */
 	trigger_init_levels(INIT_LEVEL_EARLIEST, INIT_LEVEL_LATEST);
 
