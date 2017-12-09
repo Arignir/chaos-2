@@ -164,7 +164,7 @@ pmm_init(void)
 	struct pmm_reserved_area const *pra;
 
 	/* Mark all memory as allocated */
-	memset(frame_bitmap, 0x00, sizeof(frame_bitmap));
+	memset(frame_bitmap, 0xFF, sizeof(frame_bitmap));
 
 	/* Go through all reserved area and mark them as allocated */
 	for (pra = __start_pmm_reserved_area; pra < __stop_pmm_reserved_area; ++pra)
