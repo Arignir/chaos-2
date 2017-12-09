@@ -63,7 +63,9 @@ multiboot_load(void)
 static void
 multiboot_init(void)
 {
+#if KCONFIG_DEBUG_MULTIBOOT
 	multiboot_memory_map_t *mmap;
+#endif /* KCONFIG_DEBUG_MULTBOOT */
 
 	if (mb_tag) {
 		multiboot_load();
@@ -80,9 +82,9 @@ multiboot_init(void)
 		mmap = multiboot_infos.mmap;
 		while (mmap < multiboot_infos.mmap_end)
 		{
-			printf("\tFrom %llx to %llx (Flag: %u)\n",
+			printf("\tFrom %#llx to %#llx (Flag: %u)\n",
 					ROUND_DOWN(mmap->addr, PAGE_SIZE),
-					ALIGN(mmap->addr, PAGE_SIZE),
+					ALIGN(mmap->addr + mmap->len, PAGE_SIZE),
 					mmap->type
 			);
 			mmap = (multiboot_memory_map_t *)((uchar *)mmap + multiboot_infos.mmap_entry_size);

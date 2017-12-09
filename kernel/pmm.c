@@ -9,7 +9,8 @@
 
 #include <kernel/init.h>
 #include <kernel/pmm.h>
-# include <string.h>
+#include <kernel/multiboot.h>
+#include <string.h>
 
 #if KCONFIG_DEBUG_PMM
 # include <stdio.h>
@@ -161,10 +162,24 @@ extern struct pmm_reserved_area const __stop_pmm_reserved_area[] __weak;
 static void
 pmm_init(void)
 {
+	multiboot_memory_map_t *mmap;
 	struct pmm_reserved_area const *pra;
 
 	/* Mark all memory as allocated */
 	memset(frame_bitmap, 0xFF, sizeof(frame_bitmap));
+
+	/* Parse the multiboot structure to unmark available memory */
+	mmap = multiboot_infos.mmap;
+	while (mmap < multiboot_infos.mmap_end)
+	{
+		if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE) {
+			mark_range_as_free(
+				ROUND_DOWN(mmap->addr, PAGE_SIZE),
+				ALIGN(mmap->addr + mmap->len, PAGE_SIZE)
+			);
+		}
+		mmap = (multiboot_memory_map_t *)((uchar *)mmap + multiboot_infos.mmap_entry_size);
+	}
 
 	/* Go through all reserved area and mark them as allocated */
 	for (pra = __start_pmm_reserved_area; pra < __stop_pmm_reserved_area; ++pra)

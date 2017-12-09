@@ -104,6 +104,6 @@ void	kmain(void);
 # define ROUND_DOWN(x, y)	((x) & ~((y) - 1))
 
 /* Align the given number to the greatest-or-equal given power of 2 */
-# define ALIGN(x, y)		((x) + ((y) - 1) & ~((y)) - 1)
+# define ALIGN(x, y)		(((x) + ((y) - 1)) & ~((y) - 1))
 
 #endif /* !_CHAOSDEF_H_ */
