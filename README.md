@@ -1,8 +1,8 @@
-ChaOS is a fun project that i'm doing for my studies at Epitech.
+ChaOS is an SMP-aware kernel that we are doing as a part of our studies at Epitech.
 
 # Build Dependencies
 * `make`
-* `gcc` or `clang` (last version preferred)
+* `gcc` or `clang` (latest version, ideally)
 * `grub-mkrescue` and `libisoburn` (generally packed with other binaries as `grub`)
 * `mtools`
 * `qemu` (cpu emulator) *optional*
@@ -26,12 +26,12 @@ If you are using an other package manager, well... Good luck! :p
 
 # Building an iso
 
-First, edit the configuration that you want with
+First, tune as you wish the kernel's configuration with
 ```bash
 make config
 ```
 
-Then, build the kernel by running
+Then, build the kernel:
 ```bash
 make kernel
 ```
@@ -57,14 +57,14 @@ make run
   - [X] Multiboot
   - [ ] Paging setup
   - [X] GDT setup
-  - [ ] IDT setup
+  - [X] IDT setup
   - [ ] TSS setup
-  - [ ] SMP setup
+  - [X] SMP setup
 - [ ] Pc drivers
   - [X] VGA
   - [ ] Serial
 - [ ] Memory
-  - [ ] PMM
+  - [X] PMM
   - [ ] VMM
   - [ ] Kernel heap
   - [ ] User heap
