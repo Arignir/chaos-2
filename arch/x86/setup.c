@@ -9,6 +9,7 @@
 
 #include <kconfig.h>
 #include <kernel/init.h>
+#include <kernel/pmm.h>
 #include <arch/x86/cpu.h>
 #include <arch/x86/smp.h>
 #include <arch/x86/asm.h>

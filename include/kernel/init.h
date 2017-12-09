@@ -36,9 +36,9 @@ typedef void(*init_hook_funcptr)(void);
 
 struct init_hook
 {
+	char const *name;
 	enum init_level level;
 	init_hook_funcptr hook;
-	char const *name;
 };
 
 void	trigger_init_levels(enum init_level start, enum init_level end);
@@ -46,9 +46,9 @@ void	trigger_init_levels(enum init_level start, enum init_level end);
 # define NEW_INIT_HOOK(n, h, l)						\
 	__aligned(sizeof(void *)) __used __section("chaos_init")	\
 	static struct init_hook const _init_hook_struct_##n = {		\
-		.level = l,						\
-		.hook = h,						\
 		.name = #n,						\
+		.level = (l),						\
+		.hook = (h),						\
 	}
 
 #endif /* !_KERNEL_INIT_H_ */

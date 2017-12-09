@@ -53,6 +53,7 @@ export CFLAGS += \
 	-Wnested-externs \
 	-Winline \
 	-Wuninitialized \
+	-Wno-missing-braces \
 	-MD \
 	-O2 \
 	--std=gnu11 \

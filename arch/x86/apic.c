@@ -12,7 +12,7 @@
 #include <arch/x86/apic.h>
 #include <stdio.h> // TODO For Debug
 
-static volatile uchar *apic = NULL;
+static volatile void *apic = NULL;
 
 static void	apic_timer_ihandler(struct iframe *iframe);
 static void	apic_error_ihandler(struct iframe *iframe);
@@ -21,10 +21,10 @@ static void	apic_spurious_ihandler(struct iframe *iframe);
 /*
 ** Writes to a local APIC register
 */
-static void
+static inline void
 apic_write(enum apic_reg reg, uint32 value)
 {
-	*(volatile uint32 *)(apic + reg) = value;
+	*((volatile uint32 *)apic + reg / sizeof(uint32)) = value;
 }
 
 /*
@@ -80,7 +80,7 @@ apic_init(void)
 uint32
 apic_get_id(void)
 {
-	return (*(volatile uint32 *)(apic + APIC_ID) >> 24u);
+	return (*((volatile uint32 *)apic + APIC_ID / sizeof(uint32)) >> 24u);
 }
 
 /*
@@ -90,7 +90,7 @@ void
 apic_map(physaddr_t pa)
 {
 	/* TODO This must be updated when paging will be enabled */
-	apic = (volatile uchar *)pa;
+	apic = (volatile void *)pa;
 }
 
 /*
@@ -157,7 +157,7 @@ apic_ipi_acked(void)
 
 	timeout = 100;
 	while (--timeout > 0) {
-		reg = *(volatile uint32 *)(apic + APIC_ICR_LOW);
+		reg = *((volatile uint32 *)apic + APIC_ICR_LOW / sizeof(uint32));
 		if (!(reg & APIC_ICR_PENDING))
 			return (true);
 	}

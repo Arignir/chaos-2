@@ -33,7 +33,7 @@ struct cpu
 	uint32 signature; /* eax value of cpuid.01h */
 	uint32 features; /* edx value of cpuid.01h - see 'enum cpuid_features' */
 	uint32 lapic_id; /* Local APIC id */
-	bool started;
+	uint started;
 };
 
 void	detect_cpu_features(void);

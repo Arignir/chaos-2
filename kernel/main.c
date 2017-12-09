@@ -10,6 +10,8 @@
 #include <kernel/init.h>
 #include <kernel/multiboot2.h>
 #include <kernel/interrupts.h>
+#include <kernel/linker.h>
+#include <kernel/pmm.h>
 #include <stdio.h>
 
 /*
@@ -30,3 +32,6 @@ kmain(uint32 mb_magic, uintptr mb_ptr __unused) /* TODO: use mb_ptr */
 	while (42)
 		halt();
 }
+
+/* Mark the kernel as physically reserved */
+NEW_PMM_RESERVED_AREA(kernel, NULL_FRAME, KERNEL_PHYSICAL_END);

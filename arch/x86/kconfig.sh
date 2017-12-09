@@ -12,6 +12,7 @@
 set -u
 
 # Processor menu variables
+new_kconfig_var PAGE_SIZE 4096u
 new_kconfig_var KCONFIG_ENABLE_SMP 1
 new_kconfig_var KCONFIG_MAX_CPUS 8
 

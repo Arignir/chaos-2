@@ -40,6 +40,8 @@ SECTIONS
 	PROVIDE(__stop_bss = .);
 
 	. = ALIGN(0x1000);
+
+	__KERNEL_PHYSICAL_END = .;
 }
 
 

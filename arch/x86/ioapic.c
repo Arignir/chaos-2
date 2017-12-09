@@ -9,7 +9,7 @@
 
 #include <arch/x86/ioapic.h>
 
-static volatile uchar *ioapic = NULL;
+static volatile void *ioapic = NULL;
 
 /*
 ** Maps the I/O APIC registers to the given physical address.
@@ -18,7 +18,7 @@ void
 ioapic_map(physaddr_t pa)
 {
 	/* TODO This must be updated when paging will be enabled */
-	ioapic = (volatile uchar *)pa;
+	ioapic = (volatile void *)pa;
 }
 
 /*
@@ -30,7 +30,7 @@ static void
 ioapic_write(enum ioapic_reg reg, uint32 value)
 {
 	*(volatile uint32 *)ioapic = reg;
-	*(volatile uint32 *)(ioapic + 0x10) = value;
+	*((volatile uint32 *)ioapic + 0x4) = value; // Offset is 0x10 (0x4 * 0x4)
 }
 
 /*
@@ -42,7 +42,7 @@ static uint32
 ioapic_read(enum ioapic_reg reg)
 {
 	*(volatile uint32 *)ioapic = reg;
-	return (*(volatile uint32 *)(ioapic + 0x10));
+	return (*((volatile uint32 *)ioapic + 0x4)); // Offset is 0x10 (0x4 * 0x4)
 }
 
 /*

@@ -91,6 +91,19 @@ void				panic(char const *fmt, ...) __noreturn;
 /* Panics if the first operand is greater or equal to the other one. */
 # define assert_ge(a, b)	assert((a) > (b))
 
+/* Main entry point of the kernel. Called by assembly bootstrap code */
 void	kmain(uint32 mb_magic, uintptr mb_ptr);
+
+/* Mask to test if an address is page-aligned */
+# define PAGE_SIZE_MASK		((PAGE_SIZE) - 1u)
+
+/* Tests if a given address is a multiple of PAGE_SIZE */
+# define IS_PAGE_ALIGNED(x)	(!((uintptr)(x) & PAGE_SIZE_MASK))
+
+/* Round down the given number to the given power of 2 */
+# define ROUND_DOWN(x, y)	((x) & ~((y) - 1))
+
+/* Align the given number to the greatest-or-equal given power of 2 */
+# define ALIGN(x, y)		((x) + ((y) - 1) & ~((y)) - 1)
 
 #endif /* !_CHAOSDEF_H_ */

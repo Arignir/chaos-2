@@ -13,10 +13,24 @@ set -u
 # Each menu within the ChaOS configuration
 #
 
+new_kconfig_var KCONFIG_DEBUG_PMM 0
+new_kconfig_var KCONFIG_DEBUG_VMM 0
+
+function menu_debug() {
+	menu_checklist "Debug Options" \
+		"Enable PMM Debug" KCONFIG_DEBUG_PMM \
+			"This options enables debugging outputs and assertions for the Physical Memory Manager" \
+		"Enable VMM Debug" KCONFIG_DEBUG_VMM \
+			"This options enables debugging outputs and assertions for the Virtual Memory Manager" \
+
+}
+
 function main_menu() {
 	menu_link "Main Menu" \
 		"Processor" menu_cpu \
 			"Couple of options to help you tune your processor as you wish" \
+		"Debug" menu_debug \
+			"Couple of options to help you debug the kernel. They may make it slow down a bit." \
 
 }
 
