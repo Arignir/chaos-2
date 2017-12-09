@@ -59,7 +59,7 @@ mark_frame_as_free(physaddr_t frame)
 /*
 ** Mark a range of frames as allocated.
 */
-static void
+void
 mark_range_as_allocated(physaddr_t start, physaddr_t end)
 {
 	assert_pmm(IS_PAGE_ALIGNED(start));
@@ -75,7 +75,7 @@ mark_range_as_allocated(physaddr_t start, physaddr_t end)
 /*
 ** Mark a range of frames as freed.
 */
-static void
+void
 mark_range_as_free(physaddr_t start, physaddr_t end)
 {
 	assert_pmm(IS_PAGE_ALIGNED(start));

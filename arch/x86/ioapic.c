@@ -7,6 +7,7 @@
 **
 \* ------------------------------------------------------------------------ */
 
+#include <kernel/pmm.h>
 #include <arch/x86/ioapic.h>
 
 static volatile void *ioapic = NULL;
@@ -17,6 +18,9 @@ static volatile void *ioapic = NULL;
 void
 ioapic_map(physaddr_t pa)
 {
+	/* Mark the frame of the APIC as allocated */
+	mark_range_as_allocated(pa, pa + PAGE_SIZE);
+
 	/* TODO This must be updated when paging will be enabled */
 	ioapic = (volatile void *)pa;
 }

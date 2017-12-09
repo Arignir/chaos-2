@@ -7,6 +7,7 @@
 **
 \* ------------------------------------------------------------------------ */
 
+#include <kernel/pmm.h>
 #include <arch/x86/asm.h>
 #include <arch/x86/interrupts.h>
 #include <arch/x86/apic.h>
@@ -89,6 +90,9 @@ apic_get_id(void)
 void
 apic_map(physaddr_t pa)
 {
+	/* Mark the frame of the APIC as allocated */
+	mark_range_as_allocated(pa, pa + PAGE_SIZE);
+
 	/* TODO This must be updated when paging will be enabled */
 	apic = (volatile void *)pa;
 }
