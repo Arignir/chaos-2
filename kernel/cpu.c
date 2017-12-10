@@ -7,27 +7,10 @@
 **
 \* ------------------------------------------------------------------------ */
 
-#ifndef _KERNEL_CPU_H_
-# define _KERNEL_CPU_H_
-
-# include <chaosdef.h>
-# include <kconfig.h>
-# include <arch/cpu.h>
-
-/* A structure representing a CPU */
-struct cpu
-{
-	struct arch_cpu;	/* Arch dependant stuff */
-	struct thread *thread;	/* Currently running thread */
-};
+#include <kernel/cpu.h>
 
 /* Number of CPUs on the current system. */
-extern uint ncpu;
+uint ncpu = 0;
 
 /* An array for all possible cpus. */
-extern struct cpu cpus[KCONFIG_MAX_CPUS];
-
-/* Arch-dependant function to return the current cpu */
-struct cpu	*current_cpu(void);
-
-#endif /* !_KERNEL_CPU_H_ */
+struct cpu cpus[KCONFIG_MAX_CPUS] = { 0 };

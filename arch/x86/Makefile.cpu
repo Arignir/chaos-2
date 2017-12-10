@@ -15,7 +15,8 @@ CFLAGS += \
 	-mno-sse4 \
 	-mno-sse4.1 \
 	-mno-sse4.2 \
-	-isystem "$(INCLUDE_DIR)/lib/libc/arch/x86/"
+	-isystem "$(INCLUDE_DIR)/lib/libc/arch/x86/" \
+	-isystem "$(INCLUDE_DIR)/arch/x86/common/"
 
 NASMFLAGS += \
 	-felf32

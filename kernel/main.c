@@ -11,14 +11,19 @@
 #include <kernel/interrupts.h>
 #include <kernel/linker.h>
 #include <kernel/memory.h>
+#include <kernel/thread.h>
 #include <stdio.h>
 
+#include <kernel/cpu.h>
 /*
 ** Kernel main entry point
 */
 void
 kmain(void)
 {
+	/* Put us in some sort of thread-context */
+	thread_early_init();
+
 	/* Trigger all init levels */
 	trigger_init_levels(INIT_LEVEL_EARLIEST, INIT_LEVEL_LATEST);
 

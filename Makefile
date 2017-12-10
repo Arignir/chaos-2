@@ -61,6 +61,7 @@ export CFLAGS += \
 	-nostdinc \
 	-nostdlib \
 	-ffreestanding \
+	-fms-extensions \
 	-fno-stack-protector \
 	-fno-omit-frame-pointer \
 	-isystem "$(INCLUDE_DIR)" \

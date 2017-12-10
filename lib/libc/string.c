@@ -51,7 +51,6 @@ strncpy(char *dest, char const *src, size_t n)
 		dest[i] = '\0';
 		++i;
 	}
-	*dest = '\0';
 	return (dest);
 }
 

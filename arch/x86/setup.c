@@ -10,6 +10,7 @@
 #include <kconfig.h>
 #include <kernel/init.h>
 #include <kernel/pmm.h>
+#include <kernel/thread.h>
 #include <arch/x86/cpu.h>
 #include <arch/x86/smp.h>
 #include <arch/x86/asm.h>
@@ -80,6 +81,9 @@ arch_x86_setup(void)
 	pic_init();
 	ioapic_init();	/* Enable I/O APIC */
 	apic_init();	/* Enable local APIC */
+
+	/* Set the current cpu's thread to be the boot thread */
+	current_cpu()->thread = thread_table;
 
 #if KCONFIG_ENABLE_SMP
 	mp_start_aps();	/* Start other processors */

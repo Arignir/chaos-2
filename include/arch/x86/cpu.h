@@ -10,7 +10,7 @@
 #ifndef _ARCH_X86_CPU_H_
 # define _ARCH_X86_CPU_H_
 
-# include <chaosdef.h>
+# include <kernel/cpu.h>
 
 /*
 ** CPUID features bitfield
@@ -24,24 +24,10 @@ enum cpuid_features {
 	CPUID_EDX_SSE2		= 1 << 26, /* Streaming SIMD extensions 2 (SSE2) */
 };
 
-/*
-** A structure representing a single CPU
-*/
-struct cpu
-{
-	uchar vendor_id[13];
-	uint32 signature; /* eax value of cpuid.01h */
-	uint32 features; /* edx value of cpuid.01h - see 'enum cpuid_features' */
-	uint32 lapic_id; /* Local APIC id */
-	uint started;
-};
-
 void	detect_cpu_features(void);
 
 #if KCONFIG_ENABLE_SMP
 void	ap_setup(void);
 #endif /* KCONFIG_ENABLE_SMP */
-
-# include <kernel/cpu.h>
 
 #endif /* !_ARCH_X86_CPU_H_ */

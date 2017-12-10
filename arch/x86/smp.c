@@ -9,17 +9,13 @@
 
 #include <kconfig.h>
 #include <kernel/checksum.h>
+#include <kernel/cpu.h>
 #include <arch/x86/smp.h>
-#include <arch/x86/cpu.h>
 #include <arch/x86/asm.h>
 #include <arch/x86/apic.h>
 #include <arch/x86/ioapic.h>
 #include <string.h>
 #include <stdio.h>
-
-/* Number of CPUs enabled. */
-uint ncpu = 0;
-struct cpu cpus[KCONFIG_MAX_CPUS] = { 0 };
 
 #if KCONFIG_ENABLE_SMP
 
