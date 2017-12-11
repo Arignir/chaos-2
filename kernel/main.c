@@ -14,7 +14,6 @@
 #include <kernel/thread.h>
 #include <stdio.h>
 
-#include <kernel/cpu.h>
 /*
 ** Kernel main entry point
 */
