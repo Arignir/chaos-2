@@ -76,9 +76,12 @@ arch_x86_setup(void)
 		cpus[0].lapic_id = apic_get_id();
 	}
 
+	/* Remap the BSP's information with it's entry within the cpu table */
+	cpu_remap_bsp();
+
 	printf("Number of cpus: %u\n", ncpu);
 
-	pic_init();
+	pic_init();	/* Disable PIC */
 	ioapic_init();	/* Enable I/O APIC */
 	apic_init();	/* Enable local APIC */
 

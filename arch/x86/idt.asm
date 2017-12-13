@@ -94,6 +94,9 @@ idt_end:
 ;
 idt_setup:
 	push ebx
+	push esi
+	push edi
+	push ecx
 
 	mov esi, isr
 	mov edi, idt
@@ -110,6 +113,9 @@ idt_setup:
 
 	loop .loop
 
+	pop ecx
+	pop edi
+	pop esi
 	pop ebx
 	ret
 

@@ -19,6 +19,15 @@ static ihandler_t irqhandlers[X86_INT_MAX];
 */
 
 /*
+** Tests if interrupts are enabled
+*/
+bool
+are_interrupts_enable(void)
+{
+	return (get_eflags().IF);
+}
+
+/*
 ** Enables interrupts
 */
 void
@@ -40,21 +49,21 @@ disable_interrupts(void)
 ** Stores in 'save' the current interrupt state
 */
 void
-push_interrupts_state(void *save)
+push_interrupts_state(int_state_t *save)
 {
-	*(bool *)save = get_eflags().IF;
+	*save = get_eflags().IF;
 }
 
 /*
 ** Restores the current interrupt state
 */
 void
-pop_interrupts_state(void *save)
+pop_interrupts_state(int_state_t *save)
 {
 	union eflags e;
 
 	e = get_eflags();
-	e.IF = *(bool *)save;
+	e.IF = (bool)*save;
 	set_eflags(e.value);
 }
 

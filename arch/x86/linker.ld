@@ -28,6 +28,9 @@ SECTIONS
 	.data ALIGN(0x1000) : AT(ADDR(.data))
 	{
 		*(.data)
+		. = ALIGN(0x1000);
+		*(.boot_memory)
+		. = ALIGN(0x1000);
 	}
 
 	. = ALIGN(0x1000);

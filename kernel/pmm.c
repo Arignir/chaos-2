@@ -10,6 +10,7 @@
 #include <kernel/init.h>
 #include <kernel/pmm.h>
 #include <kernel/multiboot.h>
+#include <kernel/spinlock.h>
 #include <string.h>
 
 #if KCONFIG_DEBUG_PMM
@@ -23,12 +24,15 @@
 ** It can definitely be optimised, but that's not the point at this moment.
 */
 
-uchar frame_bitmap[FRAME_BITMAP_SIZE];
+static uchar frame_bitmap[FRAME_BITMAP_SIZE];
 static size_t next_frame;
+static struct spinlock frame_lock = SPINLOCK_DEFAULT;
 
 /*
 ** Returns true if the given physical address is taken.
 ** Must be page-aligned
+**
+** Assumes the frame bitmap is already locked
 */
 static inline bool
 is_frame_allocated(physaddr_t frame)
@@ -39,6 +43,8 @@ is_frame_allocated(physaddr_t frame)
 
 /*
 ** Mark a frame as allocated.
+**
+** Assumes the frame bitmap is already locked
 */
 static inline void
 mark_frame_as_allocated(physaddr_t frame)
@@ -49,6 +55,8 @@ mark_frame_as_allocated(physaddr_t frame)
 
 /*
 ** Mark a frame as freed.
+**
+** Assumes the frame bitmap is already locked
 */
 static inline void
 mark_frame_as_free(physaddr_t frame)
@@ -66,11 +74,13 @@ mark_range_as_allocated(physaddr_t start, physaddr_t end)
 	assert_pmm(IS_PAGE_ALIGNED(start));
 	assert_pmm(IS_PAGE_ALIGNED(end));
 
+	spinlock_acquire(&frame_lock);
 	while (start <= end)
 	{
 		mark_frame_as_allocated(start);
 		start += PAGE_SIZE;
 	}
+	spinlock_release(&frame_lock);
 }
 
 /*
@@ -82,12 +92,14 @@ mark_range_as_free(physaddr_t start, physaddr_t end)
 	assert_pmm(IS_PAGE_ALIGNED(start));
 	assert_pmm(IS_PAGE_ALIGNED(end));
 
+	spinlock_acquire(&frame_lock);
 	while (start <= end)
 	{
 		mark_frame_as_free(start);
 		start += PAGE_SIZE;
 	}
 	next_frame = start;
+	spinlock_release(&frame_lock);
 }
 
 /*
@@ -109,6 +121,7 @@ alloc_frame(void)
 	size_t final;
 	bool pass;
 
+	spinlock_acquire(&frame_lock);
 	i = next_frame;
 	final = FRAME_BITMAP_SIZE;
 	pass = false;
@@ -122,6 +135,7 @@ look_for_address:
 			}
 			frame_bitmap[i] |= (1 << j);
 			next_frame = i;
+			spinlock_release(&frame_lock);
 			return (PAGE_SIZE * (i * 8u + j));
 		}
 		++i;
@@ -133,6 +147,7 @@ look_for_address:
 		pass = true;
 		goto look_for_address;
 	}
+	spinlock_release(&frame_lock);
 	return (NULL_FRAME);
 }
 
@@ -148,9 +163,13 @@ free_frame(physaddr_t frame)
 	/* Ensure the given physical address is taken */
 	assert_pmm(is_frame_allocated(frame));
 
+	spinlock_acquire(&frame_lock);
+
 	/* Set the bit corresponding to this frame to 0 */
 	frame_bitmap[GET_FRAME_IDX(frame)] &= ~(GET_FRAME_MASK(frame));
 	next_frame = GET_FRAME_IDX(frame);
+
+	spinlock_release(&frame_lock);
 }
 
 extern struct pmm_reserved_area const __start_pmm_reserved_area[] __weak;
