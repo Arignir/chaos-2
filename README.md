@@ -76,11 +76,11 @@ make run
   - [ ] Processes (`fork()` and `exit()`)
 - [ ] Initrd loading, reading and writing
 - [ ] Filesystem
-  - Directory listing (`opendir()`, `readdir()`, `closedir()`)
-  - Creating and removing files/directories (`unlink()`)
-  - File basic IO operations (`read()`, `write()`)
-  - File advanced IO operations (`pipe()`, `dup()`)
-  - File informations (`stat()`)
+  - [ ] Directory listing (`opendir()`, `readdir()`, `closedir()`)
+  - [ ] Creating and removing files/directories (`unlink()`)
+  - [ ] File basic IO operations (`read()`, `write()`)
+  - [ ] File advanced IO operations (`pipe()`, `dup()`)
+  - [ ] File informations (`stat()`)
 - [ ] User space programs (init, tty, shell, basic binaries such as `echo`, `ls`, `rm` etc.)
 - [ ] Virtual filesystems (`/proc`, `/dev`)
 
