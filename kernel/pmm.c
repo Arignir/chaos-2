@@ -26,6 +26,8 @@
 
 static uchar frame_bitmap[FRAME_BITMAP_SIZE];
 static size_t next_frame;
+
+/* Protects frame_bitmap and next_frame from concurrent modifications */
 static struct spinlock frame_lock = SPINLOCK_DEFAULT;
 
 /*

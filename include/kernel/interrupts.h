@@ -10,6 +10,8 @@
 #ifndef _KERNEL_INTERRUPTS_H_
 # define _KERNEL_INTERRUPTS_H_
 
+# include <chaosdef.h>
+
 typedef uintptr int_state_t;
 
 /*

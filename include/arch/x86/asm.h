@@ -185,4 +185,10 @@ hlt(void)
 	asm volatile("hlt");
 }
 
+static inline void
+invlpg(void *p)
+{
+	asm volatile("invlpg (%0)" : : "r"(p) : "memory");
+}
+
 #endif /* !_ARCH_X86_ASM_H_ */

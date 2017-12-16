@@ -7,6 +7,7 @@
 **
 \* ------------------------------------------------------------------------ */
 
+#include <kernel/interrupts.h>
 #include <stdio.h>
 #include <stdarg.h>
 
@@ -14,13 +15,17 @@
 ** Produces a kernel panic, printing the given error message and some debug
 ** informations.
 ** Never returns.
+**
+** This function must be self-contained as much as possible, as we don't know the state
+** of the system when it will be called.
 */
 void
 panic(char const *fmt, ...)
 {
 	va_list va;
 
-	// TODO: Disable interrupts
+	disable_interrupts();
+
 	va_start(va, fmt);
 	printf("\nKernel panicked: ");
 	vprintf(fmt, va);

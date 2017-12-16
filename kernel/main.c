@@ -9,9 +9,9 @@
 
 #include <kernel/init.h>
 #include <kernel/interrupts.h>
-#include <kernel/linker.h>
 #include <kernel/memory.h>
 #include <kernel/thread.h>
+#include <arch/linker.h>
 #include <stdio.h>
 
 /*

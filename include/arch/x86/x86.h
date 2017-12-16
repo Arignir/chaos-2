@@ -25,5 +25,4 @@ enum dpl
 	DPL_RING3			= 0x3,
 };
 
-
 #endif /* !_ARCH_X86_X86_H_ */

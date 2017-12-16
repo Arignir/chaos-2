@@ -8,12 +8,15 @@
 \* ------------------------------------------------------------------------ */
 
 #include <kernel/pmm.h>
+#include <kernel/vmm.h>
 #include <arch/x86/asm.h>
 #include <arch/x86/interrupts.h>
 #include <arch/x86/apic.h>
 #include <stdio.h> // TODO For Debug
 
-static volatile void *apic = NULL;
+/* TODO: This must be updated when we'll have a kernel heap */
+__aligned(PAGE_SIZE)
+static volatile uchar apic[PAGE_SIZE] = { 0 };
 
 static void	apic_timer_ihandler(struct iframe *iframe);
 static void	apic_error_ihandler(struct iframe *iframe);
@@ -93,8 +96,13 @@ apic_map(physaddr_t pa)
 	/* Mark the frame of the APIC as allocated */
 	mark_range_as_allocated(pa, pa + PAGE_SIZE);
 
-	/* TODO This must be updated when paging will be enabled */
-	apic = (volatile void *)pa;
+	/* Map it to memory */
+	assert(mmap_device(
+			(virtaddr_t)apic,
+			pa,
+			PAGE_SIZE,
+			MMAP_WRITE | MMAP_REMAP
+	));
 }
 
 /*
@@ -200,7 +208,7 @@ apic_start_ap(uint32 lapic_id, uintptr addr)
 	outb(PORT_CMOS_RETURN, 0x0A);
 
 	/* Warm reset vector is at fixed address 0x40:0x67 */
-	wrv = (ushort *)(0x40 << 4 | 0x67); /* TODO update this when paging */
+	wrv = (ushort *)(P2V(0x40 << 4 | 0x67));
 	wrv[1] = 0;
 	wrv[0] = addr >> 4;
 

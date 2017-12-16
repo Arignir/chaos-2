@@ -8,6 +8,7 @@
 \* ------------------------------------------------------------------------ */
 
 #include <kernel/init.h>
+#include <kernel/memory.h>
 #include <arch/x86/asm.h>
 #include <drivers/vga.h>
 #include <string.h>
@@ -18,7 +19,7 @@ static uint const VGA_HEIGHT = 25u;
 static struct vga vga =
 {
 	.vga_attrib = 0,
-	.vgabuff = (uint16 *)0xB8000,
+	.vgabuff = (uint16 *)P2V(0xB8000),
 	.cursor_x = 0,
 	.cursor_y = 0,
 };

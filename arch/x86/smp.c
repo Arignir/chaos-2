@@ -10,6 +10,8 @@
 #include <kconfig.h>
 #include <kernel/checksum.h>
 #include <kernel/cpu.h>
+#include <kernel/memory.h>
+#include <kernel/vmm.h>
 #include <arch/x86/smp.h>
 #include <arch/x86/asm.h>
 #include <arch/x86/apic.h>
@@ -88,7 +90,7 @@ mp_config(struct mp **mp_ptr)
 	if (mp == NULL || mp->conf_physaddr == 0) {
 		return (NULL);
 	}
-	conf = (struct mp_conf *)mp->conf_physaddr;
+	conf = (struct mp_conf *)P2V(mp->conf_physaddr);
 	if (memcmp(conf->signature, "PCMP", 4) || checksum8(conf, conf->length)) {
 		return (NULL);
 	}
@@ -153,19 +155,38 @@ mp_start_aps(void)
 	struct cpu *cpu;
 	struct cpu *current;
 
+	/*
+	** Boot code is size-limited, so we only do a far-jump to boot_ap,
+	** where it's more convienent and not restricted.
+	*/
 	current = current_cpu();
-	/* TODO Update this when paging will be enable */
-	*(uchar *)(TRAMPOLINE_START) = 0xEA; /* Far jump */
-	*(ushort *)(TRAMPOLINE_START + 1) = (uint16)(uintptr)&boot_ap + 0x10; /* IP */
-	*(ushort *)(TRAMPOLINE_START + 3) = 0xFFFF; /* CS */
+	*(uchar *)(P2V(TRAMPOLINE_START)) = 0xEA; /* Far jump, IP, CS */
+	*(ushort *)(P2V(TRAMPOLINE_START + 1)) = (uint16)(uintptr)&boot_ap + 0x10;
+	*(ushort *)(P2V(TRAMPOLINE_START + 3)) = 0xFFFF;
 
+	/* Identity map the kernel so that APs can enable paging */
+	assert(mmap_device(
+			(virtaddr_t)KERNEL_PHYSICAL_LINK,
+			KERNEL_PHYSICAL_LINK,
+			PAGE_ALIGN(KERNEL_PHYSICAL_END - KERNEL_PHYSICAL_LINK),
+			MMAP_EXEC
+	));
+
+	/* Start all available cpus */
 	for (cpu = cpus; cpu < cpus + ncpu; ++cpu)
 	{
 		if (cpu == current)
 			continue;
-		apic_start_ap(cpu->lapic_id, (uintptr)TRAMPOLINE_START);
+		apic_start_ap(cpu->lapic_id, TRAMPOLINE_START);
 		while (!cpu->started);
 	}
+
+	/* Unmap the previous mapping */
+	munmap(
+			(virtaddr_t)KERNEL_PHYSICAL_LINK,
+			PAGE_ALIGN(KERNEL_PHYSICAL_END - KERNEL_PHYSICAL_LINK),
+			MUNMAP_DONTFREE
+	);
 }
 
 #endif /* KCONFIG_ENABLE_SMP */

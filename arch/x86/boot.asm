@@ -9,8 +9,10 @@
 
 [global start]
 [global detect_cpuid]
+[global kthread_page_directory]
 [extern kmain]
 [extern gdtptr]
+[extern gdtptr_phys]
 [extern __start_bss]
 [extern __stop_bss]
 [extern mb_tag]
@@ -35,21 +37,26 @@ mb_header_start:
 	dd 8				; size
 mb_header_end:
 
+;
+; Kernel start point.
+;
+; The bootloader drops us here following the multiboot's specification.
+; The eax register should contain the multiboot2 bootloader's magic value, and
+; 	we should crash if it's not the case.
+; The ebx register should contain the multiboot2 structure, and should therefor
+; 	NOT be modified until the bss section is cleaned up
 [section .text]
 start:
 	; Set up boot stack
-	mov esp, boot_stack_top
+	mov esp, V2P(boot_stack_top)
 
 	; Check we have been booted using multiboot
 	cmp eax, MULTIBOOT2_BOOTLOADER_MAGIC
 	jne 0				; Crash if it's not the case
 
-	; Save ebx value now in a scratch register, so that we can use it after bss's reset
-	add ebx, 8
-	mov ecx, ebx
-
 	; Load the new GDT
-	lgdt [gdtptr]
+	mov eax, V2P(gdtptr_phys)
+	lgdt [eax]
 
 	; Load all data segment selectors
 	mov ax, KERNEL_DATA_SELECTOR
@@ -60,9 +67,68 @@ start:
 	mov ss, ax
 
 	; Do a far jump to update code selector
-	jmp KERNEL_CODE_SELECTOR:.far_jump
+	jmp KERNEL_CODE_SELECTOR:V2P(.far_jump)
 
 .far_jump:
+
+	; Set-up recursive mapping
+	mov eax, V2P(kthread_page_directory)
+	or eax, 0x3		; Present + Writtable
+	mov dword [V2P(kthread_page_directory.last_entry)], eax
+
+	; Map the kernel page table
+	mov eax, V2P(kthread_kernel_pagetable)
+	or eax, 0x3		; Present + Writtable
+	mov dword [V2P(kthread_page_directory.kernel_entry)], eax
+
+	mov eax, 0
+	mov edx, 0
+	mov edi, V2P(kthread_kernel_pagetable)
+.fill_page:			; Fill the page table containing the kernel
+	mov ecx, edx
+	or ecx, 0x3		; Present + Writtable
+	mov [edi + eax * 4], ecx
+	add edx, 4096
+	inc eax
+	cmp eax, 1024
+	jne .fill_page		; Works because jmp are relative, no need to use V2P().
+
+	; Load page directory
+	mov eax, V2P(kthread_page_directory)
+	mov cr3, eax
+
+	; Enable 4MiB pages (only to identity map the kernel)
+	mov eax, cr4
+	or eax, 0b10000
+	mov cr4, eax
+
+	; Enable paging and protected mode
+	mov eax, cr0
+	or eax, 0x80000001
+	mov cr0, eax
+
+	; Jump to high address space
+	lea eax, [.higher_half]
+	jmp eax
+.higher_half:
+
+	; Remove the 4MiB entry of the page directory
+	mov dword [kthread_page_directory.first_entry], 0x0
+
+	; Flush tlb
+	mov eax, cr3
+	mov cr3, eax
+
+	; Disable 4MiB pages
+	mov eax, cr4
+	and eax, ~0b10000
+	mov cr4, eax
+
+	; Reload the GDT
+	lgdt [gdtptr]
+
+	; Reset boot stack
+	mov esp, boot_stack_top
 
 	; Clear BSS section
 	mov eax, __start_bss
@@ -74,10 +140,11 @@ start:
 	jmp .loop
 	.endloop:
 
-	; TODO This will need to be updated when virtual memory will be available
 	; Save multiboot's structure
 	mov edx, mb_tag
-	mov dword [edx], ecx
+	add ebx, 8
+	add ebx, KERNEL_VIRTUAL_BASE
+	mov dword [edx], ebx
 
 	; Call kernel main and common entry point
 	call kmain
@@ -107,3 +174,21 @@ align 4096
 boot_stack_bottom:
 	resb 4096 * 16
 boot_stack_top:
+
+[section .data]
+align 4096
+kthread_page_directory:
+	.first_entry:
+	dd 0x00000083			; Identity map the first entry to avoid crash
+	times (KERNEL_PAGE_INDEX - 1) dd 0
+	.kernel_entry:			; Used at a later point.
+	dd 0
+	times (1024 - KERNEL_PAGE_INDEX - 2) dd 0
+	.last_entry:			; Used for recursive mapping
+	dd 0
+
+kthread_kernel_pagetable:
+	times 1024 dd 0
+
+section .bss
+

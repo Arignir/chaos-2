@@ -8,9 +8,12 @@
 \* ------------------------------------------------------------------------ */
 
 #include <kernel/pmm.h>
+#include <kernel/vmm.h>
 #include <arch/x86/ioapic.h>
 
-static volatile void *ioapic = NULL;
+/* TODO: This must be updated when we'll have a kernel heap */
+__aligned(PAGE_SIZE)
+static volatile uchar ioapic[PAGE_SIZE] = { 0 };
 
 /*
 ** Maps the I/O APIC registers to the given physical address.
@@ -18,11 +21,16 @@ static volatile void *ioapic = NULL;
 void
 ioapic_map(physaddr_t pa)
 {
-	/* Mark the frame of the APIC as allocated */
+	/* Mark the frame of the IOAPIC as allocated */
 	mark_range_as_allocated(pa, pa + PAGE_SIZE);
 
-	/* TODO This must be updated when paging will be enabled */
-	ioapic = (volatile void *)pa;
+	/* Map it to memory */
+	assert(mmap_device(
+			(virtaddr_t)ioapic,
+			pa,
+			PAGE_SIZE,
+			MMAP_WRITE | MMAP_REMAP
+	));
 }
 
 /*

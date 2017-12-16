@@ -8,13 +8,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 [global gdtptr]
+[global gdtptr_phys]
 [global gdt]
+
+%include "arch/x86/asm.inc"
 
 [section .rodata]
 align 16
 gdtptr:
 	dw gdt_end - gdt_start - 1
 	dd gdt
+
+align 16
+gdtptr_phys:
+	dw gdt_end - gdt_start - 1
+	dd V2P(gdt)
 
 [section .data]
 align 16

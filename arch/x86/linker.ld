@@ -7,25 +7,30 @@
 **
 \* ------------------------------------------------------------------------ */
 
+/* These values must match the ones in include/arch/x86/asm.inc */
+__KERNEL_VIRTUAL_LINK = 0xC0100000;
+__KERNEL_VIRTUAL_BASE = 0xC0000000;
+__KERNEL_PHYSICAL_LINK = 0x00100000;
+
 OUTPUT_FORMAT(elf32-i386);
 ENTRY(start)
 
 SECTIONS
 {
-	. = 1M;
+	. = __KERNEL_VIRTUAL_LINK;
 
-	.text ALIGN(0x1000) : AT(ADDR(.text))
+	.text ALIGN(0x1000) : AT(ADDR(.text) - __KERNEL_VIRTUAL_BASE)
 	{
 		KEEP(*(.header))
 		*(.text)
 	}
 
-	.rodata ALIGN(0x1000) : AT(ADDR(.rodata))
+	.rodata ALIGN(0x1000) : AT(ADDR(.rodata) - __KERNEL_VIRTUAL_BASE)
 	{
 		*(.rodata)
 	}
 
-	.data ALIGN(0x1000) : AT(ADDR(.data))
+	.data ALIGN(0x1000) : AT(ADDR(.data) - __KERNEL_VIRTUAL_BASE)
 	{
 		*(.data)
 		. = ALIGN(0x1000);
@@ -35,7 +40,7 @@ SECTIONS
 
 	. = ALIGN(0x1000);
 	PROVIDE(__start_bss = .);
-	.bss ALIGN(0x1000) : AT(ADDR(.bss))
+	.bss ALIGN(0x1000) : AT(ADDR(.bss) - __KERNEL_VIRTUAL_BASE)
 	{
 		*(COMMON)
 		*(.bss)
@@ -44,7 +49,8 @@ SECTIONS
 
 	. = ALIGN(0x1000);
 
-	__KERNEL_PHYSICAL_END = .;
+	__KERNEL_VIRTUAL_END = .;
+	__KERNEL_PHYSICAL_END = . - __KERNEL_VIRTUAL_BASE;
 }
 
 

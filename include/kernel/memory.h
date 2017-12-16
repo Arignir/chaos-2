@@ -10,14 +10,16 @@
 #ifndef _KERNEL_MEMORY_H_
 # define _KERNEL_MEMORY_H_
 
-# include <chaosdef.h>
 # include <kconfig.h>
+# include <chaosdef.h>
+# include <arch/linker.h>
 
 typedef uintptr			physaddr_t;
 typedef void			*virtaddr_t;
 
-# define P2V(phys)		((virtaddr_t)(phys))
-# define V2P(phys)		((physaddr_t)(phys))
+/* Works only for kernel addresses */
+# define P2V(x)			((virtaddr_t)((x) + (uintptr)KERNEL_VIRTUAL_BASE))
+# define V2P(x)			((physaddr_t)(x) - (uintptr)KERNEL_VIRTUAL_BASE)
 
 /* The NULL frame. The equivalent of NULL, but for physical memory. */
 # define NULL_FRAME		((physaddr_t)0u)
