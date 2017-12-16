@@ -60,9 +60,10 @@ make run
   - [X] IDT setup
   - [ ] TSS setup
   - [X] SMP setup
-- [ ] Pc drivers
+- [ ] Basic drivers
   - [X] VGA
   - [ ] Serial
+  - [ ] PS/2 Keyboard
 - [ ] Memory
   - [X] Physical Memory Management
   - [X] Virtual Memory Management (`mmap()`, `munmap()` etc.)
