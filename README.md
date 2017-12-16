@@ -52,10 +52,10 @@ make run
 
 - [X] Kernel options
 - [X] Kernel architecture
-- [ ] High-address Kernel
+- [X] High-address Kernel
 - [ ] Boot
   - [X] Multiboot
-  - [ ] Paging setup
+  - [X] Paging setup
   - [X] GDT setup
   - [X] IDT setup
   - [ ] TSS setup
@@ -64,20 +64,25 @@ make run
   - [X] VGA
   - [ ] Serial
 - [ ] Memory
-  - [X] PMM
-  - [ ] VMM
+  - [X] Physical Memory Management
+  - [X] Virtual Memory Management (`mmap()`, `munmap()` etc.)
+  - [ ] Virtual segments of memory (`brk(), `sbrk()`)
   - [ ] Kernel heap
-  - [ ] User heap
-  - [ ] User stacks / mmap
+- [ ] ELF Program execution (`execve()`)
+- [ ] Syscall interface and userspace (ring 3)
 - [ ] Multi process / threads
   - [ ] Scheduling
   - [ ] Kernel threads
   - [ ] Processes (`fork()` and `exit()`)
-- [ ] Syscall interface
-- [ ] Userspace (ring3)
-- [ ] Filesystem (`open()`, `read()`, `write()`, `close()`, `unlink`, `opendir()`, `readdir()`, `closedir()`, `pipe()`, `dup()`, `dup2()`)
-- [ ] ELF parsing and loading (`execve()`)
-- [ ] User space programs (init, shell, basic binaries such as `echo`, `ls`, `rm` etc.)
+- [ ] Initrd loading, reading and writing
+- [ ] Filesystem
+  - Directory listing (`opendir(), `readdir()`, `closedir()`)
+  - Creating and removing files/directories (`unlink()`)
+  - File basic IO operations (`read()`, `write()`)
+  - File advanced IO operations (`pipe()`, `dup()`)
+  - File informations (`stat()`)
+- [ ] User space programs (init, tty, shell, basic binaries such as `echo`, `ls`, `rm` etc.)
+- [ ] Virtual filesystems (`/proc`, `/dev`)
 
 # :rocket: Wanna participate?
 
