@@ -78,11 +78,11 @@ make run
 - [ ] Initrd loading, reading and writing
 - [ ] Filesystem
   - [ ] Directory listing (`opendir()`, `readdir()`, `closedir()`)
-  - [ ] Creating and removing files/directories (`unlink()`)
-  - [ ] File basic IO operations (`read()`, `write()`)
+  - [ ] Creating and removing files/directories (`mkfile()`, `mkdir()`, `remove()`)
+  - [ ] File basic IO operations (`open()`, `read()`, `write()`, `close()`)
   - [ ] File advanced IO operations (`pipe()`, `dup()`)
   - [ ] File informations (`stat()`)
-- [ ] User space programs (init, tty, shell, basic binaries such as `echo`, `ls`, `rm` etc.)
+- [ ] User space programs (init, tty, shell, basic binaries such as `echo`, `ls`, `rm`, `mkdir` etc.)
 - [ ] Virtual filesystems (`/proc`, `/dev`)
 
 # :rocket: Wanna participate?
