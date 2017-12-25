@@ -271,10 +271,26 @@ vmm_unmap(virtaddr_t va, munmap_flags_t flags)
 static void
 arch_vmm_init(void)
 {
+	size_t j;
+
 	/* Some assertions that can't be static_assert() */
 	assert(IS_PAGE_ALIGNED(KERNEL_VIRTUAL_BASE));
 	assert(IS_PAGE_ALIGNED(KERNEL_VIRTUAL_END));
 	assert(IS_PAGE_ALIGNED(KERNEL_PHYSICAL_END));
+
+	/* Remove mapping that is above the kernel */
+	j = get_pt_idx(KERNEL_VIRTUAL_END);
+	munmap(
+		(uchar *)KERNEL_VIRTUAL_END + PAGE_SIZE,
+		(1024 - j - 1) * PAGE_SIZE,
+		MUNMAP_DONTFREE
+	);
+
+	/* Ensure everything is fine */
+	assert(vmm_is_mapped(KERNEL_VIRTUAL_END));
+	assert(!vmm_is_mapped((uchar *)KERNEL_VIRTUAL_END + PAGE_SIZE));
+	assert(!vmm_is_mapped(get_virtaddr(get_pd_idx(KERNEL_VIRTUAL_END), 1023)));
+	assert(!vmm_is_mapped(get_virtaddr(get_pd_idx(KERNEL_VIRTUAL_END) + 1, 0)));
 
 	vmm_init();
 }

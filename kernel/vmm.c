@@ -12,6 +12,7 @@
 */
 
 #include <kernel/vmm.h>
+#include <kernel/kalloc.h>
 #include <arch/linker.h>
 
 /*
@@ -39,8 +40,6 @@ mmap(virtaddr_t va, size_t size, mmap_flags_t flags)
 	assert_vmm(IS_PAGE_ALIGNED(va));
 	assert_vmm(IS_PAGE_ALIGNED(size));
 
-	/* TODO Lock vaspace */
-
 	ori_va = va;
 	if (va == NULL) {
 		panic("mmap with a NULL address not implemented yet.");
@@ -63,10 +62,8 @@ mmap(virtaddr_t va, size_t size, mmap_flags_t flags)
 		}
 	}
 
-	/* TODO Release vaspace */
 	return (ori_va);
 err:
-	/* TODO Release vaspace */
 	return (NULL);
 }
 
@@ -153,5 +150,5 @@ munmap(virtaddr_t va, size_t size, munmap_flags_t flags)
 void
 vmm_init(void)
 {
-	/* TODO Set up kernel heap here */
+	kalloc_init();
 }
