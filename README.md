@@ -60,14 +60,15 @@ make run
   - [X] IDT setup
   - [ ] TSS setup
   - [X] SMP setup
-- [ ] Pc drivers
+- [ ] Basic drivers
   - [X] VGA
   - [ ] Serial
+  - [ ] PS/2 Keyboard
 - [ ] Memory
   - [X] Physical Memory Management
   - [X] Virtual Memory Management (`mmap()`, `munmap()` etc.)
-  - [ ] Virtual segments of memory (`brk(), `sbrk()`)
-  - [ ] Kernel heap
+  - [ ] Virtual segments of memory (`brk()`, `sbrk()`)
+  - [ ] Kernel heap (`kalloc()`, `kfree()`, `krealloc()`)
 - [ ] ELF Program execution (`execve()`)
 - [ ] Syscall interface and userspace (ring 3)
 - [ ] Multi process / threads
@@ -76,12 +77,12 @@ make run
   - [ ] Processes (`fork()` and `exit()`)
 - [ ] Initrd loading, reading and writing
 - [ ] Filesystem
-  - Directory listing (`opendir(), `readdir()`, `closedir()`)
-  - Creating and removing files/directories (`unlink()`)
-  - File basic IO operations (`read()`, `write()`)
-  - File advanced IO operations (`pipe()`, `dup()`)
-  - File informations (`stat()`)
-- [ ] User space programs (init, tty, shell, basic binaries such as `echo`, `ls`, `rm` etc.)
+  - [ ] Directory listing (`opendir()`, `readdir()`, `closedir()`)
+  - [ ] Creating and removing files/directories (`mkfile()`, `mkdir()`, `remove()`)
+  - [ ] File basic IO operations (`open()`, `read()`, `write()`, `close()`)
+  - [ ] File advanced IO operations (`pipe()`, `dup()`)
+  - [ ] File informations (`stat()`)
+- [ ] User space programs (init, tty, shell, basic binaries such as `echo`, `ls`, `rm`, `mkdir` etc.)
 - [ ] Virtual filesystems (`/proc`, `/dev`)
 
 # :rocket: Wanna participate?
