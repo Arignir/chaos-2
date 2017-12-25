@@ -98,8 +98,6 @@ mmap_device(virtaddr_t va, physaddr_t pa, size_t size, mmap_flags_t flags)
 	assert_vmm(IS_PAGE_ALIGNED(pa));
 	assert_vmm(IS_PAGE_ALIGNED(size));
 
-	/* TODO Lock vaspace */
-
 	ori_va = va;
 	if (va == NULL) {
 		panic("mmap_device with a NULL address not implemented yet.");
@@ -123,13 +121,15 @@ mmap_device(virtaddr_t va, physaddr_t pa, size_t size, mmap_flags_t flags)
 		}
 	}
 
-	/* TODO Release vaspace */
 	return (ori_va);
 err:
-	/* TODO Release vaspace */
 	return (NULL);
 }
 
+/*
+** Unmaps the contiguous virtual addresses given in parameters.
+** Does nothing if one of the given pages is actually not mapped.
+*/
 void
 munmap(virtaddr_t va, size_t size, munmap_flags_t flags)
 {
@@ -138,14 +138,12 @@ munmap(virtaddr_t va, size_t size, munmap_flags_t flags)
 	assert_vmm(IS_PAGE_ALIGNED(va));
 	assert_vmm(IS_PAGE_ALIGNED(size));
 
-	/* TODO Lock vaspace */
 	ori_va = va;
 	while ((uchar *)va < (uchar *)ori_va + size)
 	{
 		vmm_unmap(va, flags);
 		va = (uchar *)va + PAGE_SIZE;
 	}
-	/* TODO Release vaspace */
 }
 
 /*

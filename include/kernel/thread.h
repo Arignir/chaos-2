@@ -13,10 +13,17 @@
 # include <kconfig.h>
 # include <chaosdef.h>
 # include <kernel/memory.h>
+# include <kernel/rwlock.h>
 # include <arch/thread.h>
 
 typedef int tid_t;
 typedef int (*thread_main)(void);
+
+# if KCONFIG_DEBUG_THREAD
+#  define assert_thread(x) assert(x)
+# else
+#  define assert_thread(x)
+# endif /* KCONFIG_DEBUG_THREAD */
 
 /*
 ** An enum of all states a thread can be in.
@@ -69,13 +76,15 @@ struct			thread
 
 	/* virtual address space */
 	struct vaspace *vaspace;
+
+	/* RWlock to lock this thread */
+	struct rwlock rwlock;
 };
 
 /* Thread table */
 extern struct thread thread_table[KCONFIG_MAX_THREADS];
 
-/* Thread functions */
-
 void	thread_early_init(void);
+void	thread_init(void);
 
 #endif /* !_KERNEL_THREAD_H_ */

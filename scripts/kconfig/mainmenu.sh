@@ -19,6 +19,7 @@ new_kconfig_var KCONFIG_DEBUG_MULTIBOOT		0
 new_kconfig_var KCONFIG_DEBUG_LOCKS		0
 new_kconfig_var KCONFIG_DEBUG_PMM		0
 new_kconfig_var KCONFIG_DEBUG_VMM 		0
+new_kconfig_var KCONFIG_DEBUG_THREAD 		0
 
 function menu_debug() {
 	menu_checklist "Debug Options" \
@@ -30,6 +31,8 @@ function menu_debug() {
 			"This options enables debugging outputs and assertions for the Physical Memory Manager" \
 		"Enable VMM Debug" KCONFIG_DEBUG_VMM \
 			"This options enables debugging outputs and assertions for the Virtual Memory Manager" \
+		"Enable Thread Debug" KCONFIG_DEBUG_THREAD \
+			"This options enables debugging outputs and assertions for functions related to threads. " \
 
 }
 

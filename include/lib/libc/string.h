@@ -26,9 +26,14 @@ int		strcmp(char const *s1, char const *s2) __pure;
 int		strncmp(char const *s1, char const *s2, size_t n) __pure;
 
 void		*memset(void *src, int c, size_t n);
+void volatile	*memset_v(void volatile *src, int c, size_t n);
 void		*memcpy(void *dest, void const *src, size_t n);
+void volatile	*memcpy_v(void volatile *dest, void const volatile *src, size_t n);
 int		memcmp(void const *s1, void const *s2, size_t n) __pure;
+int		memcmp_v(void const volatile *s1, void const volatile *s2, size_t n) __pure;
 void		*memchr(void const *src, int c, size_t n) __pure;
-void 		*memmove(void *dest, void const *src, size_t n);
+void volatile	*memchr_v(void const volatile *src, int c, size_t n) __pure;
+void		*memmove(void *dest, void const *src, size_t n);
+void volatile	*memmove_v(void volatile *dest, void const volatile *src, size_t n);
 
 #endif /* !_LIBC_STRING_H_ */

@@ -93,6 +93,8 @@ arch_x86_setup(void)
 #endif /* KCONFIG_ENABLE_SMP */
 
 	common_setup();	/* Finish the processor's setup */
+
+	thread_init();	/* Finish setting up kthread */
 }
 
 #if KCONFIG_ENABLE_SMP
@@ -106,8 +108,9 @@ ap_setup(void)
 	apic_init();
 	common_setup();
 
-	while (42)
+	while (42) {
 		halt();
+	}
 }
 
 #endif /* KCONFIG_ENABLE_SMP */

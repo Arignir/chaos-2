@@ -19,6 +19,12 @@ atomic_exchange(uint *ptr, uint value)
 }
 
 static inline void
+fetch_and_add(int *variable, int value)
+{
+	return (xaddl(variable, value));
+}
+
+static inline void
 memory_barrier(void)
 {
 	asm volatile("" : : : "memory");
