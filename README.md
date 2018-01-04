@@ -64,11 +64,11 @@ make run
   - [X] VGA
   - [ ] Serial
   - [ ] PS/2 Keyboard
-- [ ] Memory
+- [X] Memory
   - [X] Physical Memory Management
   - [X] Virtual Memory Management (`mmap()`, `munmap()` etc.)
-  - [ ] Virtual segments of memory (`brk()`, `sbrk()`)
-  - [ ] Kernel heap (`kalloc()`, `kfree()`, `krealloc()`)
+  - [X] Virtual segments of memory (`brk()`, `sbrk()`)
+  - [X] Kernel heap (`kalloc()`, `kfree()`, `krealloc()`)
 - [ ] ELF Program execution (`execve()`)
 - [ ] Syscall interface and userspace (ring 3)
 - [ ] Multi process / threads
