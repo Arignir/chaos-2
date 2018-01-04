@@ -14,6 +14,16 @@
 # include <kconfig.h>
 # include <kernel/memory.h>
 
+/* Debug assertions for kernel heap */
+# if KCONFIG_DEBUG_KALLOC
+#  define assert_kalloc(x) assert(x)
+# else
+#  define assert_kalloc(x)
+# endif /* KCONFIG_DEBUG_KALLOC */
+
+/*
+** Each allocation made with kalloc() belongs to a block, which form a linked list.
+*/
 struct block
 {
 	bool used;
@@ -21,14 +31,20 @@ struct block
 	struct block *prev;
 };
 
-# if KCONFIG_DEBUG_KALLOC
-#  define assert_kalloc(x) assert(x)
-# else
-#  define assert_kalloc(x)
-# endif
+/*
+** We are using a dirty trick to have a quick and functional kalloc_aligned().
+** It needs to store the original pointer returned by kalloc() before aligning it to
+** a page boundary.
+*/
+struct aligned_address
+{
+	virtaddr_t ptr;
+	virtaddr_t ori_ptr;
+};
 
 virtaddr_t	kalloc(size_t);
-virtaddr_t	kalloc_align(size_t);
+virtaddr_t	kalloc_aligned(size_t);
+virtaddr_t	kalloc_device(size_t size, physaddr_t pa);
 virtaddr_t	krealloc(virtaddr_t, size_t);
 virtaddr_t	kcalloc(size_t, size_t);
 void		kfree(virtaddr_t);
@@ -37,4 +53,3 @@ void		kalloc_init(void);
 static_assert(sizeof(struct block) % sizeof(void *) == 0);
 
 #endif /* !_KERNEL_KALLOC_H_ */
-
