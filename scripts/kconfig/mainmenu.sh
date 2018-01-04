@@ -34,7 +34,7 @@ function menu_debug() {
 			"This options enables debugging outputs and assertions for the Virtual Memory Manager" \
 		"Enable Thread Debug" KCONFIG_DEBUG_THREAD \
 			"This options enables debugging outputs and assertions for functions related to threads." \
-		"Enable kalloc() Debug" KCONFIG_DEBUG_THREAD \
+		"Enable Kernel Heap Debug" KCONFIG_DEBUG_KALLOC \
 			"This options enables debugging assertions for kalloc(), kfree() and all other kernel-heap related functions." \
 
 }

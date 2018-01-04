@@ -8,15 +8,12 @@
 \* ------------------------------------------------------------------------ */
 
 #include <kernel/pmm.h>
-#include <kernel/vmm.h>
+#include <kernel/kalloc.h>
 #include <arch/x86/asm.h>
 #include <arch/x86/interrupts.h>
 #include <arch/x86/apic.h>
-#include <stdio.h> // TODO For Debug
 
-/* TODO: This must be updated when we'll have a kernel heap */
-__aligned(PAGE_SIZE)
-static volatile uchar apic[PAGE_SIZE] = { 0 };
+static volatile uchar *apic = NULL;
 
 static void	apic_timer_ihandler(struct iframe *iframe);
 static void	apic_error_ihandler(struct iframe *iframe);
@@ -28,7 +25,16 @@ static void	apic_spurious_ihandler(struct iframe *iframe);
 static inline void
 apic_write(enum apic_reg reg, uint32 value)
 {
-	*((volatile uint32 *)apic + reg / sizeof(uint32)) = value;
+	*((volatile uint32 *)(apic + reg)) = value;
+}
+
+/*
+** Reads a local APIC register
+*/
+static inline uint32
+apic_read(enum apic_reg reg)
+{
+	return (*((volatile uint32 *)(apic + reg)));
 }
 
 /*
@@ -84,7 +90,7 @@ apic_init(void)
 uint32
 apic_get_id(void)
 {
-	return (*((volatile uint32 *)apic + APIC_ID / sizeof(uint32)) >> 24u);
+	return (apic_read(APIC_ID) >> 24u);
 }
 
 /*
@@ -97,12 +103,11 @@ apic_map(physaddr_t pa)
 	mark_range_as_allocated(pa, pa + PAGE_SIZE);
 
 	/* Map it to memory */
-	assert(mmap_device(
-			(virtaddr_t)apic,
-			pa,
-			PAGE_SIZE,
-			MMAP_WRITE | MMAP_REMAP
-	));
+	apic = kalloc_device(
+		PAGE_SIZE,
+		pa
+	);
+	assert_ne(apic, NULL);
 }
 
 /*
@@ -130,7 +135,7 @@ apic_timer_ihandler(struct iframe *iframe __unused)
 void
 apic_error_ihandler(struct iframe *iframe __unused)
 {
-	printf("In apic error handler\n");
+	panic("apic error encountered.\n");
 	apic_eoi();
 }
 
@@ -140,7 +145,7 @@ apic_error_ihandler(struct iframe *iframe __unused)
 void
 apic_spurious_ihandler(struct iframe *iframe __unused)
 {
-	printf("In apic spurious handler\n");
+	panic("apic spurious interruption encountered.\n");
 	apic_eoi();
 }
 
@@ -168,7 +173,7 @@ apic_ipi_acked(void)
 
 	timeout = 100;
 	while (--timeout > 0) {
-		reg = *((volatile uint32 *)apic + APIC_ICR_LOW / sizeof(uint32));
+		reg = apic_read(APIC_ICR_LOW);
 		if (!(reg & APIC_ICR_PENDING))
 			return (true);
 	}
@@ -186,7 +191,7 @@ micro_wait(void)
 	uint64 tsc;
 
 	tsc = rdtsc();
-	while (rdtsc() < tsc + 300000000ull);
+	while (rdtsc() < tsc + APIC_INIT_CLOCK_WAIT);
 }
 
 /*

@@ -8,12 +8,10 @@
 \* ------------------------------------------------------------------------ */
 
 #include <kernel/pmm.h>
-#include <kernel/vmm.h>
+#include <kernel/kalloc.h>
 #include <arch/x86/ioapic.h>
 
-/* TODO: This must be updated when we'll have a kernel heap */
-__aligned(PAGE_SIZE)
-static volatile uchar ioapic[PAGE_SIZE] = { 0 };
+static volatile uchar *ioapic;
 
 /*
 ** Maps the I/O APIC registers to the given physical address.
@@ -25,12 +23,11 @@ ioapic_map(physaddr_t pa)
 	mark_range_as_allocated(pa, pa + PAGE_SIZE);
 
 	/* Map it to memory */
-	assert(mmap_device(
-			(virtaddr_t)ioapic,
-			pa,
-			PAGE_SIZE,
-			MMAP_WRITE | MMAP_REMAP
-	));
+	ioapic = kalloc_device(
+		PAGE_SIZE,
+		pa
+	);
+	assert_ne(ioapic, NULL);
 }
 
 /*

@@ -56,22 +56,29 @@ grow_heap(uintptr inc)
 	virtaddr_t oldbrk;
 	virtaddr_t old;
 	virtaddr_t new;
+	uintptr round_add;
 
 	old = (uchar *)kernel_heap_start + kernel_heap_size;
 	new = (uchar *)old + inc;
 	oldbrk = old;
-	if (new > kernel_heap_start)
+	if (likely(new > kernel_heap_start))
 	{
-		old = (virtaddr_t)ROUND_DOWN((uintptr)old, PAGE_SIZE);
 		new = (virtaddr_t)ROUND_DOWN((uintptr)new, PAGE_SIZE);
+		old = (virtaddr_t)ROUND_DOWN((uintptr)old, PAGE_SIZE);
+		round_add = (uintptr)new - (uintptr)old;
 		kernel_heap_size += inc;
-		if (new > old && unlikely(mmap(
+		if (new > old) {
+			if (unlikely(mmap(
 				(uchar *)old + PAGE_SIZE,
-				PAGE_ALIGN(inc),
+				round_add,
 				MMAP_WRITE) == NULL))
-		{
-			kernel_heap_size -= inc;
-			return ((virtaddr_t)-1);
+			{
+				kernel_heap_size -= inc;
+				return ((virtaddr_t)-1);
+			}
+#if KCONFIG_DEBUG_KALLOC
+			memset((uchar *)old + PAGE_SIZE, 42, round_add);
+#endif /* KCONFIG_DEBUG_KALLOC */
 		}
 		return (oldbrk);
 	}

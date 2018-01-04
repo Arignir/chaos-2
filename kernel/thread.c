@@ -32,8 +32,8 @@ thread_set_name(struct thread *t, char const *name)
 ** Attaches the given virtual space to the given thread.
 ** This assumes there is no previous virtual space already attached.
 **
-** This function assumes that the given thread 'thread' and the given
-** virtual memory space 'vaspace' and locked as writers (or there is no
+** This assumes that the given thread 'thread' and the given
+** virtual memory space 'vaspace' are locked as writers (or there is no
 ** need to do so).
 */
 static void
@@ -87,13 +87,12 @@ thread_init(void)
 		thread_set_name(t, "kthread");
 
 		/* Setup vaspace */
-		vaspace_init(&kthread_vaspace);
+		assert_eq(vaspace_init(&kthread_vaspace), OK);
 		rwlock_acquire_write(&kthread_vaspace.rwlock);
 		{
 			thread_attach_vaspace(t, &kthread_vaspace);
 		}
 		rwlock_release_write(&kthread_vaspace.rwlock);
-
 		t->state = RUNNABLE;
 	}
 	rwlock_release_write(&t->rwlock);
