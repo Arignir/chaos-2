@@ -10,8 +10,9 @@
 #ifndef _ARCH_X86_APIC_H_
 # define _ARCH_X86_APIC_H_
 
-# include <chaosdef.h>
 # include <kconfig.h>
+# include <chaosdef.h>
+# include <chaoserr.h>
 # include <kernel/memory.h>
 
 # define APIC_BASE_ADDR		0xFEE00000
@@ -93,7 +94,7 @@ void	apic_send_ipi(uint32 dest, uint32 flags);
 bool	apic_ipi_acked(void);
 
 #if KCONFIG_ENABLE_SMP
-void	apic_start_ap(uint32 lapic_id, uintptr addr);
+status_t	apic_start_ap(uint32 lapic_id, uintptr addr);
 #endif /* KCONFIG_ENABLE_SMP */
 
 #endif /* !_ARCH_X86_APIC_H_ */

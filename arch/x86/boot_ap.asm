@@ -16,6 +16,7 @@
 [extern gdt]
 [extern gdtptr]
 [extern kthread_page_directory]
+[extern ap_boot_stack]
 
 %include "arch/x86/asm.inc"
 
@@ -70,10 +71,9 @@ boot_ap:
 	; Reload the GDT
 	lgdt [gdtptr]
 
-	; Switch to stack allocated by mp_start_aps()
-	; TODO Change this when we'll have a kernel heap
-	; mov (boot_ap-4), %esp
-	mov esp, boot2_stack_top
+	; Switch to stack allocated by apic_start_ap()
+	mov eax, [ap_boot_stack]
+	mov esp, eax
 
 	; Go to C code
 	call ap_setup
@@ -81,11 +81,5 @@ boot_ap:
 .catch_fire:
 	hlt
 	jmp .catch_fire
-
-[section .bss]
-align 4096
-boot2_stack_bottom:
-	resb 4096 * 16
-boot2_stack_top:
 
 %endif

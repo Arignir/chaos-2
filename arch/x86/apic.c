@@ -19,6 +19,10 @@ static void	apic_timer_ihandler(struct iframe *iframe);
 static void	apic_error_ihandler(struct iframe *iframe);
 static void	apic_spurious_ihandler(struct iframe *iframe);
 
+/* Variable to transmit the AP's new stack when starting up */
+__section(".boot_memory")
+virtaddr_t ap_boot_stack;
+
 /*
 ** Writes to a local APIC register
 */
@@ -197,12 +201,19 @@ micro_wait(void)
 /*
 ** Starts the AP with the given apic id and makes it jump at given address.
 */
-void
+status_t
 apic_start_ap(uint32 lapic_id, uintptr addr)
 {
 	ushort *wrv;
 
 	assert_eq(addr & 0xFFF00FFF, 0);
+
+	/* Allocate stack for the new cpu */
+	ap_boot_stack = kalloc_aligned(16 * PAGE_SIZE);
+	if (ap_boot_stack == NULL) {
+		return (ERR_NO_MEMORY);
+	}
+	ap_boot_stack = (uchar *)ap_boot_stack + 16 * PAGE_SIZE - sizeof(void *);
 
 	/*
 	** MP Specification says that we must initialize CMOS shutdown code to
@@ -227,6 +238,7 @@ apic_start_ap(uint32 lapic_id, uintptr addr)
 		apic_send_ipi(lapic_id, APIC_ICR_STARTUP | (addr >> 12));
 		micro_wait();
 	}
+	return (OK);
 }
 
 #endif /* KCONFIG_ENABLE_SMP */

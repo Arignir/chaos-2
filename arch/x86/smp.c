@@ -10,14 +10,12 @@
 #include <kconfig.h>
 #include <kernel/checksum.h>
 #include <kernel/cpu.h>
-#include <kernel/memory.h>
 #include <kernel/vmm.h>
+#include <kernel/kalloc.h>
 #include <arch/x86/smp.h>
-#include <arch/x86/asm.h>
 #include <arch/x86/apic.h>
 #include <arch/x86/ioapic.h>
 #include <string.h>
-#include <stdio.h>
 
 #if KCONFIG_ENABLE_SMP
 
@@ -177,8 +175,10 @@ mp_start_aps(void)
 	{
 		if (cpu == current)
 			continue;
-		apic_start_ap(cpu->lapic_id, TRAMPOLINE_START);
-		while (!cpu->started);
+
+		if (apic_start_ap(cpu->lapic_id, TRAMPOLINE_START) == OK) {
+			while (!cpu->started);
+		}
 	}
 
 	/* Unmap the previous mapping */
