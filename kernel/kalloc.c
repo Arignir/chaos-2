@@ -21,9 +21,9 @@
 ** time doing it. Feel free to improve it :)
 **
 ** kalloc_aligned() is using a dirty trick to easily make aligned allocations.
-** It calls malloc() with a size of ('size' + PAGE_SIZE) bytes and align the returned
-** pointer to a page boundary. Then it stores the old pointer in aladdr_array so that
-** free knows it.
+** It calls kalloc() with a size of ('size' + PAGE_SIZE) bytes and align the returned
+** pointer to a page boundary. The old pointer in then added to aladdr_array so
+** free() can find it.
 **
 ** This definitely deserve an improvement, but eh, it's not fun enough.
 ** (I hate writting mallocs(). I mean it.)
@@ -161,9 +161,8 @@ join_block(struct block *block)
 ** entry from the array (swapping with the last entry and using kalloc()), and
 ** then return the original pointer.
 **
-** This is part of a trick to easily
-** have an aligned malloc() without having to lose to much time changing the
-** current implementation.
+** This is part of a trick to easily have an aligned malloc() without having to
+** lose to much time changing the current implementation.
 */
 static virtaddr_t
 get_original_and_remove(virtaddr_t ptr)

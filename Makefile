@@ -14,6 +14,7 @@ export PATCH	= 0
 export EXTRA	= -indev
 
 export KERNEL = chaos_$(ARCH)-$(MAJOR).$(MINOR).$(PATCH)$(EXTRA).bin
+export INITRD = $(PWD)/initrd.img
 export ISO = chaos_$(ARCH)-$(MAJOR).$(MINOR).$(PATCH)$(EXTRA).iso
 
 # Verbosity
@@ -80,7 +81,7 @@ include arch/$(ARCH)/Makefile.cpu
 MAKEFLAGS += --no-print-directory
 
 .PHONY: all
-all: kernel
+all: iso
 
 .PHONY: print_building
 print_building: kconfig
@@ -102,11 +103,15 @@ $(KERNEL): arch/arch.o drivers/drivers.o kernel/kernel.o lib/lib.o
 	$(Q)printf "  LD\t $(notdir $@)\n"
 	$(Q)$(LD) -T $(LINKER_SCRIPT) -o $@ $^ $(KERNEL_LDFLAGS)
 
-.PHONY: iso
-iso: $(ISO)
+.PHONY: check_iso
+check_iso: kernel
+	$(Q)$(MAKE) -C userspace all
+	$(Q)$(MAKE) $(ISO)
 
-$(ISO): kernel
-	$(Q)./scripts/initrd.sh
+.PHONY: iso
+iso: check_iso
+
+$(ISO): $(INITRD) $(KERNEL)
 	$(Q)./scripts/chaos-iso.sh -b "$(BOOT_FLAGS)"
 
 kconfig:
@@ -142,6 +147,7 @@ clean:
 	$(Q)$(MAKE) -C kernel clean
 	$(Q)$(MAKE) -C drivers clean
 	$(Q)$(MAKE) -C lib clean
+	$(Q)$(MAKE) -C userspace clean
 	$(Q)$(RM) "$(ISO)" "$(KERNEL)"
 
 .PHONY: re

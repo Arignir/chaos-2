@@ -25,6 +25,8 @@
 # Userspace programs
 /userspace/cat
 /userspace/touch
+/userspace/game
+/userspace/test
 
 # Editor
 *~

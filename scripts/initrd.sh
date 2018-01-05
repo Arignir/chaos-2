@@ -26,5 +26,5 @@ if ! which dd &> /dev/null; then
 	exit 1
 fi
 
-# Create ramdisk image
-echo "I love ChaOS" > "$OUTPUT_PATH"
+# For now, initial ramdisk is all about copying the only userspace binary available
+cp "$USERSPACE_BINS" "$OUTPUT_PATH"

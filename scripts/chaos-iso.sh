@@ -14,7 +14,6 @@ set -e -u
 declare SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 declare PROJECT_DIR="$SCRIPT_DIR/../"
 declare BOOT_ARGS=""
-declare INITRD="initrd.img"
 
 function print_usage() {
 	printf "Usage: $0 [OPTIONS]\n"
@@ -41,7 +40,7 @@ TEMP=$(mktemp -d)
 
 mkdir -p -- "$TEMP/boot/grub"
 cp -- "$PROJECT_DIR/$KERNEL" "$TEMP/boot/$KERNEL"
-cp -- "$PROJECT_DIR/$INITRD" "$TEMP/boot/$INITRD"
+cp -- "$PROJECT_DIR/$(basename "$INITRD")" "$TEMP/boot/$(basename "$INITRD")"
 
 cat -- > "$TEMP/boot/grub/grub.cfg" << EOF
 set timeout=0
