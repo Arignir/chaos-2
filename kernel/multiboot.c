@@ -10,6 +10,7 @@
 #include <kconfig.h>
 #include <multiboot2.h>
 #include <kernel/init.h>
+#include <kernel/initrd.h>
 #include <kernel/multiboot.h>
 #include <string.h>
 
@@ -53,7 +54,10 @@ multiboot_load(void)
 			multiboot_infos.mmap_end = (multiboot_memory_map_t *)((uchar *)tag + tag->size);
 			break;
 		case MULTIBOOT_TAG_TYPE_MODULE:
-			/* Do stuff with initrd here */
+			initrd_set_physical(
+				((struct multiboot_tag_module *)tag)->mod_start,
+				((struct multiboot_tag_module *)tag)->mod_end
+			);
 			break;
 		}
 		tag = (struct multiboot_tag *)((uchar *)tag + ((tag->size + 7) & ~7));

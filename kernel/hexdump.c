@@ -60,7 +60,7 @@ hexdump(uchar *start, size_t size)
 	{
 		len = end - start;
 		if (len >= HEXDUMP_WIDTH) {
-			len = 10;
+			len = HEXDUMP_WIDTH;
 		}
 		printf("%p ", start);
 		hexdump_char(start, len);

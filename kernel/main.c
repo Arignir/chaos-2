@@ -14,6 +14,8 @@
 #include <arch/linker.h>
 #include <stdio.h>
 
+#include <kernel/initrd.h> /* TODO FIXME For debugging purposes */
+
 /*
 ** Kernel main entry point
 */
@@ -25,6 +27,10 @@ kmain(void)
 
 	/* Trigger all init levels */
 	trigger_init_levels(INIT_LEVEL_EARLIEST, INIT_LEVEL_LATEST);
+
+	printf("\n");
+	initrd_dump();
+	printf("\n");
 
 	printf("Welcome to ChaOS\n");
 

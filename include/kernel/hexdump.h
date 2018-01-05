@@ -12,7 +12,7 @@
 
 # include <chaosdef.h>
 
-# define HEXDUMP_WIDTH		10
+# define HEXDUMP_WIDTH		16
 
 void	hexdump(uchar *start, size_t size);
 

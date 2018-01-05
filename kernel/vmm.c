@@ -13,6 +13,7 @@
 
 #include <kernel/vmm.h>
 #include <kernel/kalloc.h>
+#include <kernel/initrd.h>
 #include <arch/linker.h>
 
 /*
@@ -151,4 +152,7 @@ void
 vmm_init(void)
 {
 	kalloc_init();
+	if (initrd_is_present()) {
+		initrd_map();
+	}
 }

@@ -14,9 +14,17 @@ set -e -u
 declare SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 declare PROJECT_DIR="$SCRIPT_DIR/../"
 
-if [ ! -f "$PROJECT_DIR/kconfig" ]; then
-	printf "You have no configuration with your kernel.\n"
-	printf "A default one will be used. You can edit it using 'make config'.\n"
-	"$SCRIPT_DIR/kconfig/main.sh" "gen-default"
-	"$SCRIPT_DIR/gen-config.sh"
+declare OUTPUT=initrd.img
+declare OUTPUT_PATH="$PROJECT_DIR/$OUTPUT"
+
+# Add root paths for distros that have a different path for the root user
+declare PATH="$PATH:/sbin:/usr/sbin/"
+
+# Check that dependencies are installed
+if ! which dd &> /dev/null; then
+	printf "You must install dd"
+	exit 1
 fi
+
+# Create ramdisk image
+echo "I love ChaOS" > "$OUTPUT_PATH"

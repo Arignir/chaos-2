@@ -11,6 +11,7 @@
 #include <kernel/pmm.h>
 #include <kernel/multiboot.h>
 #include <kernel/spinlock.h>
+#include <kernel/initrd.h>
 #include <string.h>
 
 #if KCONFIG_DEBUG_PMM
@@ -69,6 +70,7 @@ mark_frame_as_free(physaddr_t frame)
 
 /*
 ** Mark a range of frames as allocated.
+** The range is inclusive.
 */
 void
 mark_range_as_allocated(physaddr_t start, physaddr_t end)
@@ -185,6 +187,7 @@ pmm_init(void)
 {
 	multiboot_memory_map_t *mmap;
 	struct pmm_reserved_area const *pra;
+	struct initrd_phys *initrd;
 
 	/* Mark all memory as allocated */
 	memset(frame_bitmap, 0xFF, sizeof(frame_bitmap));
@@ -210,6 +213,12 @@ pmm_init(void)
 				pra->name, (void *)pra->start, (void *)pra->end);
 #endif /* KCONFIG_DEBUG_PMM */
 		mark_range_as_allocated(pra->start, pra->end);
+	}
+
+	/* Mark the initrd (if available) as allocated */
+	if (initrd_is_present()) {
+		initrd = initrd_get_physical();
+		mark_range_as_allocated(PAGE_ALIGN(initrd->start), PAGE_ALIGN(initrd->end));
 	}
 
 	/* Quickly ensure the kernel has been marked as allocated */

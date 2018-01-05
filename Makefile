@@ -106,6 +106,7 @@ $(KERNEL): arch/arch.o drivers/drivers.o kernel/kernel.o lib/lib.o
 iso: $(ISO)
 
 $(ISO): kernel
+	$(Q)./scripts/initrd.sh
 	$(Q)./scripts/chaos-iso.sh -b "$(BOOT_FLAGS)"
 
 kconfig:
