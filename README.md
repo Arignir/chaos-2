@@ -3,7 +3,7 @@ ChaOS is an SMP-aware kernel that we are doing as a part of our studies at Epite
 # Build Dependencies
 * `make`
 * `gcc` or `clang` (latest version, ideally)
-* `grub-mkrescue` and `libisoburn` (generally packed with other binaries as `grub`)
+* `grub-mkrescue` and `libisoburn` (usually packed with other binaries as `grub`)
 * `mtools`
 * `qemu` (cpu emulator) *optional*
 
