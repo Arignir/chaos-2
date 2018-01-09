@@ -69,7 +69,7 @@ make run
   - [X] Virtual Memory Management (`mmap()`, `munmap()` etc.)
   - [X] Virtual segments of memory (`brk()`, `sbrk()`)
   - [X] Kernel heap (`kalloc()`, `kfree()`, `krealloc()`)
-- [ ] ELF Program execution (`execve()`)
+- [X] ELF Program execution (`execve()`)
 - [ ] Syscall interface and userspace (ring 3)
 - [ ] Multi process / threads
   - [ ] Scheduling
