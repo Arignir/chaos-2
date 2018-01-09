@@ -16,6 +16,16 @@
 #include <string.h>
 
 /*
+** Returns the current virtual address space.
+** This functions asserts a thread context.
+*/
+struct vaspace *
+current_vaspace(void)
+{
+	return (current_cpu()->thread->vaspace);
+}
+
+/*
 ** Initializes the given virtual address space with default values.
 **
 ** Only the kernel's virtual segment is mapped.

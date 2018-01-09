@@ -12,7 +12,7 @@ export USERSPACE_BINS	:= game
 
 # Flags
 CFLAGS		+=
-LDFLAGS		+=
+LDFLAGS		+= -emain # Set entry point to 'main' (and not '_start')
 
 all:		$(INITRD)
 

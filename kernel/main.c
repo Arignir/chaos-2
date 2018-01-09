@@ -15,6 +15,7 @@
 #include <stdio.h>
 
 #include <kernel/initrd.h> /* TODO FIXME For debugging purposes */
+#include <kernel/exec.h>
 
 /*
 ** Kernel main entry point
@@ -28,11 +29,10 @@ kmain(void)
 	/* Trigger all init levels */
 	trigger_init_levels(INIT_LEVEL_EARLIEST, INIT_LEVEL_LATEST);
 
-	printf("\n");
-	initrd_dump();
-	printf("\n");
-
 	printf("Welcome to ChaOS\n");
+
+	struct initrd_virt *virt = initrd_get_virtual();
+	assert_eq(exec(virt->start, virt->len), OK);
 
 	/* Halt (and catch fire) */
 	while (42)

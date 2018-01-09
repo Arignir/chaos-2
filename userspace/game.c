@@ -7,13 +7,11 @@
 **
 \* ------------------------------------------------------------------------ */
 
-void _start(void);
-int main(void);
+__attribute__((used))
+int jaj[512] = { 0 };
 
-void _start(void)
-{
-	main();
-}
+__attribute__((used))
+char const *jouj = "Hello God Damn World";
 
 int main(void) {
 	while (42);

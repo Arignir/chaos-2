@@ -19,8 +19,11 @@
 /*
 ** Represents the virtual address space shared by a couple of threads.
 **
-** The golden rule is that must _NEVER_ have two virtual segments
+** The golden rule is that we must _NEVER_ have two virtual segments
 ** overlapping.
+**
+** Remeber that vsegs are inclusives, which means that a segment that is
+** one page long has the same 'start' and 'end' addresses.
 */
 struct vaspace
 {
@@ -37,6 +40,7 @@ struct vaspace
 	uint count;
 };
 
+struct vaspace	*current_vaspace(void);
 status_t	vaspace_init(struct vaspace *vaspace);
 status_t	vaspace_new_vseg(virtaddr_t start, size_t size, mmap_flags_t flags);
 status_t	vaspace_add_vseg(struct vaspace *vaspace, virtaddr_t start, virtaddr_t end);

@@ -132,6 +132,35 @@ vmm_dump_mem(void)
 }
 
 /*
+** Used for debugging purposes. Dumps the current page directory except kernel space.
+*/
+void
+vmm_dump_user_mem(void)
+{
+	uint i;
+	struct page_dir *pd;
+
+	pd = get_pagedir();
+	for (i = 0; i < get_pd_idx(KERNEL_VIRTUAL_BASE); ++i)
+	{
+		if (pd->entries[i].present)
+		{
+			printf("[%4u] [%p -> %p] %s %c %c %c %c %c\n",
+				i,
+				(virtaddr_t)(i << 22u),
+				(virtaddr_t)(pd->entries[i].frame << 12ul),
+				"RO\0RW" + pd->entries[i].rw * 3,
+				"ku"[pd->entries[i].user],
+				"-w"[pd->entries[i].wtrough],
+				"-d"[pd->entries[i].cache],
+				"-a"[pd->entries[i].accessed],
+				"-H"[pd->entries[i].size]);
+				vmm_dump_pagetable(i);
+		}
+	}
+}
+
+/*
 ** Tells if the given virtual address is mapped.
 */
 bool
@@ -188,9 +217,10 @@ vmm_map_physical(virtaddr_t va, physaddr_t pa, mmap_flags_t flags)
 		if (pde->value == NULL_FRAME) {
 			return (ERR_NO_MEMORY);
 		}
+		/* Always map page table for users */
+		pde->user = true;
 		pde->present = true;
 		pde->rw = true;
-		pde->user = (bool)(flags & MMAP_USER);
 		pde->accessed = false;
 		invlpg(pt);
 		memset(pt, 0, PAGE_SIZE);

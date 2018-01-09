@@ -10,7 +10,6 @@
 #include <kernel/initrd.h>
 #include <kernel/kalloc.h>
 #include <kernel/hexdump.h>
-#include <stdio.h>
 
 static struct initrd_phys initrd_phys =
 {
@@ -39,10 +38,8 @@ initrd_map(void)
 
 	assert(initrd_is_present());
 
-	printf("Mapping: Start %p End %p\n", initrd_phys.start, initrd_phys.end);
 	round_start = PAGE_ALIGN(initrd_phys.start);
 	round_end = PAGE_ALIGN(initrd_phys.end);
-	printf("RoundMapping: Start %p End %p\n", round_start, round_end);
 	initrd_virt.len = initrd_phys.end - initrd_phys.start + 1;
 	initrd_virt.start = kalloc_device(
 		round_end - round_start + PAGE_SIZE,
@@ -105,6 +102,5 @@ initrd_dump(void)
 {
 	assert(initrd_virt.start);
 
-	printf("Dumping initrd:\n");
 	hexdump(initrd_virt.start, initrd_virt.len);
 }
