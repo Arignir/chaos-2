@@ -52,7 +52,7 @@ make run
 
 - [X] Kernel options
 - [X] Kernel architecture
-- [X] High-address Kernel
+- [X] Kernel placed in high-addresses
 - [ ] Boot
   - [X] Multiboot
   - [X] Paging setup
