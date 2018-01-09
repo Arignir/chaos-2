@@ -13,8 +13,6 @@
 # include <chaosdef.h>
 # include <limits.h>
 
-# define RAND_MAX	INT_MAX
-
 void	seed_by_time(void);
 uchar	rand_uchar(void);
 ushort	rand_ushort(void);
