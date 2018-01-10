@@ -42,7 +42,7 @@ mmap(virtaddr_t va, size_t size, mmap_flags_t flags)
 	assert_vmm(IS_PAGE_ALIGNED(size));
 
 	ori_va = va;
-	if (va == NULL) {
+	if (unlikely(va == NULL)) {
 		panic("mmap with a NULL address not implemented yet.");
 	}
 	else {

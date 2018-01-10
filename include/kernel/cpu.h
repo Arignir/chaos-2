@@ -13,6 +13,7 @@
 # include <chaosdef.h>
 # include <kconfig.h>
 # include <kernel/interrupts.h>
+# include <kernel/thread.h>
 # include <arch/cpu.h>
 
 /* A structure representing a CPU */
@@ -43,5 +44,59 @@ struct cpu	*current_cpu(void);
 void		cpu_push_ints(void);
 void		cpu_pop_ints(void);
 void		cpu_remap_bsp(void);
+
+/*
+** Locks the currently running thread as reader and returns a constant pointer to it.
+**
+** Remember to release the thread later.
+*/
+static inline struct thread const *
+current_thread_acquire_read(void)
+{
+	struct thread *t;
+
+	t = current_cpu()->thread;
+	rwlock_acquire_read(&t->rwlock);
+	return (t);
+}
+
+/*
+** Release the currently running thread as reader.
+*/
+static inline void
+current_thread_release_read(void)
+{
+	struct thread *t;
+
+	t = current_cpu()->thread;
+	rwlock_release_read(&t->rwlock);
+}
+
+/*
+** Locks the currently running thread as writer and returns a pointer to it.
+**
+** Remember to release the thread later.
+*/
+static inline struct thread *
+current_thread_acquire_write(void)
+{
+	struct thread *t;
+
+	t = current_cpu()->thread;
+	rwlock_acquire_write(&t->rwlock);
+	return (t);
+}
+
+/*
+** Release the currently running thread as writer.
+*/
+static inline void
+current_thread_release_write(void)
+{
+	struct thread *t;
+
+	t = current_cpu()->thread;
+	rwlock_release_write(&t->rwlock);
+}
 
 #endif /* !_KERNEL_CPU_H_ */

@@ -13,6 +13,11 @@
 # include <chaosdef.h>
 # include <chaoserr.h>
 
+/*
+** Executable formats callback doesn't have to worry about locking the current thread
+** nor the current virtual address space. It's already done.
+*/
+
 typedef status_t (*identify_funcptr)(uchar const *, size_t, void **);
 typedef status_t (*map_funcptr)(uchar const *, size_t, void **);
 typedef status_t (*exec_funcptr)(uchar const *, size_t, void **);

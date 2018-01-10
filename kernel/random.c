@@ -86,6 +86,21 @@ rand_ulong(void)
 }
 
 /*
+** Returns a pseudo-random unsigned char in the range [0, ULONG_MAX]
+*/
+uintptr
+rand_uintptr(void)
+{
+	uintptr rnd;
+
+	rnd = rand_uchar();
+	for (size_t i = 1; i < sizeof(rnd); ++i) {
+		rnd = (rnd << 8u) | rand_uchar();
+	}
+	return (rnd);
+}
+
+/*
 ** Seeds the random algorithm using the current timestamp.
 **
 ** NOTE: The current implementation doesn't use time yet, as it's not

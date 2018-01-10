@@ -10,6 +10,8 @@
 #include <kernel/elf.h>
 #include <kernel/exec.h>
 #include <kernel/vaspace.h>
+#include <kernel/thread.h>
+#include <kernel/cpu.h>
 #include <string.h>
 
 #include <stdio.h> /* TODO FIXME For debugging */
@@ -167,13 +169,24 @@ static status_t
 elf_exec(uchar const *start, size_t _ __unused , void **__ __unused)
 {
 	struct Elf32_Ehdr *header;
-	void (*entry)(void);
+	virtaddr_t start_stack;
+	status_t s;
 
 	header = (struct Elf32_Ehdr *)start;
-	printf("Executing %p\n", (void *)header->e_entry);
-	entry = (void (*)(void))header->e_entry;
-	entry();
-	return (OK);
+	if ((s = thread_create_stack())) {
+		return (s);
+	}
+	start_stack = current_cpu()->thread->stack;
+	start_stack = (uchar *)start_stack + KCONFIG_THREAD_STACK_SIZE * PAGE_SIZE;
+	start_stack = (uchar *)start_stack - sizeof(void*);
+	printf("Executing %p. Stack at %p\n",
+		(void *)header->e_entry,
+		start_stack
+	);
+	printf("Address Space:\n");
+	vaspace_dump(current_vaspace());
+	jump_to_userspace(start_stack, (void (*)(void))header->e_entry);
+	panic("Unreachable elf_exec()");
 }
 
 NEW_EXEC_FORMAT(elf, &elf_identify, &elf_map, &elf_exec, NULL);

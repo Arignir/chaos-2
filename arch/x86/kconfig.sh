@@ -20,25 +20,12 @@ function menu_cpu_opts
 {
 	menu_checklist "Processor" \
 		"Enable SMP" KCONFIG_ENABLE_SMP \
-			"This enables support Symmetric Multiprocessing, which let you have multiple processors running in one system."
+			"Enables support Symmetric Multiprocessing, which let you have multiple processors running in one system."
 }
 
 function menu_cpu_max_cores
 {
-	error="Number of cores (Max 255)"
-	while :; do
-		menu_textbox "$error" $(get_kconfig_value KCONFIG_MAX_CPUS) 2> "$TEMP"
-		nb=$(cat "$TEMP")
-		if [[ "$nb" == "" ]]; then
-			break
-		fi
-		re='^[0-9]+$'
-		if [[ "$nb" =~ $re && "$nb" -gt 0 && "$nb" -le 255 ]]; then
-			set_kconfig_value KCONFIG_MAX_CPUS "$nb"
-			break
-		fi
-		error="$nb: Error, you must type a number between 1 and 255"
-	done
+	menu_integer "Maximum number of cores" KCONFIG_MAX_CPUS 1 255
 }
 
 function menu_cpu() {

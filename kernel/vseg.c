@@ -32,13 +32,14 @@ vseg_init(struct vseg *seg, virtaddr_t start, virtaddr_t end)
 status_t
 vseg_grow(struct vseg *seg, size_t size, mmap_flags_t flags)
 {
+	status_t s;
 	size_t i;
 	struct vaspace *vaspace;
 	struct vseg tmp_seg;
 
 	assert_vmm(IS_PAGE_ALIGNED(size));
 
-	vaspace = current_cpu()->thread->vaspace;
+	vaspace = current_vaspace();
 	tmp_seg = *seg;
 	tmp_seg.end = (char *)seg->end + size;
 
@@ -46,19 +47,24 @@ vseg_grow(struct vseg *seg, size_t size, mmap_flags_t flags)
 	for (i = 0; i < vaspace->vseg_size; ++i) {
 		if (&vaspace->vsegs[i] != seg
 			&& vseg_intersects(&vaspace->vsegs[i], &tmp_seg)) {
-			return (ERR_ALREADY_MAPPED);
+			s = ERR_ALREADY_MAPPED;
+			goto end;
 		}
 	}
 
 	/* Map the new memory */
 	if (mmap((uchar *)seg->end + PAGE_SIZE, size, flags)
 			!= (uchar *)seg->end + PAGE_SIZE) {
-		return (ERR_CANT_MAP);
+		s = ERR_CANT_MAP;
+		goto end;
 	}
 
 	/* Update the segment */
 	seg->end = tmp_seg.end;
-	return (OK);
+	s = OK;
+end:
+	current_thread_release_write();
+	return (s);
 }
 
 /*
@@ -82,15 +88,35 @@ vseg_reduce(struct vseg *seg, size_t size, munmap_flags_t flags)
 
 /*
 ** Returns true if the two given virtual segments intersects.
-** This function assumes both given virtual segment are already
-** locked.
 */
 bool
-vseg_intersects(struct vseg *seg1, struct vseg *seg2)
+vseg_intersects(struct vseg const *seg1, struct vseg const *seg2)
 {
 	if (seg1->start < seg2->start) {
 		return (seg2->start <= seg1->end);
 	} else { // seg2->start <= seg1->start
 		return (seg1->start <= seg2->end);
 	}
+}
+
+/*
+** Calculates the length of the given virtual segment, that is
+** the difference between it's end address and it's start address.
+*/
+size_t
+vseg_length(struct vseg const *seg)
+{
+	return ((size_t)((uchar *)seg->end - (uchar *)seg->start));
+}
+
+/*
+** Calculates the length between two virtual segment, that is the distance
+** between the end of 'seg1' and the start of 'seg2'.
+**
+** This asserts seg2 is higher than seg1.
+*/
+size_t
+vseg_length_between(struct vseg const *seg1, struct vseg const *seg2)
+{
+	return ((uchar *)seg2->start - (uchar *)seg1->end - PAGE_SIZE);
 }

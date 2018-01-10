@@ -15,6 +15,7 @@
 # include <kernel/rwlock.h>
 # include <kernel/vseg.h>
 # include <kernel/vmm.h>
+# include <kernel/cpu.h>
 
 /*
 ** Represents the virtual address space shared by a couple of threads.
@@ -27,7 +28,10 @@
 */
 struct vaspace
 {
-	/* All the memory segments composing this virtual address space */
+	/*
+	** All the memory segments composing this virtual address space.
+	** This array is sorted in ascending order of vseg->start.
+	*/
 	struct vseg *vsegs;
 
 	/* Number of virtual segments in the array above */
@@ -40,10 +44,25 @@ struct vaspace
 	uint count;
 };
 
-struct vaspace	*current_vaspace(void);
+/*
+** Returns the current virtual address space.
+** This functions asserts a thread context.
+**
+**
+** THIS WILL NOT TRY TO LOCK THE CURRENT THREAD NOR THE CURRENT VIRTUAL ADDRESS SPACE.
+**
+** BE CAREFUL WHEN USING IT. YOU HAVE BEEN WARNED.
+*/
+static inline struct vaspace *
+current_vaspace(void)
+{
+	return (current_cpu()->thread->vaspace);
+}
+
 status_t	vaspace_init(struct vaspace *vaspace);
 status_t	vaspace_new_vseg(virtaddr_t start, size_t size, mmap_flags_t flags);
 status_t	vaspace_add_vseg(struct vaspace *vaspace, virtaddr_t start, virtaddr_t end);
+virtaddr_t	vaspace_new_random_vseg(size_t size, mmap_flags_t flags);
 void		vaspace_remove_vseg(size_t idx, munmap_flags_t flags);
 void		vaspace_dump(struct vaspace *vaspace);
 

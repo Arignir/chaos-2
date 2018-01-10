@@ -10,20 +10,10 @@
 #include <kernel/vaspace.h>
 #include <kernel/vseg.h>
 #include <kernel/thread.h>
-#include <kernel/cpu.h>
 #include <kernel/kalloc.h>
+#include <kernel/random.h>
 #include <stdio.h>
 #include <string.h>
-
-/*
-** Returns the current virtual address space.
-** This functions asserts a thread context.
-*/
-struct vaspace *
-current_vaspace(void)
-{
-	return (current_cpu()->thread->vaspace);
-}
 
 /*
 ** Initializes the given virtual address space with default values.
@@ -52,45 +42,81 @@ vaspace_init(struct vaspace *vaspace)
 status_t
 vaspace_new_vseg(virtaddr_t start, size_t size, mmap_flags_t flags)
 {
-	size_t i;
+	status_t s;
 	struct vaspace *vaspace;
-	struct vseg vseg;
-	struct vseg *new_vsegs;
 
+	vaspace = current_vaspace();
 	assert_vmm(IS_PAGE_ALIGNED(start));
 	assert_vmm(IS_PAGE_ALIGNED(size));
 
 	/* Sets size to PAGE_SIZE if size == 0 */
 	size += (size == 0) * PAGE_SIZE;
 
-	vaspace = current_cpu()->thread->vaspace;
-	vseg_init(&vseg, start, (uchar *)start + size - PAGE_SIZE);
-	for (i = 0; i < vaspace->vseg_size; ++i) {
-		if (vseg_intersects(vaspace->vsegs + i, &vseg)) {
-			return (ERR_ALREADY_MAPPED);
-		}
-	}
-
-	/* Pre-allocates the segment space */
-	new_vsegs = krealloc(
-		vaspace->vsegs,
-		sizeof(*vaspace->vsegs) * (vaspace->vseg_size + 1)
-	);
-
-	if (unlikely(new_vsegs == NULL)) {
-		return (ERR_NO_MEMORY);
-	}
-
 	/* Try to map the segment */
 	if (mmap(start, size, flags) != start) {
 		return (ERR_CANT_MAP);
 	}
 
-	/* Add the segment to the virtual address space */
-	vaspace->vsegs = new_vsegs;
-	vaspace->vsegs[vaspace->vseg_size] = vseg;
-	++vaspace->vseg_size;
-	return (OK);
+	/* Try to add the segment */
+	s = vaspace_add_vseg(vaspace, start, (uchar *)start + size - PAGE_SIZE);
+	if (s) {
+		/* Unmap in case of failure */
+		munmap(start, size, MUNMAP_DEFAULT);
+	}
+	return (s);
+}
+
+/*
+** If ASLR is enable, this function will add a new vseg of size 'size' to a random
+** location.
+** If not, this function will put it anywhere it finds enough place.
+** Return value points to the start of the virtual segment, or NULL if an error
+** occured (not enough memory etc.)
+**
+** This function will iterate through all vsegs and calculate the length between them.
+** It will retain the biggest empty space and the segments associated with it and
+** create a new segment of desired size in this empty area.
+*/
+virtaddr_t
+vaspace_new_random_vseg(size_t size, mmap_flags_t flags)
+{
+	struct vaspace *vaspace;
+	size_t biggest_length;
+	size_t tmp_length;
+	struct vseg null_vseg;
+	struct vseg *biggest;
+	struct vseg *prev;
+	struct vseg *seg;
+	size_t i;
+	virtaddr_t start;
+
+	biggest_length = 0;
+	vaspace = current_vaspace();
+	vseg_init(&null_vseg, NULL, NULL);
+	prev = biggest = &null_vseg;
+	for (i = 0; i < vaspace->vseg_size; ++i) {
+		seg = vaspace->vsegs + i;
+		tmp_length = vseg_length_between(prev, seg);
+		if (tmp_length > biggest_length) {
+			biggest = prev;
+			biggest_length = tmp_length;
+		}
+		prev = seg;
+	}
+	if (biggest_length < size) {
+		return (NULL);
+	}
+#if KCONFIG_ENABLE_ASLR
+	biggest_length += PAGE_SIZE;
+	start = (uchar *)biggest->end + PAGE_SIZE + rand_uintptr() % (biggest_length - size);
+	start = (uchar *)ROUND_DOWN((uintptr)start, PAGE_SIZE);
+#else
+	start = (uchar *)biggest->end + PAGE_SIZE;
+#endif /* KCONFIG_ENABLE_ASLR */
+	if (vaspace_new_vseg(start, size, flags)) {
+		return (NULL);
+	}
+	return (start);
 }
 
 /*
@@ -99,6 +125,8 @@ vaspace_new_vseg(virtaddr_t start, size_t size, mmap_flags_t flags)
 **
 ** This will check if the new virtual segment is overlapping an existing
 ** one and throw an error if it's the case.
+**
+** This asserts the current virtual address space is already locked in writting.
 */
 status_t
 vaspace_add_vseg(struct vaspace *vaspace, virtaddr_t start, virtaddr_t end)
@@ -115,20 +143,30 @@ vaspace_add_vseg(struct vaspace *vaspace, virtaddr_t start, virtaddr_t end)
 		if (vseg_intersects(vaspace->vsegs + i, &vseg)) {
 			return (ERR_ALREADY_MAPPED);
 		}
+		if (vaspace->vsegs[i].start > vseg.start) {
+			break;
+		}
 	}
 
 	/* Allocates the segment space */
 	new_vsegs = krealloc(
 		vaspace->vsegs,
-		sizeof(*vaspace->vsegs) * (vaspace->vseg_size + 1)
+		sizeof(*new_vsegs) * (vaspace->vseg_size + 1)
 	);
-
 	if (unlikely(new_vsegs == NULL)) {
 		return (ERR_NO_MEMORY);
 	}
 
+	/* Insertion sort. We move old values away. */
+	memmove(
+		new_vsegs + (i + 1),
+		new_vsegs + i,
+		(vaspace->vseg_size - i) * sizeof(*new_vsegs)
+	);
+
+	/* And add the new one to the remaining 'i'. */
+	new_vsegs[i] = vseg;
 	vaspace->vsegs = new_vsegs;
-	vaspace->vsegs[vaspace->vseg_size] = vseg;
 	++vaspace->vseg_size;
 	return (OK);
 }
@@ -150,20 +188,24 @@ vaspace_remove_vseg(size_t idx, munmap_flags_t flags)
 	struct vaspace *vaspace;
 	struct vseg *seg;
 
-	vaspace = current_cpu()->thread->vaspace;
+	vaspace = current_vaspace();
 	assert_vmm(idx < vaspace->vseg_size);
-	seg = &vaspace->vsegs[idx];
+	seg = vaspace->vsegs + idx;
 
 	/* Unmap the segment */
 	munmap(seg->start, (uchar *)seg->end - (uchar *)seg->start + PAGE_SIZE, flags);
 
-	/* Swap the last one with the removed one so there is no hole in the array */
-	vaspace->vseg_size -= 1;
-	vaspace->vsegs[idx] = vaspace->vsegs[vaspace->vseg_size];
+	/* Remove element but conserve order */
+	memmove(
+		vaspace->vsegs + idx,
+		vaspace->vsegs + (idx + 1),
+		(vaspace->vseg_size - idx - 1) * sizeof(*vaspace->vsegs)
+	);
 	seg = krealloc(
 		vaspace->vsegs,
-		sizeof(*vaspace->vsegs) * vaspace->vseg_size
+		sizeof(*seg) * (vaspace->vseg_size - 1)
 	);
+	--vaspace->vseg_size;
 	if (seg != NULL) {
 		vaspace->vsegs = seg;
 	}
@@ -182,10 +224,11 @@ vaspace_dump(struct vaspace *vaspace)
 	printf("Shared by %u thread(s)\n", vaspace->count);
 	printf("Number of vsegs: %zu\n", vaspace->vseg_size);
 	for (i = 0; i < vaspace->vseg_size; ++i) {
-		printf("\t%zu: From %p to %p\n",
+		printf("\t%zu: From %p to %p (Size: %p)\n",
 				i,
 				vaspace->vsegs[i].start,
-				vaspace->vsegs[i].end
+				vaspace->vsegs[i].end,
+				(uchar *)vaspace->vsegs[i].end - (uchar *)vaspace->vsegs[i].start
 		);
 	}
 }

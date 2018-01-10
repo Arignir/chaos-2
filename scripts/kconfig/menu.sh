@@ -49,6 +49,29 @@ function menu_textbox() {
 	$DIALOG "--keep-tite" "--clear" --inputbox "$1" 10 60 "$2"
 }
 
+# menu_integer error kvar min max
+function menu_integer() {
+	declare error=$1
+	declare kvar=$2
+	declare -i min=$3
+	declare -i max=$4
+
+	error="$error (Between $min and $max)"
+	while :; do
+		menu_textbox "$error" $(get_kconfig_value "$kvar") 2> "$TEMP"
+		nb=$(cat "$TEMP")
+		if [[ "$nb" == "" ]]; then
+			break
+		fi
+		re='^[0-9]+$'
+		if [[ "$nb" =~ $re && "$nb" -ge $min && "$nb" -le $max ]]; then
+			set_kconfig_value "$kvar" "$nb"
+			break
+		fi
+		error="$nb: Error, you must type a number between $min and $max"
+	done
+}
+
 # menu_save
 function menu_save() {
 	menu_textbox "Enter a file name to which this configuration should be saved." "./kconfig" 2> "$TEMP"

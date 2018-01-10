@@ -10,6 +10,7 @@
 #include <kconfig.h>
 #include <kernel/cpu.h>
 #include <kernel/interrupts.h>
+#include <kernel/thread.h>
 
 /* Number of CPUs on the current system. */
 uint ncpu = 0;

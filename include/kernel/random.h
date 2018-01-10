@@ -18,5 +18,6 @@ uchar	rand_uchar(void);
 ushort	rand_ushort(void);
 uint	rand_uint(void);
 ulong	rand_ulong(void);
+uintptr	rand_uintptr(void);
 
 #endif /* !_KERNEL_RANDOM_H_ */

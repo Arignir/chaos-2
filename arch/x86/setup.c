@@ -59,6 +59,7 @@ arch_x86_early_setup(void)
 static void
 arch_x86_setup(void)
 {
+	struct thread *thread_table;
 	bool smp_enabled;
 
 	/* If SMP is enabled, detect other CPUs */
@@ -86,7 +87,9 @@ arch_x86_setup(void)
 	apic_init();	/* Enable local APIC */
 
 	/* Set the current cpu's thread to be the boot thread */
+	thread_table = thread_table_acquire_write();
 	current_cpu()->thread = thread_table;
+	thread_table_release_write();
 
 #if KCONFIG_ENABLE_SMP
 	mp_start_aps();	/* Start other processors */

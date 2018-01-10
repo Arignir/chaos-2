@@ -13,14 +13,20 @@ set -u
 # Each menu within the ChaOS configuration
 #
 
+# Scheduler
 new_kconfig_var KCONFIG_MAX_THREADS		32
+new_kconfig_var KCONFIG_THREAD_STACK_SIZE	32
 
+# Memory
+new_kconfig_var KCONFIG_ENABLE_ASLR		1
+
+# Debug
 new_kconfig_var KCONFIG_DEBUG_MULTIBOOT		0
-new_kconfig_var KCONFIG_DEBUG_LOCKS		0
-new_kconfig_var KCONFIG_DEBUG_PMM		0
-new_kconfig_var KCONFIG_DEBUG_VMM 		0
-new_kconfig_var KCONFIG_DEBUG_THREAD		0
-new_kconfig_var KCONFIG_DEBUG_KALLOC		0
+new_kconfig_var KCONFIG_DEBUG_LOCKS		1
+new_kconfig_var KCONFIG_DEBUG_PMM		1
+new_kconfig_var KCONFIG_DEBUG_VMM 		1
+new_kconfig_var KCONFIG_DEBUG_THREAD		1
+new_kconfig_var KCONFIG_DEBUG_KALLOC		1
 
 function menu_debug() {
 	menu_checklist "Debug Options" \
@@ -40,36 +46,39 @@ function menu_debug() {
 }
 
 function menu_max_threads() {
-	error="Number of threads (Max 16384)"
-	while :; do
-		menu_textbox "$error" $(get_kconfig_value KCONFIG_MAX_THREADS) 2> "$TEMP"
-		nb=$(cat "$TEMP")
-		if [[ "$nb" == "" ]]; then
-			break
-		fi
-		re='^[0-9]+$'
-		if [[ "$nb" =~ $re && "$nb" -ge 8 && "$nb" -le 16384 ]]; then
-			set_kconfig_value KCONFIG_MAX_THREADS "$nb"
-			break
-		fi
-		error="$nb: Error, you must type a number between 8 and 255"
-	done
+	menu_integer "Maximum number of concurrent threads" KCONFIG_MAX_THREADS 8 16384
 }
 
-function menu_system() {
+function menu_thread_stack_size() {
+	menu_integer "Stack size (in pages)" KCONFIG_THREAD_STACK_SIZE 1 64
+}
+
+function menu_scheduler() {
 	menu_link "System" \
 		"Maximum Threads" menu_max_threads \
-			"Maximum number of threads running at the same time"
+			"Maximum number of threads running at the same time" \
+		"Thread stack size" menu_thread_stack_size \
+			"Default stack size for a given thread" \
+
+}
+
+function menu_memory() {
+	menu_checklist "Memory" \
+		"Enable ASLR" KCONFIG_ENABLE_ASLR \
+			"Enables support for ASLR (Address Space Layout Randomization). This is a security feature that is higly recommended." \
+
 }
 
 function main_menu() {
 	menu_link "Main Menu" \
 		"Processor" menu_cpu \
 			"Couple of options to help you tune your processor as you wish" \
-		"System" menu_system \
+		"Threads and Scheduling" menu_scheduler \
 			"Couple of options to help you tune your system as you wish" \
-		"Debug" menu_debug \
-			"Couple of options to help you debug the kernel. They may make it slow down a bit." \
+		"Memory" menu_memory \
+			"Couple of options to help you tune memory management as you wish" \
+		"Debugging" menu_debug \
+			"Couple of options to help you debug the kernel, but they may make it slower." \
 
 }
 

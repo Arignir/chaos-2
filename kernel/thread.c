@@ -10,10 +10,12 @@
 #include <kconfig.h>
 #include <kernel/thread.h>
 #include <kernel/vaspace.h>
+#include <kernel/rwlock.h>
 #include <string.h>
 
 /* Thread table */
-struct thread thread_table[KCONFIG_MAX_THREADS] = { 0 };
+static struct thread thread_table[KCONFIG_MAX_THREADS] = { 0 };
+static struct rwlock thread_table_lock = RWLOCK_DEFAULT;
 
 /* The virtual address space for the kthread process. */
 static struct vaspace kthread_vaspace;
@@ -26,6 +28,29 @@ thread_set_name(struct thread *t, char const *name)
 {
 	strncpy(t->name, name, sizeof(t->name) - 1);
 	t->name[sizeof(t->name) - 1] = '\0';
+}
+
+/*
+** Creates a stack for the current thread.
+** This assumes the current thread and the current virtual address space are both
+** locked as writers.
+*/
+status_t
+thread_create_stack(void)
+{
+	struct thread *t;
+
+	t = current_cpu()->thread;
+	assert_thread(t->state == EMBRYO);
+	assert_thread(!t->stack);
+	t->stack = vaspace_new_random_vseg(
+		KCONFIG_THREAD_STACK_SIZE * PAGE_SIZE,
+		MMAP_USER | MMAP_WRITE
+	);
+	if (!t->stack) {
+		return (ERR_NO_MEMORY);
+	}
+	return (OK);
 }
 
 /*
@@ -93,7 +118,48 @@ thread_init(void)
 			thread_attach_vaspace(t, &kthread_vaspace);
 		}
 		rwlock_release_write(&kthread_vaspace.rwlock);
-		t->state = RUNNABLE;
 	}
 	rwlock_release_write(&t->rwlock);
+}
+
+/*
+** Locks the thread table as reader and returns a constant pointer to it.
+**
+** Remember to release the thread table later.
+*/
+struct thread const *
+thread_table_acquire_read(void)
+{
+	rwlock_acquire_read(&thread_table_lock);
+	return (thread_table);
+}
+
+/*
+** Release the thread table as reader.
+*/
+void
+thread_table_release_read(void)
+{
+	rwlock_release_read(&thread_table_lock);
+}
+
+/*
+** Locks the thread table as writer and returns a pointer to it.
+**
+** Remember to release the thread table later.
+*/
+struct thread *
+thread_table_acquire_write(void)
+{
+	rwlock_acquire_write(&thread_table_lock);
+	return (thread_table);
+}
+
+/*
+** Release the thread table as writer.
+*/
+void
+thread_table_release_write(void)
+{
+	rwlock_release_read(&thread_table_lock);
 }

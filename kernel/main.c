@@ -16,6 +16,8 @@
 
 #include <kernel/initrd.h> /* TODO FIXME For debugging purposes */
 #include <kernel/exec.h>
+#include <kernel/cpu.h>
+#include <kernel/vaspace.h>
 
 /*
 ** Kernel main entry point
@@ -29,10 +31,16 @@ kmain(void)
 	/* Trigger all init levels */
 	trigger_init_levels(INIT_LEVEL_EARLIEST, INIT_LEVEL_LATEST);
 
-	printf("Welcome to ChaOS\n");
+	printf("Welcome to ChaOS\n\n");
 
 	struct initrd_virt *virt = initrd_get_virtual();
-	assert_eq(exec(virt->start, virt->len), OK);
+	struct thread *t = current_thread_acquire_write();
+	{
+		rwlock_acquire_write(&t->vaspace->rwlock);
+		assert_eq(exec(virt->start, virt->len), OK);
+		rwlock_release_write(&t->vaspace->rwlock);
+	}
+	current_thread_release_write();
 
 	/* Halt (and catch fire) */
 	while (42)
