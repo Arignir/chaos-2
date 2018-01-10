@@ -20,7 +20,7 @@ function menu_cpu_opts
 {
 	menu_checklist "Processor" \
 		"Enable SMP" KCONFIG_ENABLE_SMP \
-			"Enables support Symmetric Multiprocessing, which let you have multiple processors running in one system."
+			"Enables support for Symmetric Multiprocessing, which lets you have multiple processors running in the same system."
 }
 
 function menu_cpu_max_cores

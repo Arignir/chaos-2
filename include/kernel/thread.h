@@ -88,7 +88,7 @@ void			thread_table_release_write(void);
 void			thread_early_init(void);
 void			thread_init(void);
 
-/* Arch-independant function, usually in assembly */
+/* Arch-dependant function, usually in assembly */
 void			jump_to_userspace(void *stack, void (*main)(void));
 
 status_t thread_create_stack(void);
