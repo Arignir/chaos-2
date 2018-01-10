@@ -137,7 +137,7 @@ monitor: iso
 debug: iso
 	$(Q)./scripts/qemu.sh -d -m 1G -a "$(ARCH)" -s "$(SMP)" -c "$(CPU)"
 
-.PHONY: run
+.PHONY: kvm
 kvm: iso
 	$(Q)./scripts/qemu.sh -t -k -m 1G -a "$(ARCH)" -s "$(SMP)" -c "$(CPU)"
 
