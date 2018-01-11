@@ -53,12 +53,12 @@ make run
 - [X] Kernel options
 - [X] Kernel architecture
 - [X] Kernel placed in high-addresses
-- [ ] Boot
+- [X] Boot
   - [X] Multiboot
   - [X] Paging setup
   - [X] GDT setup
   - [X] IDT setup
-  - [ ] TSS setup
+  - [X] TSS setup
   - [X] SMP setup
 - [ ] Basic drivers
   - [X] VGA
