@@ -155,6 +155,12 @@ lidt(void *base, ushort size)
 }
 
 static inline void
+ltr(uint16 sel)
+{
+	asm volatile("ltr %0" :: "a"(sel));
+}
+
+static inline void
 interrupt(uchar v)
 {
 	asm volatile("int %0" :: "i"(v));

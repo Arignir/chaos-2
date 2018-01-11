@@ -15,10 +15,11 @@ set -u
 
 # Scheduler
 new_kconfig_var KCONFIG_MAX_THREADS		32
-new_kconfig_var KCONFIG_THREAD_STACK_SIZE	32
 
 # Memory
 new_kconfig_var KCONFIG_ENABLE_ASLR		1
+new_kconfig_var KCONFIG_THREAD_STACK_SIZE	32
+new_kconfig_var KCONFIG_KERNEL_STACK_SIZE	16
 
 # Debug
 new_kconfig_var KCONFIG_DEBUG_MULTIBOOT		0
@@ -27,6 +28,9 @@ new_kconfig_var KCONFIG_DEBUG_PMM		1
 new_kconfig_var KCONFIG_DEBUG_VMM 		1
 new_kconfig_var KCONFIG_DEBUG_THREAD		1
 new_kconfig_var KCONFIG_DEBUG_KALLOC		1
+
+# Arch independant kvars
+new_kconfig_var KCONFIG_MAX_CPUS 8
 
 function menu_debug() {
 	menu_checklist "Debug Options" \

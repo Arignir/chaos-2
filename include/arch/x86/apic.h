@@ -94,7 +94,7 @@ void	apic_send_ipi(uint32 dest, uint32 flags);
 bool	apic_ipi_acked(void);
 
 #if KCONFIG_ENABLE_SMP
-status_t	apic_start_ap(uint32 lapic_id, uintptr addr);
+status_t	apic_start_ap(struct cpu *, uintptr addr);
 #endif /* KCONFIG_ENABLE_SMP */
 
 #endif /* !_ARCH_X86_APIC_H_ */

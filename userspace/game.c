@@ -7,12 +7,15 @@
 **
 \* ------------------------------------------------------------------------ */
 
+#include <chaosdef.h>
+
 __attribute__((used))
 int jaj[512] = { 0 };
 
 __attribute__((used))
 char const *jouj = "Hello God Damn World";
 
+__optimize(0)
 int main(void) {
 	while (42);
 	return (0);

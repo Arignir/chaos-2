@@ -24,6 +24,7 @@ struct cpu
 	uint int_count;		/* Number of recursion of cpu_push_ints() */
 	int_state_t int_state;	/* State of the ints at the first call of cpu_push_ints */
 	bool bsp;		/* Is it the bootstrap processor ? */
+	uint started;		/* Is the cpu started ? */
 };
 
 /* Number of CPUs on the current system. */
@@ -44,6 +45,7 @@ struct cpu	*current_cpu(void);
 void		cpu_push_ints(void);
 void		cpu_pop_ints(void);
 void		cpu_remap_bsp(void);
+size_t		current_cpu_id(void);
 
 /*
 ** Locks the currently running thread as reader and returns a constant pointer to it.

@@ -65,8 +65,12 @@ struct			thread
 	struct thread *parent;		/* Parent thread */
 
 	/* Thread stack */
-	virtaddr_t stack;	/* Starting point of stack, not current point */
-	size_t stack_size;	/* Which means stack is [stack, stack + stack_size[ */
+	virtaddr_t stack;	/* Bottom of user stack */
+	virtaddr_t stack_top;	/* Top of user stack. */
+
+	/* Kernel stack */
+	virtaddr_t kstack;	/* Bottom of kernel stack */
+	virtaddr_t kstack_top;	/* Top of user stack */
 
 	/* arch-dependant stuff */
 	struct arch_thread arch;
@@ -87,10 +91,10 @@ struct thread		*thread_table_acquire_write(void);
 void			thread_table_release_write(void);
 void			thread_early_init(void);
 void			thread_init(void);
+status_t		thread_create_stacks(void);
 
 /* Arch-dependant function, usually in assembly */
-void			jump_to_userspace(void *stack, void (*main)(void));
-
-status_t thread_create_stack(void);
+void			arch_jump_to_userspace(void *stack, void (*main)(void));
+void			arch_set_kernel_stack(uintptr);
 
 #endif /* !_KERNEL_THREAD_H_ */

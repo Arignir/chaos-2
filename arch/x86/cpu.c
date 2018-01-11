@@ -43,7 +43,7 @@ current_cpu(void)
 		apic_id = apic_get_id();
 		for (struct cpu *cpu = cpus; cpu < cpus + ncpu; ++cpu)
 		{
-			if (cpu->lapic_id == apic_id)
+			if (cpu->apic_id == apic_id)
 				return (cpu);
 		}
 		panic("Current cpu has an unknown local APIC id");

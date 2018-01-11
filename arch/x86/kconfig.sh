@@ -14,7 +14,6 @@ set -u
 # Processor menu variables
 new_kconfig_var PAGE_SIZE 4096u
 new_kconfig_var KCONFIG_ENABLE_SMP 1
-new_kconfig_var KCONFIG_MAX_CPUS 8
 
 function menu_cpu_opts
 {
@@ -25,7 +24,7 @@ function menu_cpu_opts
 
 function menu_cpu_max_cores
 {
-	menu_integer "Maximum number of cores" KCONFIG_MAX_CPUS 1 255
+	menu_integer "Maximum number of cores" KCONFIG_MAX_CPUS 1 64
 }
 
 function menu_cpu() {

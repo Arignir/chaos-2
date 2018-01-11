@@ -98,7 +98,7 @@ elf_map_program_segment(struct Elf32_Phdr *ph, uchar const *seg_start)
 		(uchar *)v + PAGE_ALIGN(ph->p_memsz) - PAGE_SIZE
 	);
 	if (s != OK) {
-		munmap(v,PAGE_ALIGN(ph->p_memsz), MUNMAP_DEFAULT);
+		munmap(v, PAGE_ALIGN(ph->p_memsz), MUNMAP_DEFAULT);
 		return (s);
 	}
 	memcpy((uchar *)ph->p_vaddr, seg_start, ph->p_filesz);
@@ -169,23 +169,26 @@ static status_t
 elf_exec(uchar const *start, size_t _ __unused , void **__ __unused)
 {
 	struct Elf32_Ehdr *header;
-	virtaddr_t start_stack;
+	struct thread *t;
 	status_t s;
 
+
+	t = current_cpu()->thread;
 	header = (struct Elf32_Ehdr *)start;
-	if ((s = thread_create_stack())) {
+	if ((s = thread_create_stacks())) {
 		return (s);
 	}
-	start_stack = current_cpu()->thread->stack;
-	start_stack = (uchar *)start_stack + KCONFIG_THREAD_STACK_SIZE * PAGE_SIZE;
-	start_stack = (uchar *)start_stack - sizeof(void*);
-	printf("Executing %p. Stack at %p\n",
+	printf("Executing %p. Stack: %p-%p, Kernel stack: %p-%p\n",
 		(void *)header->e_entry,
-		start_stack
+		t->stack,
+		t->stack_top,
+		t->kstack,
+		t->kstack_top
 	);
 	printf("Address Space:\n");
 	vaspace_dump(current_vaspace());
-	jump_to_userspace(start_stack, (void (*)(void))header->e_entry);
+	arch_set_kernel_stack((uintptr)t->kstack_top);
+	arch_jump_to_userspace(t->stack_top, (void (*)(void))header->e_entry);
 	panic("Unreachable elf_exec()");
 }
 

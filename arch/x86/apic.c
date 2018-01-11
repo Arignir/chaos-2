@@ -9,6 +9,7 @@
 
 #include <kernel/pmm.h>
 #include <kernel/kalloc.h>
+#include <kernel/cpu.h>
 #include <arch/x86/asm.h>
 #include <arch/x86/interrupts.h>
 #include <arch/x86/apic.h>
@@ -202,18 +203,19 @@ micro_wait(void)
 ** Starts the AP with the given apic id and makes it jump at given address.
 */
 status_t
-apic_start_ap(uint32 lapic_id, uintptr addr)
+apic_start_ap(struct cpu *ap, uintptr addr)
 {
 	ushort *wrv;
 
 	assert_eq(addr & 0xFFF00FFF, 0);
 
 	/* Allocate stack for the new cpu */
-	ap_boot_stack = kalloc_aligned(16 * PAGE_SIZE);
+	ap_boot_stack = kalloc_aligned(PAGE_SIZE * KCONFIG_KERNEL_STACK_SIZE);
 	if (ap_boot_stack == NULL) {
 		return (ERR_NO_MEMORY);
 	}
 	ap_boot_stack = (uchar *)ap_boot_stack + 16 * PAGE_SIZE - sizeof(void *);
+	ap->boot_stack = ap_boot_stack;
 
 	/*
 	** MP Specification says that we must initialize CMOS shutdown code to
@@ -230,12 +232,12 @@ apic_start_ap(uint32 lapic_id, uintptr addr)
 
 	/* Universal Startup Algorithm */
 
-	apic_send_ipi(lapic_id, APIC_ICR_INIT);
+	apic_send_ipi(ap->apic_id, APIC_ICR_INIT);
 	assert(apic_ipi_acked());
 	micro_wait();
 
 	for (int i = 0; i < 2; ++i) {
-		apic_send_ipi(lapic_id, APIC_ICR_STARTUP | (addr >> 12));
+		apic_send_ipi(ap->apic_id, APIC_ICR_STARTUP | (addr >> 12));
 		micro_wait();
 	}
 	return (OK);

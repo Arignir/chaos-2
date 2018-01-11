@@ -11,6 +11,7 @@
 #include <kernel/thread.h>
 #include <kernel/vaspace.h>
 #include <kernel/rwlock.h>
+#include <kernel/kalloc.h>
 #include <string.h>
 
 /* Thread table */
@@ -31,18 +32,21 @@ thread_set_name(struct thread *t, char const *name)
 }
 
 /*
-** Creates a stack for the current thread.
+** Creates both user and kernel stacks for the current thread.
+**
 ** This assumes the current thread and the current virtual address space are both
 ** locked as writers.
 */
 status_t
-thread_create_stack(void)
+thread_create_stacks(void)
 {
 	struct thread *t;
 
 	t = current_cpu()->thread;
 	assert_thread(t->state == EMBRYO);
 	assert_thread(!t->stack);
+	assert_thread(!t->kstack);
+
 	t->stack = vaspace_new_random_vseg(
 		KCONFIG_THREAD_STACK_SIZE * PAGE_SIZE,
 		MMAP_USER | MMAP_WRITE
@@ -50,6 +54,13 @@ thread_create_stack(void)
 	if (!t->stack) {
 		return (ERR_NO_MEMORY);
 	}
+	t->kstack = kalloc(KCONFIG_KERNEL_STACK_SIZE * PAGE_SIZE);
+	if (!t->kstack) {
+		/* TODO FIXME Free thread stack here */
+		return (ERR_NO_MEMORY);
+	}
+	t->stack_top = (uchar *)t->stack + KCONFIG_THREAD_STACK_SIZE * PAGE_SIZE;
+	t->kstack_top = (uchar *)t->kstack + KCONFIG_KERNEL_STACK_SIZE * PAGE_SIZE;
 	return (OK);
 }
 

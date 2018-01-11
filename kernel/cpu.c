@@ -12,6 +12,8 @@
 #include <kernel/interrupts.h>
 #include <kernel/thread.h>
 
+extern virtaddr_t bsp_kernel_stack_top[];
+
 /* Number of CPUs on the current system. */
 uint ncpu = 0;
 
@@ -36,6 +38,8 @@ cpu_remap_bsp(void)
 	cpu = current_cpu();
 	cpu->int_count = bsp->int_count;
 	cpu->int_state = bsp->int_state;
+	cpu->bsp = true;
+	cpu->boot_stack = bsp_kernel_stack_top;
 	bsp = NULL;
 }
 
@@ -66,4 +70,13 @@ cpu_pop_ints(void)
 	--cpu->int_count;
 	if (cpu->int_count == 0)
 		pop_interrupts_state(&cpu->int_state);
+}
+
+/*
+** Returns the current cpu's index.
+*/
+size_t
+current_cpu_id(void)
+{
+	return (current_cpu() - cpus);
 }

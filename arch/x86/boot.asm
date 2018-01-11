@@ -10,6 +10,7 @@
 [global start]
 [global detect_cpuid]
 [global kthread_page_directory]
+[global bsp_kernel_stack_top]
 [extern kmain]
 [extern gdtptr]
 [extern gdtptr_phys]
@@ -19,6 +20,7 @@
 
 %include "arch/x86/asm.inc"
 %include "multiboot.inc"
+%include "kconfig.inc"
 
 ; Multiboot header - Must be at the very beginning of the binary
 [section .header]
@@ -48,7 +50,7 @@ mb_header_end:
 [section .text]
 start:
 	; Set up boot stack
-	mov esp, V2P(boot_stack_top)
+	mov esp, V2P(bsp_kernel_stack_top)
 
 	; Check we have been booted using multiboot
 	cmp eax, MULTIBOOT2_BOOTLOADER_MAGIC
@@ -128,7 +130,7 @@ start:
 	lgdt [gdtptr]
 
 	; Reset boot stack
-	mov esp, boot_stack_top
+	mov esp, bsp_kernel_stack_top
 
 	; Clear BSS section
 	mov eax, __start_bss
@@ -171,9 +173,9 @@ detect_cpuid:
 
 [section .bss]
 align 4096
-boot_stack_bottom:
-	resb 4096 * 16
-boot_stack_top:
+bsp_kernel_stack_bottom:
+	resb 4096 * KCONFIG_KERNEL_STACK_SIZE
+bsp_kernel_stack_top:
 
 [section .data]
 align 4096

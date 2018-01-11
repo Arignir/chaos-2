@@ -120,7 +120,7 @@ mp_init(void)
 		case MP_PROCESSOR:
 			proc = (struct mp_proc *)type;
 			if (ncpu < KCONFIG_MAX_CPUS) {
-				cpus[ncpu].lapic_id = proc->lapic_id;
+				cpus[ncpu].apic_id = proc->lapic_id;
 				++ncpu;
 			}
 			type += sizeof(*proc);
@@ -176,7 +176,7 @@ mp_start_aps(void)
 		if (cpu == current)
 			continue;
 
-		if (apic_start_ap(cpu->lapic_id, TRAMPOLINE_START) == OK) {
+		if (!apic_start_ap(cpu, TRAMPOLINE_START)) {
 			while (!cpu->started);
 		}
 	}

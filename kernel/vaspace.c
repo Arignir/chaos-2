@@ -227,8 +227,8 @@ vaspace_dump(struct vaspace *vaspace)
 		printf("\t%zu: From %p to %p (Size: %p)\n",
 				i,
 				vaspace->vsegs[i].start,
-				vaspace->vsegs[i].end,
-				(uchar *)vaspace->vsegs[i].end - (uchar *)vaspace->vsegs[i].start
+				(uchar *)vaspace->vsegs[i].end + PAGE_SIZE - 1,
+				(uchar *)vaspace->vsegs[i].end - (uchar *)vaspace->vsegs[i].start + PAGE_SIZE
 		);
 	}
 }

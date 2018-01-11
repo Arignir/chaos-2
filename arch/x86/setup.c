@@ -18,6 +18,7 @@
 #include <arch/x86/apic.h>
 #include <arch/x86/ioapic.h>
 #include <arch/x86/interrupts.h>
+#include <arch/x86/tss.h>
 #include <drivers/vga.h>
 #include <stdio.h>
 #include <string.h>
@@ -74,7 +75,7 @@ arch_x86_setup(void)
 		ncpu = 1;
 		ioapic_map(IOAPIC_BASE_ADDR);
 		apic_map(APIC_BASE_ADDR);
-		cpus[0].lapic_id = apic_get_id();
+		cpus[0].apic_id = apic_get_id();
 	}
 
 	/* Remap the BSP's information with it's entry within the cpu table */
@@ -134,14 +135,16 @@ common_setup(void)
 	/* Loads the IDT */
 	idt_load();
 
+	/* Setup the tss */
+	tss_setup();
+
 	/* Print informations about this CPU */
-	printf("Processor %u started.\n", cpu->lapic_id);
-	printf("\tvendor_id: %s\n", cpu->vendor_id);
-	printf("\tfpu: %y, sse: %y, apic: %y, sse2: %y\n",
+	printf("Processor %u started (%s)\n", current_cpu_id(), cpu->vendor_id);
+	printf("\tfpu: %y, sse: %y, sse2: %y, apic: %y\n",
 		cpu->features & CPUID_EDX_X87,
 		cpu->features & CPUID_EDX_SSE,
-		cpu->features & CPUID_EDX_APIC,
-		cpu->features & CPUID_EDX_SSE2
+		cpu->features & CPUID_EDX_SSE2,
+		cpu->features & CPUID_EDX_APIC
 	);
 
 	/* Mark this cpu as started */
