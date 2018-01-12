@@ -7,8 +7,12 @@
 **
 \* ------------------------------------------------------------------------ */
 
+#include <kernel/syscall.h>
+#include <kernel/memory.h>
 #include <arch/x86/interrupts.h>
 #include <arch/x86/asm.h>
+
+#include <stdio.h> /* TODO DEBUG FIXME */
 
 static ihandler_t irqhandlers[X86_INT_MAX];
 
@@ -94,6 +98,63 @@ halt()
 }
 
 /*
+** Exceptions handler
+*/
+
+/*
+** Page fault handler.
+**
+** Kills current thread.
+*/
+static void
+pagefault_handler(struct iframe *iframe)
+{
+	uintptr addr;
+
+	addr = get_cr2();
+	panic("Page Fault at address %#p.\n"
+		"\teip: %#p\n"
+		"\tStack: %#p\n"
+		"\tPresent: %y\n"
+		"\tWrite: %y\n"
+		"\tUser-mode: %y\n"
+		"\tInstruction fetch: %y\n",
+		(void *)addr,
+		iframe->eip,
+		iframe->esp,
+		iframe->err_code & 0b00001,
+		iframe->err_code & 0b00010,
+		iframe->err_code & 0b00100,
+		iframe->err_code & 0b10000
+	);
+}
+
+/*
+** Handles the syscall interruption.
+**
+** Arguments are in edi, esi, edx and ecx.
+** Syscall id is in eax.
+** Return value must be placed in eax.
+*/
+void
+syscall_handler(struct iframe *iframe)
+{
+	switch (iframe->eax)
+	{
+	case SYSCALL_WRITE:
+		iframe->eax = sys_write(
+			(int)iframe->edi,
+			(char const *)iframe->esi,
+			(size_t)iframe->edx
+		);
+		break;
+	default:
+		panic("Unknown syscall");
+		break;
+	}
+}
+
+/*
 ** Interrupt handler routine
 */
 void
@@ -102,6 +163,9 @@ interrupts_handler(struct iframe *iframe)
 	switch (iframe->int_num)
 	{
 	/* Interrupt Request */
+	case INT_PAGE_FAULT:
+		pagefault_handler(iframe);
+		break;
 	case INT_IRQ0...X86_INT_NB:
 		if (irqhandlers[iframe->int_num]) {
 			irqhandlers[iframe->int_num](iframe);

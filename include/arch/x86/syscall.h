@@ -7,10 +7,12 @@
 **
 \* ------------------------------------------------------------------------ */
 
-#include <ulib.h>
+#ifndef _ARCH_X86_SYSCALL_H_
+# define _ARCH_X86_SYSCALL_H_
 
-int main(void) {
-	putstr("Hello Userspace World!\n");
-	while (42);
-	return (0);
-}
+# include <kernel/syscall.h>
+# include <arch/x86/interrupts.h>
+
+void	syscall_init(void);
+
+#endif /* !_ARCH_X86_SYSCALL_H_ */

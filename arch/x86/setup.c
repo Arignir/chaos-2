@@ -19,6 +19,7 @@
 #include <arch/x86/ioapic.h>
 #include <arch/x86/interrupts.h>
 #include <arch/x86/tss.h>
+#include <arch/x86/syscall.h>
 #include <drivers/vga.h>
 #include <stdio.h>
 #include <string.h>
@@ -91,6 +92,9 @@ arch_x86_setup(void)
 	thread_table = thread_table_acquire_write();
 	current_cpu()->thread = thread_table;
 	thread_table_release_write();
+
+	/* Set-up syscalls */
+	register_int_handler(INT_SYSCALL, &syscall_handler);
 
 #if KCONFIG_ENABLE_SMP
 	mp_start_aps();	/* Start other processors */

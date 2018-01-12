@@ -7,10 +7,21 @@
 **
 \* ------------------------------------------------------------------------ */
 
-#include <ulib.h>
+#ifndef _KERNEL_SYSCALL_H_
+# define _KERNEL_SYSCALL_H_
 
-int main(void) {
-	putstr("Hello Userspace World!\n");
-	while (42);
-	return (0);
-}
+# include <chaosdef.h>
+
+enum syscall_id
+{
+	SYSCALL_UNKNOWN		= 0,
+	SYSCALL_WRITE		= 1,
+};
+
+/*
+** Provides implementation for all given syscalls.
+*/
+
+int	sys_write(file_handler_t handler, char const *buff, size_t s);
+
+#endif /* !_KERNEL_SYSCALL_H_ */

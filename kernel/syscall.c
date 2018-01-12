@@ -7,10 +7,15 @@
 **
 \* ------------------------------------------------------------------------ */
 
-#include <ulib.h>
+#include <kernel/syscall.h>
+#include <drivers/vga.h>
 
-int main(void) {
-	putstr("Hello Userspace World!\n");
-	while (42);
-	return (0);
+/*
+** Writes the given buffer to the given file.
+*/
+int
+sys_write(file_handler_t handler __unused, char const *buff, size_t s)
+{
+	/* TODO FIXME We should ensure the 'buff' pointer belongs to userspace memory. */
+	return (vga_putsn(buff, s));
 }

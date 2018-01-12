@@ -143,6 +143,15 @@ set_eflags(uint32 value)
 	asm volatile("pushl %0; popfl" :: "g"(value) : "memory", "cc");
 }
 
+static inline uintptr
+get_cr2(void)
+{
+	uintptr out;
+
+	asm volatile("mov %%cr2, %0" : "=a"(out));
+	return (out);
+}
+
 static inline void
 lidt(void *base, ushort size)
 {

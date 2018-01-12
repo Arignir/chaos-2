@@ -58,6 +58,10 @@ typedef uint32_t		uint32;
 typedef uint64_t		uint64;
 typedef uintptr_t		uintptr;
 
+/* ChaOS Object's Handler */
+typedef uint			handler_t;
+typedef handler_t		file_handler_t;
+
 /* Print a message and halt the computer. */
 void				panic(char const *fmt, ...) __noreturn;
 
@@ -107,6 +111,6 @@ void	kmain(void);
 # define ALIGN(x, y)		(((x) + ((y) - 1)) & ~((y) - 1))
 
 /* Align the given number to PAGE_SIZE */
-# define PAGE_ALIGN(x)		(((x) + ((PAGE_SIZE) - 1)) & ~((PAGE_SIZE) - 1))
+# define PAGE_ALIGN(x)		(ALIGN(x, PAGE_SIZE))
 
 #endif /* !_CHAOSDEF_H_ */

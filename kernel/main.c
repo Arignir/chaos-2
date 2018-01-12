@@ -35,16 +35,12 @@ kmain(void)
 
 	struct initrd_virt *virt = initrd_get_virtual();
 	struct thread *t = current_thread_acquire_write();
-	{
-		rwlock_acquire_write(&t->vaspace->rwlock);
-		assert_eq(exec(virt->start, virt->len), OK);
-		rwlock_release_write(&t->vaspace->rwlock);
-	}
-	current_thread_release_write();
+	rwlock_acquire_write(&t->vaspace->rwlock);
 
-	/* Halt (and catch fire) */
-	while (42)
-		halt();
+	/* exec will release the virtual address space and the current thread */
+	assert_eq(exec(virt->start, virt->len), OK);
+
+	panic("Leaving kmain()");
 }
 
 /* Mark the kernel as physically reserved */

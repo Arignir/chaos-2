@@ -46,6 +46,8 @@ enum x86_interrupts
 	INT_APIC_TIMER			= 0x32,
 	INT_APIC_ERROR			= 0x33,
 
+	INT_SYSCALL			= 0x80,
+
 	INT_APIC_SPURIOUS		= 0xFF,
 
 	X86_INT_MAX			= 0xFF,
@@ -82,6 +84,7 @@ struct iframe
 void	idt_setup(void);
 void	idt_load(void);
 void	interrupts_handler(struct iframe *iframe);
+void	syscall_handler(struct iframe *iframe);
 
 typedef void(*ihandler_t)(struct iframe *);
 

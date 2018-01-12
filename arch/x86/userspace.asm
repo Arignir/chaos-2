@@ -17,8 +17,12 @@
 ; Jumps in userspace and calls the given function.
 ;
 arch_jump_to_userspace:
-	mov eax, [esp + 4]
-	mov ebx, [esp + 8]
+	mov edx, [esp + 4]
+	mov ecx, [esp + 8]
+
+	mov esp, edx
+	push dword 0x0				; Push NULL as the eip to return
+	mov edx, esp
 
 	mov ax, USER_DATA_SELECTOR | 0b11	; User data selector
 	mov ds, ax
@@ -27,8 +31,8 @@ arch_jump_to_userspace:
 	mov gs, ax
 
 	push USER_DATA_SELECTOR | 0b11		; Push user data sel
-	push eax				; push user stack
+	push edx				; push user stack
 	pushf
 	push USER_CODE_SELECTOR | 0b11		; Push user code selector
-	push ebx				; Push EIP (function to call)
+	push ecx				; Push EIP (function to call)
 	iret					; Let the magic happen

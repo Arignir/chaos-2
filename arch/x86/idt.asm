@@ -21,7 +21,7 @@ isr:
 %rep 256
 	; if it has an error code
 	%if i == 8 || (i >= 10 && i <= 14) || i == 17
-		nop	; Two nops have the same length as pushl
+		nop	; Two nops have the same length as a pushl
 		nop
 		push i
 		jmp interrupt_common
@@ -112,6 +112,11 @@ idt_setup:
 	add edi, 8
 
 	loop .loop
+
+	; Syscall interrupt needs to be set as a trap gate with DPL=3
+	mov edi, idt
+	add edi, 0x80 * 8 + 5	; edi points to the syscall entry
+	mov byte [edi], 0xEF	; Present, DPL=3, Trap gate
 
 	pop ecx
 	pop edi

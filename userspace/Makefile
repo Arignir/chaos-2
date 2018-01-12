@@ -11,7 +11,7 @@
 export USERSPACE_BINS	:= game
 
 # Flags
-CFLAGS		+=
+CFLAGS		+= -I "$(PROJECT_DIR)/userspace"
 LDFLAGS		+= -emain # Set entry point to 'main' (and not '_start')
 
 all:		$(INITRD)
@@ -36,7 +36,7 @@ clean:
 	$(Q)$(RM) $(addsuffix .d, $(USERSPACE_BINS))
 	$(Q)$(RM) $(USERSPACE_BINS)
 
--include $(DEPS)
+-include $(addsuffix .d, $(USERSPACE_BINS))
 %.o: %.c
 	$(Q)printf "  CC\t $<\n"
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@

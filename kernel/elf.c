@@ -170,15 +170,17 @@ elf_exec(uchar const *start, size_t _ __unused , void **__ __unused)
 {
 	struct Elf32_Ehdr *header;
 	struct thread *t;
+	virtaddr_t stack_top;
 	status_t s;
-
 
 	t = current_cpu()->thread;
 	header = (struct Elf32_Ehdr *)start;
 	if ((s = thread_create_stacks())) {
 		return (s);
 	}
-	printf("Executing %p. Stack: %p-%p, Kernel stack: %p-%p\n",
+
+#if KCONFIG_DEBUG_THREAD || KCONFIG_DEBUG_VMM
+	printf("Executing %p.\nThread Stack: %p-%p\nKernel stack: %p-%p\n",
 		(void *)header->e_entry,
 		t->stack,
 		t->stack_top,
@@ -187,8 +189,16 @@ elf_exec(uchar const *start, size_t _ __unused , void **__ __unused)
 	);
 	printf("Address Space:\n");
 	vaspace_dump(current_vaspace());
+#endif /* KCONFIG_DEBUG_THREAD */
+
 	arch_set_kernel_stack((uintptr)t->kstack_top);
-	arch_jump_to_userspace(t->stack_top, (void (*)(void))header->e_entry);
+	stack_top = t->stack_top;
+
+	/* Release lock of the current thread (We're about to execute it) */
+	rwlock_release_write(&t->vaspace->rwlock);
+	rwlock_release_write(&t->rwlock);
+
+	arch_jump_to_userspace(stack_top, (void (*)(void))header->e_entry);
 	panic("Unreachable elf_exec()");
 }
 
