@@ -21,14 +21,16 @@
 #  define assert_vmm(x)
 # endif /* KCONFIG_DEBUG_VMM */
 
-/* Arch-indepentant flags for mmap */
-/* Warning: depending on the architecture, MMAP_WRITE and MMAP_EXEC may be exclusive. */
-# define MMAP_DEFAULT		0b00000000	/* Kernel space, read only */
+/*
+** Arch-indepentant flags for mmap
+** Warning: depending on the architecture, MMAP_WRITE and MMAP_EXEC may be exclusive.
+*/
+# define MMAP_DEFAULT		0b00000000	/* Kernel space, read only, no exec */
 # define MMAP_USER		0b00000001	/* Page belongs to user space */
-# define MMAP_READONLY		0b00000000	/* Page is read-only */
 # define MMAP_WRITE		0b00000010	/* Page is writtable */
 # define MMAP_EXEC		0b00000100	/* Page is executable */
 # define MMAP_REMAP		0b00001000	/* Remap if va is already taken */
+# define MMAP_MASK		0b00001111	/* Mask to preserve all flag values */
 
 /* The integer type corresponding to the flags above */
 typedef uint			mmap_flags_t;

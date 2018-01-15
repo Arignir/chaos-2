@@ -27,7 +27,8 @@ vaspace_init(struct vaspace *vaspace)
 	rwlock_init(&vaspace->rwlock);
 	return (vaspace_add_vseg(vaspace,
 		KERNEL_VIRTUAL_BASE,
-		(virtaddr_t)ROUND_DOWN(UINTPTR_MAX, PAGE_SIZE)
+		(virtaddr_t)ROUND_DOWN(UINTPTR_MAX, PAGE_SIZE),
+		VSEG_DEFAULT | VSEG_WRITE | VSEG_EXEC
 	));
 }
 
@@ -58,7 +59,7 @@ vaspace_new_vseg(virtaddr_t start, size_t size, mmap_flags_t flags)
 	}
 
 	/* Try to add the segment */
-	s = vaspace_add_vseg(vaspace, start, (uchar *)start + size - PAGE_SIZE);
+	s = vaspace_add_vseg(vaspace, start, (uchar *)start + size - PAGE_SIZE, flags);
 	if (s) {
 		/* Unmap in case of failure */
 		munmap(start, size, MUNMAP_DEFAULT);
@@ -92,7 +93,7 @@ vaspace_new_random_vseg(size_t size, mmap_flags_t flags)
 
 	biggest_length = 0;
 	vaspace = current_vaspace();
-	vseg_init(&null_vseg, NULL, NULL);
+	vseg_init(&null_vseg, NULL, NULL, VSEG_DEFAULT);
 	prev = biggest = &null_vseg;
 	for (i = 0; i < vaspace->vseg_size; ++i) {
 		seg = vaspace->vsegs + i;
@@ -129,7 +130,12 @@ vaspace_new_random_vseg(size_t size, mmap_flags_t flags)
 ** This asserts the current virtual address space is already locked in writting.
 */
 status_t
-vaspace_add_vseg(struct vaspace *vaspace, virtaddr_t start, virtaddr_t end)
+vaspace_add_vseg(
+	struct vaspace *vaspace,
+	virtaddr_t start,
+	virtaddr_t end,
+	vseg_flags_t flags
+)
 {
 	size_t i;
 	struct vseg vseg;
@@ -138,7 +144,7 @@ vaspace_add_vseg(struct vaspace *vaspace, virtaddr_t start, virtaddr_t end)
 	assert_vmm(IS_PAGE_ALIGNED(start));
 	assert_vmm(IS_PAGE_ALIGNED(end));
 
-	vseg_init(&vseg, start, end);
+	vseg_init(&vseg, start, end, flags);
 	for (i = 0; i < vaspace->vseg_size; ++i) {
 		if (vseg_intersects(vaspace->vsegs + i, &vseg)) {
 			return (ERR_ALREADY_MAPPED);
@@ -219,16 +225,18 @@ vaspace_remove_vseg(size_t idx, munmap_flags_t flags)
 void
 vaspace_dump(struct vaspace *vaspace)
 {
-	size_t i;
+	struct vseg *vseg;
 
 	printf("Shared by %u thread(s)\n", vaspace->count);
 	printf("Number of vsegs: %zu\n", vaspace->vseg_size);
-	for (i = 0; i < vaspace->vseg_size; ++i) {
-		printf("\t%zu: From %p to %p (Size: %p)\n",
-				i,
-				vaspace->vsegs[i].start,
-				(uchar *)vaspace->vsegs[i].end + PAGE_SIZE - 1,
-				(uchar *)vaspace->vsegs[i].end - (uchar *)vaspace->vsegs[i].start + PAGE_SIZE
+	for (vseg = vaspace->vsegs; vseg < vaspace->vsegs + vaspace->vseg_size; ++vseg) {
+		printf("\tFrom %p to %p (Size: %p) %c%c%c\n",
+			vseg->start,
+			(uchar *)vseg->end + PAGE_SIZE - 1,
+			(uchar *)vseg->end - (uchar *)vseg->start + PAGE_SIZE,
+			vseg->flags & VSEG_USER ? 'u' : 'k',
+			vseg->flags & VSEG_WRITE ? 'w' : 'r',
+			vseg->flags & VSEG_EXEC ? 'x' : '-'
 		);
 	}
 }

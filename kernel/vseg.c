@@ -18,10 +18,11 @@
 ** Inits a virtual segment.
 */
 void
-vseg_init(struct vseg *seg, virtaddr_t start, virtaddr_t end)
+vseg_init(struct vseg *seg, virtaddr_t start, virtaddr_t end, vseg_flags_t flags)
 {
 	seg->start = start;
 	seg->end = end;
+	seg->flags = flags;
 }
 
 /*
@@ -30,7 +31,7 @@ vseg_init(struct vseg *seg, virtaddr_t start, virtaddr_t end)
 ** size must be page-aligned.
 */
 status_t
-vseg_grow(struct vseg *seg, size_t size, mmap_flags_t flags)
+vseg_grow(struct vseg *seg, size_t size)
 {
 	status_t s;
 	size_t i;
@@ -53,7 +54,7 @@ vseg_grow(struct vseg *seg, size_t size, mmap_flags_t flags)
 	}
 
 	/* Map the new memory */
-	if (mmap((uchar *)seg->end + PAGE_SIZE, size, flags)
+	if (mmap((uchar *)seg->end + PAGE_SIZE, size, seg->flags & MMAP_MASK)
 			!= (uchar *)seg->end + PAGE_SIZE) {
 		s = ERR_CANT_MAP;
 		goto end;

@@ -61,7 +61,7 @@ current_vaspace(void)
 
 status_t	vaspace_init(struct vaspace *vaspace);
 status_t	vaspace_new_vseg(virtaddr_t start, size_t size, mmap_flags_t flags);
-status_t	vaspace_add_vseg(struct vaspace *vaspace, virtaddr_t start, virtaddr_t end);
+status_t	vaspace_add_vseg(struct vaspace *vaspace, virtaddr_t start, virtaddr_t end, vseg_flags_t);
 virtaddr_t	vaspace_new_random_vseg(size_t size, mmap_flags_t flags);
 void		vaspace_remove_vseg(size_t idx, munmap_flags_t flags);
 void		vaspace_dump(struct vaspace *vaspace);

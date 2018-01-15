@@ -15,6 +15,19 @@
 # include <kernel/vmm.h>
 
 /*
+** Arch-independant flags for virtual segments
+** Warning: depending on the architecture, MMAP_WRITE and MMAP_EXEC may be exclusive.
+**
+** These flags must _NEVER_ overlap mmap's flags values.
+*/
+# define VSEG_DEFAULT		MMAP_DEFAULT	/* Kernelspace, read-only, no exec */
+# define VSEG_USER		MMAP_USER	/* Vseg belongs to user-space */
+# define VSEG_WRITE		MMAP_WRITE	/* Vseg is writtable */
+# define VSEG_EXEC		MMAP_EXEC	/* Vseg is executable */
+
+typedef mmap_flags_t vseg_flags_t;
+
+/*
 ** A virtual memory segment.
 **
 ** Addresses are INCLUSIVES, which means that a segment that is one page
@@ -29,10 +42,12 @@ struct vseg
 
 	/* End address of this virtual segment */
 	virtaddr_t end;
+
+	vseg_flags_t flags;
 };
 
-void		vseg_init(struct vseg *seg, virtaddr_t start, virtaddr_t end);
-status_t	vseg_grow(struct vseg *seg, size_t size, mmap_flags_t);
+void		vseg_init(struct vseg *, virtaddr_t, virtaddr_t, vseg_flags_t);
+status_t	vseg_grow(struct vseg *seg, size_t size);
 status_t	vseg_reduce(struct vseg *seg, size_t size, munmap_flags_t);
 bool		vseg_intersects(struct vseg const *seg1, struct vseg const *seg2);
 size_t		vseg_length(struct vseg const *seg);

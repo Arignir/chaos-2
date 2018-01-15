@@ -13,8 +13,7 @@
 #include <kernel/thread.h>
 #include <kernel/cpu.h>
 #include <string.h>
-
-#include <stdio.h> /* TODO FIXME For debugging */
+#include <stdio.h>
 
 #if defined(__i386__)
 
@@ -95,7 +94,8 @@ elf_map_program_segment(struct Elf32_Phdr *ph, uchar const *seg_start)
 	s = vaspace_add_vseg(
 		current_vaspace(),
 		v,
-		(uchar *)v + PAGE_ALIGN(ph->p_memsz) - PAGE_SIZE
+		(uchar *)v + PAGE_ALIGN(ph->p_memsz) - PAGE_SIZE,
+		flags
 	);
 	if (s != OK) {
 		munmap(v, PAGE_ALIGN(ph->p_memsz), MUNMAP_DEFAULT);
