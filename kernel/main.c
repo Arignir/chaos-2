@@ -33,7 +33,7 @@ kmain(void)
 
 	printf("Welcome to ChaOS\n\n");
 
-	struct initrd_virt *virt = initrd_get_virtual();
+	struct initrd_virt const *virt = initrd_get_virtual();
 	struct thread *t = current_thread_acquire_write();
 	rwlock_acquire_write(&t->vaspace->rwlock);
 

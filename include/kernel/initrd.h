@@ -34,11 +34,11 @@ struct initrd_phys
 	physaddr_t end;
 };
 
-status_t		initrd_map(void);
-struct initrd_virt	*initrd_get_virtual(void);
-struct initrd_phys	*initrd_get_physical(void);
-void			initrd_set_physical(physaddr_t start, physaddr_t end);
-bool			initrd_is_present(void);
-void			initrd_dump(void);
+status_t			initrd_map(void);
+struct initrd_virt const	*initrd_get_virtual(void);
+struct initrd_phys const	*initrd_get_physical(void);
+void				initrd_set_physical(physaddr_t start, physaddr_t end);
+bool				initrd_is_present(void);
+void				initrd_dump(void);
 
 #endif /* !_KERNEL_INITRD_H_ */

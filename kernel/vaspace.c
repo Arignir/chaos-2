@@ -38,7 +38,6 @@ vaspace_init(struct vaspace *vaspace)
 **
 ** This will check if the new virtual segment is overlapping an existing
 ** one and throw an error if it's the case.
-**
 */
 status_t
 vaspace_new_vseg(virtaddr_t start, size_t size, mmap_flags_t flags)
@@ -126,8 +125,6 @@ vaspace_new_random_vseg(size_t size, mmap_flags_t flags)
 **
 ** This will check if the new virtual segment is overlapping an existing
 ** one and throw an error if it's the case.
-**
-** This asserts the current virtual address space is already locked in writting.
 */
 status_t
 vaspace_add_vseg(
@@ -192,7 +189,8 @@ void
 vaspace_remove_vseg(size_t idx, munmap_flags_t flags)
 {
 	struct vaspace *vaspace;
-	struct vseg *seg;
+	struct vseg const *seg;
+	struct vseg *vsegs;
 
 	vaspace = current_vaspace();
 	assert_vmm(idx < vaspace->vseg_size);
@@ -207,13 +205,13 @@ vaspace_remove_vseg(size_t idx, munmap_flags_t flags)
 		vaspace->vsegs + (idx + 1),
 		(vaspace->vseg_size - idx - 1) * sizeof(*vaspace->vsegs)
 	);
-	seg = krealloc(
+	vsegs = krealloc(
 		vaspace->vsegs,
-		sizeof(*seg) * (vaspace->vseg_size - 1)
+		sizeof(*vsegs) * (vaspace->vseg_size - 1)
 	);
 	--vaspace->vseg_size;
-	if (seg != NULL) {
-		vaspace->vsegs = seg;
+	if (vsegs != NULL) {
+		vaspace->vsegs = vsegs;
 	}
 }
 
@@ -223,9 +221,9 @@ vaspace_remove_vseg(size_t idx, munmap_flags_t flags)
 ** Assumes the address space is already locked.
 */
 void
-vaspace_dump(struct vaspace *vaspace)
+vaspace_dump(struct vaspace const *vaspace)
 {
-	struct vseg *vseg;
+	struct vseg const *vseg;
 
 	printf("Shared by %u thread(s)\n", vaspace->count);
 	printf("Number of vsegs: %zu\n", vaspace->vseg_size);

@@ -19,8 +19,8 @@ struct multiboot_info
 	char const *bootloader;
 	uintptr mem_start;
 	uintptr mem_stop;
-	multiboot_memory_map_t *mmap;
-	multiboot_memory_map_t *mmap_end;
+	multiboot_memory_map_t const *mmap;
+	multiboot_memory_map_t const *mmap_end;
 	size_t mmap_entry_size;
 };
 

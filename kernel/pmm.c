@@ -185,9 +185,9 @@ extern struct pmm_reserved_area const __stop_pmm_reserved_area[] __weak;
 static void
 pmm_init(void)
 {
-	multiboot_memory_map_t *mmap;
+	multiboot_memory_map_t const *mmap;
 	struct pmm_reserved_area const *pra;
-	struct initrd_phys *initrd;
+	struct initrd_phys const *initrd;
 
 	/* Mark all memory as allocated */
 	memset(frame_bitmap, 0xFF, sizeof(frame_bitmap));
@@ -202,7 +202,7 @@ pmm_init(void)
 				ALIGN(mmap->addr + mmap->len, PAGE_SIZE)
 			);
 		}
-		mmap = (multiboot_memory_map_t *)((uchar *)mmap + multiboot_infos.mmap_entry_size);
+		mmap = (multiboot_memory_map_t const *)((uchar const *)mmap + multiboot_infos.mmap_entry_size);
 	}
 
 	/* Go through all reserved area and mark them as allocated */
@@ -210,7 +210,7 @@ pmm_init(void)
 	{
 #if KCONFIG_DEBUG_PMM
 		printf("Marking area \"%s\" as allocated (%p - %p)\n",
-				pra->name, (void *)pra->start, (void *)pra->end);
+				pra->name, (void const *)pra->start, (void const *)pra->end);
 #endif /* KCONFIG_DEBUG_PMM */
 		mark_range_as_allocated(pra->start, pra->end);
 	}

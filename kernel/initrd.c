@@ -52,7 +52,7 @@ initrd_map(void)
 ** Returns the virtual address and length of the initial ramdisk,
 ** or NULL and 0 if it wasn't mapped yet.
 */
-struct initrd_virt *
+struct initrd_virt const *
 initrd_get_virtual(void)
 {
 	return (&initrd_virt);
@@ -64,7 +64,7 @@ initrd_get_virtual(void)
 **
 ** These addresses may not be page-aligned.
 */
-struct initrd_phys *
+struct initrd_phys const *
 initrd_get_physical(void)
 {
 	return (&initrd_phys);

@@ -26,7 +26,7 @@ extern void boot_ap_end(void);
 /*
 ** Looks for the MP Floating Pointer Structure from [start; start + len[.
 */
-static struct mp *
+static struct mp const *
 mp_search_struct(physaddr_t start, size_t len)
 {
 	uchar *s;
@@ -51,10 +51,10 @@ mp_search_struct(physaddr_t start, size_t len)
 **   2) In the last KB of system base memory
 **   3) In the BIOS ROM between 0xF0000 and 0xFFFFF
 */
-static struct mp *
+static struct mp const *
 mp_search(void)
 {
-	struct mp *mp;
+	struct mp const *mp;
 	uchar *bda;
 	physaddr_t p;
 
@@ -79,9 +79,9 @@ mp_search(void)
 ** NOTE: Does not support default configurations for now (conf_physaddr == 0)
 */
 static struct mp_conf *
-mp_config(struct mp **mp_ptr)
+mp_config(struct mp const **mp_ptr)
 {
-	struct mp *mp;
+	struct mp const *mp;
 	struct mp_conf *conf;
 
 	mp = mp_search();
@@ -102,11 +102,11 @@ mp_config(struct mp **mp_ptr)
 bool
 mp_init(void)
 {
-	struct mp *mp;
-	struct mp_proc *proc;
-	struct mp_conf *conf;
-	struct mp_ioapic *ioapic;
-	uchar *type;
+	struct mp const *mp;
+	struct mp_proc const *proc;
+	struct mp_conf const *conf;
+	struct mp_ioapic const *ioapic;
+	uchar const *type;
 
 	conf = mp_config(&mp);
 	if (!conf)

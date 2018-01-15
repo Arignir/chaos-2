@@ -22,8 +22,8 @@ bool	are_interrupts_enable(void);
 void	enable_interrupts(void);
 void	disable_interrupts(void);
 void	push_interrupts_state(int_state_t *save);
-void	pop_interrupts_state(int_state_t *save);
-void	register_int_handler(uint vector, void *handler);
+void	pop_interrupts_state(int_state_t const *save);
+void	register_int_handler(uint vector, void const *handler);
 void	unregister_int_handler(uint vector);
 void	halt(void);
 

@@ -77,7 +77,7 @@ get_virtaddr(uint pdidx, uint ptidx)
 static void
 vmm_dump_pagetable(uint pd_idx)
 {
-	struct page_table *pt;
+	struct page_table const *pt;
 	uint j;
 
 	j = 0;
@@ -107,7 +107,7 @@ void
 vmm_dump_mem(void)
 {
 	uint i;
-	struct page_dir *pd;
+	struct page_dir const *pd;
 
 	pd = get_pagedir();
 	for (i = 0; i < 1024u; ++i)
@@ -138,7 +138,7 @@ void
 vmm_dump_user_mem(void)
 {
 	uint i;
-	struct page_dir *pd;
+	struct page_dir const *pd;
 
 	pd = get_pagedir();
 	for (i = 0; i < get_pd_idx(KERNEL_VIRTUAL_BASE); ++i)
@@ -166,8 +166,8 @@ vmm_dump_user_mem(void)
 bool
 vmm_is_mapped(virtaddr_t va)
 {
-	struct pagedir_entry *pde;
-	struct pagetable_entry *pte;
+	struct pagedir_entry const *pde;
+	struct pagetable_entry const *pte;
 
 	assert_vmm(IS_PAGE_ALIGNED(va));
 	pde = get_pagedir()->entries + get_pd_idx(va);
@@ -185,8 +185,8 @@ vmm_is_mapped(virtaddr_t va)
 physaddr_t
 vmm_get_frame(virtaddr_t va)
 {
-	struct pagedir_entry *pde;
-	struct pagetable_entry *pte;
+	struct pagedir_entry const *pde;
+	struct pagetable_entry const *pte;
 
 	assert_vmm(IS_PAGE_ALIGNED(va));
 	pde = get_pagedir()->entries + get_pd_idx(va);
@@ -261,7 +261,7 @@ vmm_map_virtual(virtaddr_t va, mmap_flags_t flags)
 		if (s == OK) {
 #if KCONFIG_DEBUG_VMM
 			/* Clean the new page with random shitty values */
-			memset(va, 42, PAGE_SIZE);
+			memset(va, 0x42, PAGE_SIZE);
 #endif /* KCONFIG_DEBUG_VMM */
 			return (OK);
 		}

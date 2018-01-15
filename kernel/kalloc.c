@@ -107,7 +107,7 @@ get_free_block(size_t size)
 ** Split the given block at the given size, if possible.
 ** Note that size must not be greater that the block size.
 */
-	static void
+static void
 split_block(struct block *block, size_t size)
 {
 	struct block *new;

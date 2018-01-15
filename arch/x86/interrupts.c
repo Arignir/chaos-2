@@ -62,7 +62,7 @@ push_interrupts_state(int_state_t *save)
 ** Restores the current interrupt state
 */
 void
-pop_interrupts_state(int_state_t *save)
+pop_interrupts_state(int_state_t const *save)
 {
 	union eflags e;
 
@@ -75,7 +75,7 @@ pop_interrupts_state(int_state_t *save)
 ** Registers a handler for the given interrupt vector
 */
 void
-register_int_handler(uint vector, void *handler)
+register_int_handler(uint vector, void const *handler)
 {
 	assert(vector < X86_INT_NB);
 	irqhandlers[vector] = handler;

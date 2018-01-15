@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 static void
-hexdump_char(uchar *start, size_t len)
+hexdump_char(uchar const *start, size_t len)
 {
 	size_t i = 0;
 
@@ -26,7 +26,7 @@ hexdump_char(uchar *start, size_t len)
 }
 
 static void
-hexdump_str(uchar *start, size_t len)
+hexdump_str(uchar const *start, size_t len)
 {
 	size_t i = 0;
 	char c;
@@ -50,9 +50,9 @@ hexdump_str(uchar *start, size_t len)
 ** Dumps the given memory
 */
 void
-hexdump(uchar *start, size_t size)
+hexdump(uchar const *start, size_t size)
 {
-	uchar *end;
+	uchar const *end;
 	size_t len;
 
 	end = start + size;

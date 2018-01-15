@@ -114,11 +114,11 @@ seed_by_time(void)
 	size_t i;
 	size_t j;
 	uint64 tsc;
-	unsigned char *key;
+	unsigned char const *key;
 	unsigned char tmp;
 
 	tsc = rdtsc();
-	key = (unsigned char *)&tsc;
+	key = (unsigned char const *)&tsc;
 	for (i = 0; i < SEED_SIZE; ++i) {
 		seeds[i] = i;
 	}

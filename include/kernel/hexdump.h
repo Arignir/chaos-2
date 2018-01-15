@@ -14,6 +14,6 @@
 
 # define HEXDUMP_WIDTH		16
 
-void	hexdump(uchar *start, size_t size);
+void	hexdump(uchar const *start, size_t size);
 
 #endif /* !_KERNEL_HEXDUMP_H_ */
