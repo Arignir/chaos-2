@@ -11,6 +11,7 @@
 [global detect_cpuid]
 [global kthread_page_directory]
 [global bsp_kernel_stack_top]
+[global bsp_kernel_stack_bottom]
 [extern kmain]
 [extern gdtptr]
 [extern gdtptr_phys]

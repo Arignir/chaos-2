@@ -7,12 +7,12 @@
 **
 \* ------------------------------------------------------------------------ */
 
-#ifndef _ARCH_X86_COMMON_ARCH_THREAD_H_
-# define _ARCH_X86_COMMON_ARCH_THREAD_H_
+#ifndef _ARCH_X86_COMMON_ARCH_VASPACE_H_
+# define _ARCH_X86_COMMON_ARCH_VASPACE_H_
 
-struct arch_thread
+struct arch_vaspace
 {
-	/* TODO */
+	physaddr_t pagedir;
 };
 
-#endif /* !_ARCH_X86_COMMON_ARCH_THREAD_H_ */
+#endif /* !_ARCH_X86_COMMON_ARCH_VASPACE_H_ */

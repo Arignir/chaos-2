@@ -15,8 +15,7 @@
 #include <string.h>
 
 /* Thread table */
-static struct thread thread_table[KCONFIG_MAX_THREADS] = { 0 };
-static struct rwlock thread_table_lock = RWLOCK_DEFAULT;
+struct thread thread_table[KCONFIG_MAX_THREADS] = { 0 };
 
 /* The virtual address space for the kthread process. */
 static struct vaspace kthread_vaspace;
@@ -60,6 +59,7 @@ thread_create_stacks(void)
 		return (ERR_NO_MEMORY);
 	}
 	t->stack_top = (uchar *)t->stack + KCONFIG_THREAD_STACK_SIZE * PAGE_SIZE;
+	t->stack_saved = t->stack_top;
 	t->kstack_top = (uchar *)t->kstack + KCONFIG_KERNEL_STACK_SIZE * PAGE_SIZE;
 	return (OK);
 }
@@ -91,22 +91,22 @@ thread_early_init(void)
 	struct thread *t;
 	size_t i;
 
-	/* Init all locks */
+	/* Init thread table */
 	i = 0;
 	while (i < KCONFIG_MAX_THREADS) {
-		rwlock_init(&thread_table[i].rwlock);
+		spinlock_init(&thread_table[i].lock);
+		thread_table[i].state = NONE;
 		++i;
 	}
 
 	/* Init boot thread */
 	t = thread_table;
-	rwlock_acquire_write(&t->rwlock);
+	spinlock_acquire(&t->lock);
 	{
 		thread_set_name(t, "boot");
-		t->tid = 0;
 		t->state = EMBRYO;
 	}
-	rwlock_release_write(&t->rwlock);
+	spinlock_release(&t->lock);
 }
 
 /*
@@ -118,7 +118,7 @@ thread_init(void)
 	struct thread *t;
 
 	t = thread_table;
-	rwlock_acquire_write(&t->rwlock);
+	spinlock_acquire(&t->lock);
 	{
 		thread_set_name(t, "kthread");
 
@@ -130,47 +130,5 @@ thread_init(void)
 		}
 		rwlock_release_write(&kthread_vaspace.rwlock);
 	}
-	rwlock_release_write(&t->rwlock);
-}
-
-/*
-** Locks the thread table as reader and returns a constant pointer to it.
-**
-** Remember to release the thread table later.
-*/
-struct thread const *
-thread_table_acquire_read(void)
-{
-	rwlock_acquire_read(&thread_table_lock);
-	return (thread_table);
-}
-
-/*
-** Release the thread table as reader.
-*/
-void
-thread_table_release_read(void)
-{
-	rwlock_release_read(&thread_table_lock);
-}
-
-/*
-** Locks the thread table as writer and returns a pointer to it.
-**
-** Remember to release the thread table later.
-*/
-struct thread *
-thread_table_acquire_write(void)
-{
-	rwlock_acquire_write(&thread_table_lock);
-	return (thread_table);
-}
-
-/*
-** Release the thread table as writer.
-*/
-void
-thread_table_release_write(void)
-{
-	rwlock_release_read(&thread_table_lock);
+	spinlock_release(&t->lock);
 }

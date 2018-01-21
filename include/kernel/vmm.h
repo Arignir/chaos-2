@@ -54,6 +54,7 @@ typedef uint			munmap_flags_t;
 /* Used for debugging purposes. Dumps the memory state */
 void		vmm_dump_mem(void);
 void		vmm_dump_user_mem(void);
+void		vmm_dump_owners(physaddr_t pa);
 
 /* Tells if the given virtual address is mapped. */
 bool		vmm_is_mapped(virtaddr_t);

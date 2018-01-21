@@ -10,6 +10,7 @@
 #include <kernel/pmm.h>
 #include <kernel/kalloc.h>
 #include <kernel/cpu.h>
+#include <kernel/scheduler.h>
 #include <arch/x86/asm.h>
 #include <arch/x86/interrupts.h>
 #include <arch/x86/apic.h>
@@ -52,6 +53,9 @@ apic_init(void)
 
 	assert(apic);
 
+	/* Enable Local APIC by setting spurious interrupt vector */
+	apic_write(APIC_SIV, APIC_SVR_ENABLED | INT_APIC_SPURIOUS);
+
 	/* Mask unused/unsupported interrupts */
 	apic_write(APIC_LVT_LINT0, APIC_LVT_MASKED);
 	apic_write(APIC_LVT_LINT1, APIC_LVT_MASKED);
@@ -79,9 +83,6 @@ apic_init(void)
 
 	/* Clear task priority to enable all interrupts */
 	apic_write(APIC_TPR, 0x0);
-
-	/* Enable Local APIC by setting spurious interrupt vector */
-	apic_write(APIC_SIV, APIC_SVR_ENABLED | INT_APIC_SPURIOUS);
 
 	/* Enable APIC in the MSR */
 	msr = read_msr(MSR_APIC_BASE);
@@ -127,11 +128,16 @@ apic_eoi(void)
 
 /*
 ** Handler for the timer IRQ
+**
+** We must send the End Of Interrupt (EOI) before yielding the current thread
+** or the next thread will not receive any more APIC interrupt.
 */
 void
 apic_timer_ihandler(struct iframe *iframe __unused)
 {
 	apic_eoi();
+	if (current_cpu()->thread)
+		yield();
 }
 
 /*
@@ -214,8 +220,9 @@ apic_start_ap(struct cpu *ap, uintptr addr)
 	if (ap_boot_stack == NULL) {
 		return (ERR_NO_MEMORY);
 	}
-	ap_boot_stack = (uchar *)ap_boot_stack + 16 * PAGE_SIZE - sizeof(void *);
-	ap->boot_stack = ap_boot_stack;
+	ap->scheduler_stack = ap_boot_stack;
+	ap_boot_stack = (uchar *)ap_boot_stack + 16 * PAGE_SIZE;
+	ap->scheduler_stack_top = ap_boot_stack;
 
 	/*
 	** MP Specification says that we must initialize CMOS shutdown code to

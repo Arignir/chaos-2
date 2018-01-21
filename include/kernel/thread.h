@@ -12,9 +12,9 @@
 
 # include <kconfig.h>
 # include <chaosdef.h>
+# include <chaoserr.h>
 # include <kernel/memory.h>
-# include <kernel/rwlock.h>
-# include <arch/thread.h>
+# include <kernel/spinlock.h>
 
 typedef int tid_t;
 typedef int (*thread_main)(void);
@@ -59,7 +59,6 @@ struct			thread
 {
 	/* Thread basic infos*/
 	char name[256];			/* Name */
-	tid_t tid;			/* Thread id */
 	uchar exit_status;		/* Exit status */
 	enum thread_state state;	/* Curent thread state */
 	struct thread *parent;		/* Parent thread */
@@ -67,13 +66,12 @@ struct			thread
 	/* Thread stack */
 	virtaddr_t stack;	/* Bottom of user stack */
 	virtaddr_t stack_top;	/* Top of user stack. */
+	virtaddr_t stack_saved;	/* Stack saved when a context switch occures */
 
 	/* Kernel stack */
 	virtaddr_t kstack;	/* Bottom of kernel stack */
 	virtaddr_t kstack_top;	/* Top of user stack */
 
-	/* arch-dependant stuff */
-	struct arch_thread arch;
 
 	/* entry point */
 	thread_main entry;
@@ -81,14 +79,12 @@ struct			thread
 	/* virtual address space */
 	struct vaspace *vaspace;
 
-	/* RWlock to lock this thread */
-	struct rwlock rwlock;
+	/* Locker of this thread. Ideally, this should be a spinlock based rwlock */
+	struct spinlock lock;
 };
 
-struct thread const	*thread_table_acquire_read(void);
-void			thread_table_release_read(void);
-struct thread		*thread_table_acquire_write(void);
-void			thread_table_release_write(void);
+extern struct thread thread_table[];
+
 void			thread_early_init(void);
 void			thread_init(void);
 status_t		thread_create_stacks(void);

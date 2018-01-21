@@ -9,6 +9,7 @@
 
 #include <kernel/random.h>
 #include <kernel/init.h>
+#include <arch/x86/asm.h>
 
 /*
 ** Pseudo-random number generation using a sort of RC4 cipher algorithm.
@@ -105,9 +106,8 @@ rand_uintptr(void)
 **
 ** NOTE: The current implementation doesn't use time yet, as it's not
 ** implemented. Instead it's using the number of cpu clock cicles elapsed
-** since boot time. (TODO FIXME)
+** since boot time.
 */
-#include <arch/x86/asm.h> /* TODO FIXME */
 void
 seed_by_time(void)
 {

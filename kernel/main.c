@@ -16,7 +16,6 @@
 
 #include <kernel/initrd.h> /* TODO FIXME For debugging purposes */
 #include <kernel/exec.h>
-#include <kernel/cpu.h>
 #include <kernel/vaspace.h>
 
 /*
@@ -34,13 +33,13 @@ kmain(void)
 	printf("Welcome to ChaOS\n\n");
 
 	struct initrd_virt const *virt = initrd_get_virtual();
-	struct thread *t = current_thread_acquire_write();
+	struct thread *t = current_thread_acquire();
 	rwlock_acquire_write(&t->vaspace->rwlock);
 
 	/* exec will release the virtual address space and the current thread */
 	assert_eq(exec(virt->start, virt->len), OK);
 
-	panic("Leaving kmain()");
+	panic("Leaving kmain()\n");
 }
 
 /* Mark the kernel as physically reserved */

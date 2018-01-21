@@ -28,6 +28,7 @@ new_kconfig_var KCONFIG_DEBUG_PMM		1
 new_kconfig_var KCONFIG_DEBUG_VMM 		1
 new_kconfig_var KCONFIG_DEBUG_THREAD		1
 new_kconfig_var KCONFIG_DEBUG_KALLOC		1
+new_kconfig_var KCONFIG_DEBUG_SCHEDULER		0
 
 # Arch independant kvars
 new_kconfig_var KCONFIG_MAX_CPUS 8
@@ -46,6 +47,8 @@ function menu_debug() {
 			"This options enables debugging outputs and assertions for functions related to threads." \
 		"Enable Kernel Heap Debug" KCONFIG_DEBUG_KALLOC \
 			"This options enables debugging assertions for kalloc(), kfree() and all other kernel-heap related functions." \
+		"Enable Scheduler Debug" KCONFIG_DEBUG_SCHEDULER \
+			"This options enables debugging outputs and assertions for the scheduler" \
 
 }
 

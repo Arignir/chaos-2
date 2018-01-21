@@ -16,6 +16,7 @@
 # include <kernel/vseg.h>
 # include <kernel/vmm.h>
 # include <kernel/cpu.h>
+# include <arch/vaspace.h>
 
 /*
 ** Represents the virtual address space shared by a couple of threads.
@@ -37,6 +38,8 @@ struct vaspace
 	/* Number of virtual segments in the array above */
 	size_t vseg_size;
 
+	struct arch_vaspace arch;
+
 	/* RWlock to lock the virtual address space */
 	struct rwlock rwlock;
 
@@ -50,7 +53,6 @@ struct vaspace
 **
 **
 ** THIS WILL NOT TRY TO LOCK THE CURRENT THREAD NOR THE CURRENT VIRTUAL ADDRESS SPACE.
-**
 ** BE CAREFUL WHEN USING IT. YOU HAVE BEEN WARNED.
 */
 static inline struct vaspace *
@@ -58,6 +60,11 @@ current_vaspace(void)
 {
 	return (current_cpu()->thread->vaspace);
 }
+
+/*
+** Arch-dependant function, reimplemented for each architecture.
+*/
+void		arch_vaspace_switch(struct vaspace *new);
 
 status_t	vaspace_init(struct vaspace *vaspace);
 status_t	vaspace_new_vseg(virtaddr_t start, size_t size, mmap_flags_t flags);

@@ -23,18 +23,18 @@ isr:
 	%if i == 8 || (i >= 10 && i <= 14) || i == 17
 		nop	; Two nops have the same length as a pushl
 		nop
-		push i
+		push dword i
 		jmp interrupt_common
 	%else
-		push 0	; Fake error code
-		push i
+		push dword 0	; Fake error code
+		push dword i
 		jmp interrupt_common
 	%endif
 	%assign i (i + 1)
 %endrep
 
 interrupt_common:
-	pusha			; Push edi, esi, ebp, esp, ebx, edx, ecx, eax
+	pushad			; Push edi, esi, ebp, esp, ebx, edx, ecx, eax
 
 	push ds			; Save segment registers
 	push es
@@ -58,9 +58,9 @@ interrupt_common:
 	pop es
 	pop ds
 
-	popa
+	popad
 	add esp, 0x8		; Clean up error code and interrupt number
-	iret			; Return from interrupt (pop cs, eip, eflags, ss, esp)
+	iretd			; Return from interrupt (pop cs, eip, eflags, ss, esp)
 
 [section .rodata]
 

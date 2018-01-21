@@ -21,10 +21,16 @@ struct cpu
 {
 	struct arch_cpu;	/* Arch dependant stuff */
 	struct thread *thread;	/* Currently running thread */
-	uint int_count;		/* Number of recursion of cpu_push_ints() */
-	int_state_t int_state;	/* State of the ints at the first call of cpu_push_ints */
+
 	bool bsp;		/* Is it the bootstrap processor ? */
 	uint started;		/* Is the cpu started ? */
+
+	void *scheduler_stack;	/* Stack for the scheduler. Also the boot stack. */
+	void *scheduler_stack_top;
+
+	uint int_count;		/* Number of recursion of cpu_push_ints() */
+	int_state_t int_state;	/* State of the ints at the first call of cpu_push_ints */
+
 };
 
 /* Number of CPUs on the current system. */
@@ -48,57 +54,30 @@ void		cpu_remap_bsp(void);
 size_t		current_cpu_id(void);
 
 /*
-** Locks the currently running thread as reader and returns a constant pointer to it.
-**
-** Remember to release the thread later.
-*/
-static inline struct thread const *
-current_thread_acquire_read(void)
-{
-	struct thread *t;
-
-	t = current_cpu()->thread;
-	rwlock_acquire_read(&t->rwlock);
-	return (t);
-}
-
-/*
-** Release the currently running thread as reader.
-*/
-static inline void
-current_thread_release_read(void)
-{
-	struct thread *t;
-
-	t = current_cpu()->thread;
-	rwlock_release_read(&t->rwlock);
-}
-
-/*
-** Locks the currently running thread as writer and returns a pointer to it.
+** Locks the currently running thread and returns a constant pointer to it.
 **
 ** Remember to release the thread later.
 */
 static inline struct thread *
-current_thread_acquire_write(void)
+current_thread_acquire(void)
 {
 	struct thread *t;
 
 	t = current_cpu()->thread;
-	rwlock_acquire_write(&t->rwlock);
+	spinlock_acquire(&t->lock);
 	return (t);
 }
 
 /*
-** Release the currently running thread as writer.
+** Release the currently running thread.
 */
 static inline void
-current_thread_release_write(void)
+current_thread_release(void)
 {
 	struct thread *t;
 
 	t = current_cpu()->thread;
-	rwlock_release_write(&t->rwlock);
+	spinlock_release(&t->lock);
 }
 
 #endif /* !_KERNEL_CPU_H_ */

@@ -82,7 +82,7 @@ grow_heap(uintptr inc)
 		}
 		return (oldbrk);
 	}
-	panic("Tried to go beyond minimum kernel heap");
+	panic("Tried to go beyond minimum kernel heap\n");
 }
 
 /*

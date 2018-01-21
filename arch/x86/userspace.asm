@@ -9,6 +9,8 @@
 
 [global arch_jump_to_userspace]
 
+[bits 32]
+
 %include "arch/x86/asm.inc"
 
 ;
@@ -30,9 +32,9 @@ arch_jump_to_userspace:
 	mov fs, ax
 	mov gs, ax
 
-	push USER_DATA_SELECTOR | 0b11		; Push user data sel
-	push edx				; push user stack
-	pushf
-	push USER_CODE_SELECTOR | 0b11		; Push user code selector
-	push ecx				; Push EIP (function to call)
-	iret					; Let the magic happen
+	push dword USER_DATA_SELECTOR | 0b11		; Push user data sel
+	push dword edx				; push user stack
+	push dword 0x3202			; push eflags
+	push dword USER_CODE_SELECTOR | 0b11		; Push user code selector
+	push dword ecx				; Push EIP (function to call)
+	iretd					; Let the magic happen

@@ -8,6 +8,7 @@
 \* ------------------------------------------------------------------------ */
 
 #include <kernel/interrupts.h>
+#include <kernel/cpu.h>
 #include <stdio.h>
 #include <stdarg.h>
 
@@ -27,9 +28,10 @@ panic(char const *fmt, ...)
 	disable_interrupts();
 
 	va_start(va, fmt);
-	printf("\nKernel panicked: ");
+	printf("\nKernel panicked (CPU %zu): ", current_cpu_id());
 	vprintf(fmt, va);
 	va_end(va);
 
-	while (42);
+	while (42)
+		halt();
 }

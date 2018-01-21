@@ -10,6 +10,7 @@
 #include <kernel/pmm.h>
 #include <kernel/kalloc.h>
 #include <arch/x86/ioapic.h>
+#include <arch/x86/interrupts.h>
 
 static volatile uchar *ioapic;
 

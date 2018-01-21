@@ -22,56 +22,6 @@
 */
 
 /*
-** Returns the address of the current page directory
-** This takes advantages of the recursive mapping we set up.
-*/
-static inline struct page_dir *
-get_pagedir(void)
-{
-	return ((struct page_dir *)0xFFFFF000ul);
-}
-
-/*
-** Returns the address of the page table at index 'x'.
-** This takes advantages of the recursive mapping we set up.
-*/
-static inline struct page_table *
-get_pagetable(uint x)
-{
-	return ((struct page_table *)(0xFFC00000ul | (((x) & 0x3FF) << 12u)));
-}
-
-/*
-** Returns the index within the page directory of the page table containg the
-** given address.
-*/
-static inline uint
-get_pd_idx(virtaddr_t va)
-{
-	return ((uintptr)va >> 22u);
-}
-
-/*
-** Returns the index within the page table of the page the
-** given address belongs to.
-*/
-static inline uint
-get_pt_idx(virtaddr_t va)
-{
-	return (((uintptr)(va) >> 12u) & 0x3FF);
-}
-
-/*
-** Returns the address of the page with given page directory index
-** and given page table index.
-*/
-static inline virtaddr_t
-get_virtaddr(uint pdidx, uint ptidx)
-{
-	return ((virtaddr_t)((pdidx) << 22u | (ptidx) << 12u));
-}
-
-/*
 ** Used for debugging purposes. Dumps the page table at given index.
 */
 static void
@@ -161,6 +111,25 @@ vmm_dump_user_mem(void)
 }
 
 /*
+** Prints all pages holding this physical address.
+*/
+void
+vmm_dump_owners(physaddr_t pa)
+{
+	uchar *va;
+
+	va = NULL;
+	printf("Dumping pages holding %p...\n", pa);
+	while (va < (uchar *)get_pagedir()) {
+		if (vmm_get_frame(va) == pa) {
+			printf("\t%p\n", va);
+		}
+		va += PAGE_SIZE;
+	}
+	printf("Done\n");
+}
+
+/*
 ** Tells if the given virtual address is mapped.
 */
 bool
@@ -217,7 +186,7 @@ vmm_map_physical(virtaddr_t va, physaddr_t pa, mmap_flags_t flags)
 		if (pde->value == NULL_FRAME) {
 			return (ERR_NO_MEMORY);
 		}
-		/* Always map page table for users */
+		/* Always map page tables for user */
 		pde->user = true;
 		pde->present = true;
 		pde->rw = true;
@@ -315,6 +284,8 @@ arch_vmm_init(void)
 		(1024 - j - 1) * PAGE_SIZE,
 		MUNMAP_DONTFREE
 	);
+
+	/* TODO Allocate all page tables */
 
 	/* Ensure everything is fine */
 	assert(vmm_is_mapped(KERNEL_VIRTUAL_END));

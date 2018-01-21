@@ -196,10 +196,10 @@ elf_exec(uchar const *start, size_t _ __unused , void **__ __unused)
 
 	/* Release lock of the current thread (We're about to execute it) */
 	rwlock_release_write(&t->vaspace->rwlock);
-	rwlock_release_write(&t->rwlock);
+	spinlock_release(&t->lock);
 
 	arch_jump_to_userspace(stack_top, (void (*)(void))header->e_entry);
-	panic("Unreachable elf_exec()");
+	panic("Unreachable elf_exec()\n");
 }
 
 NEW_EXEC_FORMAT(elf, &elf_identify, &elf_map, &elf_exec, NULL);

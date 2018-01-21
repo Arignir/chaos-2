@@ -86,5 +86,55 @@ static_assert(sizeof(struct pagetable_entry) == sizeof(uintptr));
 static_assert(sizeof(struct page_table) == PAGE_SIZE);
 static_assert(sizeof(struct page_dir) == PAGE_SIZE);
 
+/*
+** Returns the address of the current page directory
+** This takes advantages of the recursive mapping we set up.
+*/
+static inline struct page_dir *
+get_pagedir(void)
+{
+	return ((struct page_dir *)0xFFFFF000ul);
+}
+
+/*
+** Returns the address of the page table at index 'x'.
+** This takes advantages of the recursive mapping we set up.
+*/
+static inline struct page_table *
+get_pagetable(uint x)
+{
+	return ((struct page_table *)(0xFFC00000ul | (((x) & 0x3FF) << 12u)));
+}
+
+/*
+** Returns the index within the page directory of the page table containg the
+** given address.
+*/
+static inline uint
+get_pd_idx(virtaddr_t va)
+{
+	return ((uintptr)va >> 22u);
+}
+
+/*
+** Returns the index within the page table of the page the
+** given address belongs to.
+*/
+static inline uint
+get_pt_idx(virtaddr_t va)
+{
+	return (((uintptr)(va) >> 12u) & 0x3FF);
+}
+
+/*
+** Returns the address of the page with given page directory index
+** and given page table index.
+*/
+static inline virtaddr_t
+get_virtaddr(uint pdidx, uint ptidx)
+{
+	return ((virtaddr_t)((pdidx) << 22u | (ptidx) << 12u));
+}
+
 #endif /* !_ARCH_X86_VMM_H_ */
 

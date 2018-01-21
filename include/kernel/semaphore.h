@@ -46,7 +46,7 @@ semaphore_acquire(struct semaphore *sem)
 
 	while (sem->count <= 0) {
 		spinlock_release(&sem->lock);
-		reschedule();
+		yield();
 		spinlock_acquire(&sem->lock);
 	}
 

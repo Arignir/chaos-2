@@ -7,23 +7,17 @@
 **
 \* ------------------------------------------------------------------------ */
 
-#ifndef _KERNEL_SYSCALL_H_
-# define _KERNEL_SYSCALL_H_
-
-# include <chaosdef.h>
-
-enum syscall_id
-{
-	SYSCALL_UNKNOWN		= 0,
-	SYSCALL_CLONE		= 1,
-	SYSCALL_EXIT		= 2,
-	SYSCALL_WRITE		= 3,
-};
+#include <kernel/thread.h>
+#include <kernel/vaspace.h>
+#include <arch/x86/vmm.h>
 
 /*
-** Provides implementation for all given syscalls.
+** Switches to the given virtual address space.
 */
-
-int	sys_write(file_handler_t handler, char const *buff, size_t s);
-
-#endif /* !_KERNEL_SYSCALL_H_ */
+void
+arch_vaspace_switch(struct vaspace *new)
+{
+	if (vmm_get_frame(get_pagedir()) != new->arch.pagedir) {
+		set_cr3(new->arch.pagedir);
+	}
+}

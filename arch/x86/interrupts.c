@@ -12,8 +12,6 @@
 #include <arch/x86/interrupts.h>
 #include <arch/x86/asm.h>
 
-#include <stdio.h> /* TODO DEBUG FIXME */
-
 static ihandler_t irqhandlers[X86_INT_MAX];
 
 /*
@@ -141,6 +139,12 @@ syscall_handler(struct iframe *iframe)
 {
 	switch (iframe->eax)
 	{
+	case SYSCALL_CLONE:
+		panic("clone() syscall unimplemented yet");
+		break;
+	case SYSCALL_EXIT:
+		panic("exit() syscall unimplemented yet");
+		break;
 	case SYSCALL_WRITE:
 		iframe->eax = sys_write(
 			(int)iframe->edi,
@@ -149,7 +153,7 @@ syscall_handler(struct iframe *iframe)
 		);
 		break;
 	default:
-		panic("Unknown syscall");
+		panic("Unknown syscall\n");
 		break;
 	}
 }

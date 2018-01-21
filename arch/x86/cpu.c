@@ -46,7 +46,7 @@ current_cpu(void)
 			if (cpu->apic_id == apic_id)
 				return (cpu);
 		}
-		panic("Current cpu has an unknown local APIC id");
+		panic("Current cpu has an unknown local APIC id\n");
 	}
 	else {
 		return (bsp);

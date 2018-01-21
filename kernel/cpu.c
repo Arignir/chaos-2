@@ -12,7 +12,13 @@
 #include <kernel/interrupts.h>
 #include <kernel/thread.h>
 
+/*
+** Implemented in each architecture.
+** Kernel's Bootstrp processor boot stack.
+** Will be used as the scheduler's stack.
+*/
 extern virtaddr_t bsp_kernel_stack_top[];
+extern virtaddr_t bsp_kernel_stack_bottom[];
 
 /* Number of CPUs on the current system. */
 uint ncpu = 0;
@@ -36,10 +42,10 @@ cpu_remap_bsp(void)
 
 	bsp_remapped = true;
 	cpu = current_cpu();
-	cpu->int_count = bsp->int_count;
-	cpu->int_state = bsp->int_state;
+	*cpu = *bsp;
 	cpu->bsp = true;
-	cpu->boot_stack = bsp_kernel_stack_top;
+	cpu->scheduler_stack = bsp_kernel_stack_bottom;
+	cpu->scheduler_stack_top = bsp_kernel_stack_top;
 	bsp = NULL;
 }
 

@@ -21,8 +21,6 @@ struct arch_cpu
 	uint32 signature;	/* eax value of cpuid.01h */
 	uint32 features;	/* edx value of cpuid.01h - see 'enum cpuid_features' */
 	uint32 apic_id;		/* Local APIC id */
-
-	virtaddr_t boot_stack;	/* Boot stack for this cpu. NULL if boot is finished */
 };
 
 #endif /* !_ARCH_X86_COMMON_ARCH_CPU_H_ */

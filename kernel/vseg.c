@@ -64,7 +64,6 @@ vseg_grow(struct vseg *seg, size_t size)
 	seg->end = tmp_seg.end;
 	s = OK;
 end:
-	current_thread_release_write();
 	return (s);
 }
 

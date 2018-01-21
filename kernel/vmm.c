@@ -43,7 +43,7 @@ mmap(virtaddr_t va, size_t size, mmap_flags_t flags)
 
 	ori_va = va;
 	if (unlikely(!va)) {
-		panic("mmap with a NULL address not implemented yet.");
+		panic("mmap with a NULL address not implemented yet.\n");
 	}
 	else {
 		while ((uchar *)va < ori_va + size)
@@ -98,7 +98,7 @@ mmap_device(virtaddr_t va, physaddr_t pa, size_t size, mmap_flags_t flags)
 
 	ori_va = va;
 	if (unlikely(!va)) {
-		panic("mmap_device with a NULL address is not implemented yet.");
+		panic("mmap_device with a NULL address is not implemented yet.\n");
 	}
 	else {
 		while ((uchar *)va < ori_va + size)

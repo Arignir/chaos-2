@@ -152,6 +152,21 @@ get_cr2(void)
 	return (out);
 }
 
+static inline uintptr
+get_cr3(void)
+{
+	uintptr out;
+
+	asm volatile("mov %%cr3, %0" : "=a"(out));
+	return (out);
+}
+
+static inline void
+set_cr3(uintptr cr3)
+{
+	asm volatile("mov %0, %%cr3" :: "r"(cr3));
+}
+
 static inline void
 lidt(void *base, ushort size)
 {
