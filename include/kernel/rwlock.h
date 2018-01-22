@@ -26,7 +26,7 @@ struct rwlock
 
 # define RWLOCK_DEFAULT					\
 	{						\
-		.readcount = 0,			\
+		.readcount = 0,				\
 		.resource_access = MUTEX_DEFAULT,	\
 		.readcount_access = MUTEX_DEFAULT,	\
 		.service_queue = MUTEX_DEFAULT,		\
