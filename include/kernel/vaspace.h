@@ -66,10 +66,12 @@ current_vaspace(void)
 void		arch_vaspace_switch(struct vaspace *new);
 
 status_t	vaspace_init(struct vaspace *vaspace);
+void		vaspace_free(void);
 status_t	vaspace_new_vseg(virtaddr_t start, size_t size, mmap_flags_t flags);
 status_t	vaspace_add_vseg(struct vaspace *vaspace, virtaddr_t start, virtaddr_t end, vseg_flags_t);
 virtaddr_t	vaspace_new_random_vseg(size_t size, mmap_flags_t flags);
-void		vaspace_remove_vseg(size_t idx, munmap_flags_t flags);
+void		vaspace_remove_vseg(virtaddr_t, munmap_flags_t flags);
+void		vaspace_remove_vseg_by_idx(size_t idx, munmap_flags_t flags);
 void		vaspace_dump(struct vaspace const *vaspace);
 
 #endif /* !_KERNEL_VASPACE_H_ */

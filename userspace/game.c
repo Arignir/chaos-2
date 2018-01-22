@@ -23,10 +23,8 @@ static void
 thread2(void)
 {
 	putstr("Hello Threading World!\n");
-	while (42) {
-		putstr("o");
-		for (int i = 0; i < 100000000; ++i); // "Sleep" for the poors
-	}
+	putstr("o");
+	exit(0);
 }
 
 __optimize(0)

@@ -87,7 +87,7 @@ thread_create_stacks(struct thread *t)
 ** The thread will have the current virtual address space attached, and a stack
 ** will be allocated.
 **
-** Current virtual address space MUST be locked as writer.
+** Current thread and virtual address space MUST be locked as writer.
 */
 status_t
 thread_clone(void *ip)
@@ -128,18 +128,69 @@ err:
 }
 
 /*
+** Exits the current thread with the given exit status.
+**
+** If the current thread is the last one holding the current vaspace, then
+** the memory is freed.
+**
+** This places the given thread in a ZOMBIE state, where most memory
+** is freed but there is still a little bit that needs to be free from
+** a different virtual address space (kernel stack and some arch-dependant stuff).
+** This is done when an other thread waits for this one.
+**
+** Current thread and current virtual address space must be locked.
+*/
+void
+thread_exit(uchar status)
+{
+	struct thread *t;
+
+	t = current_cpu()->thread;
+	printf("Exitting %zu with status %u\n", thread_table - t, status);
+
+	/* Free user stack. We can't free kernel stack from here because we are in it. */
+	vaspace_remove_vseg(t->stack, MUNMAP_DEFAULT);
+
+	/* Detach (and eventually free) virtual address space */
+	thread_detach_vaspace();
+	t->state = ZOMBIE;
+	t->exit_status = status;
+}
+
+/*
 ** Attaches the given virtual space to the given thread.
 ** This assumes there is no previous virtual space already attached.
 **
 ** This assumes that the given thread 'thread' and the given
-** virtual memory space 'vaspace' are locked as writers (or there is no
-** need to do so).
+** virtual memory space 'vaspace' are locked as writers.
 */
 void
 thread_attach_vaspace(struct thread *thread, struct vaspace *vaspace)
 {
 	thread->vaspace = vaspace;
 	++vaspace->count;
+}
+
+/*
+** Detaches the current thread from it's virtual space.
+**
+** This assumes that the current thread and it's virtual address space
+** are both locked as writers.
+*/
+void
+thread_detach_vaspace(void)
+{
+	struct thread *t;
+	struct vaspace *vaspace;
+
+	t = current_cpu()->thread;
+	vaspace = current_vaspace();
+	--vaspace->count;
+	if (!vaspace->count) {
+		vaspace_free();
+		kfree(vaspace);
+	}
+	t->vaspace = NULL;
 }
 
 /*

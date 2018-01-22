@@ -39,6 +39,12 @@ clone(void (*cb)(void))
 	return (syscall(SYSCALL_CLONE, (uintptr)cb, 0, 0, 0));
 }
 
+static void
+exit(uchar status)
+{
+	syscall(SYSCALL_EXIT, status, 0, 0, 0);
+}
+
 static size_t
 write(file_handler_t handler, char const *str, size_t n)
 {

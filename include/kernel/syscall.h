@@ -26,6 +26,7 @@ enum syscall_id
 */
 
 status_t	sys_clone(void *main);
+void		sys_exit(uchar status);
 int		sys_write(file_handler_t handler, char const *buff, size_t s);
 
 #endif /* !_KERNEL_SYSCALL_H_ */

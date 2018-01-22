@@ -23,11 +23,26 @@ sys_clone(void *main)
 	struct vaspace *vaspace;
 	status_t s;
 
+	current_thread_acquire();
 	vaspace = current_vaspace();
 	rwlock_acquire_write(&vaspace->rwlock);
 	s = thread_clone(main);
 	rwlock_release_write(&vaspace->rwlock);
+	current_thread_release();
 	return (s);
+}
+
+void
+sys_exit(uchar status)
+{
+	struct vaspace *vaspace;
+
+	current_thread_acquire();
+	vaspace = current_vaspace();
+	rwlock_acquire_write(&vaspace->rwlock);
+	thread_exit(status);
+	rwlock_release_write(&vaspace->rwlock);
+	current_thread_release();
 }
 
 /*
