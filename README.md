@@ -68,15 +68,17 @@ make run
 - [X] Memory
   - [X] Physical Memory Management
   - [X] Virtual Memory Management (`mmap()`, `munmap()` etc.)
-  - [X] Virtual segments of memory (`brk()`, `sbrk()`)
+  - [X] Virtual segments of memory
   - [X] Kernel heap (`kalloc()`, `kfree()`, `krealloc()`)
-- [X] ELF Program execution (`execve()`)
+- [X] ELF Program execution (`exec()`)
 - [X] Syscall interface and userspace (ring 3)
 - [ ] Multi process / threads
-  - [ ] Scheduling
+  - [X] Scheduling
+  - [X] User Threads
   - [ ] Kernel threads
-  - [ ] Processes (`fork()` and `exit()`)
-- [ ] Initrd loading, reading and writing
+  - [ ] Processes (mix of `clone()`, `exec()` and `exit()`)
+- [X] Initrd loading, reading and writing
+- [ ] Device abstraction
 - [ ] Filesystem
   - [ ] Directory listing (`opendir()`, `readdir()`, `closedir()`)
   - [ ] Creating and removing files/directories (`mkfile()`, `mkdir()`, `remove()`)
