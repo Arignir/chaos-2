@@ -140,7 +140,9 @@ syscall_handler(struct iframe *iframe)
 	switch (iframe->eax)
 	{
 	case SYSCALL_CLONE:
-		panic("clone() syscall unimplemented yet");
+		iframe->eax = sys_clone(
+			(void (*)(void))iframe->edi
+		);
 		break;
 	case SYSCALL_EXIT:
 		panic("exit() syscall unimplemented yet");

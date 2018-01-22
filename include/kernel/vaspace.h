@@ -51,7 +51,6 @@ struct vaspace
 ** Returns the current virtual address space.
 ** This functions asserts a thread context.
 **
-**
 ** THIS WILL NOT TRY TO LOCK THE CURRENT THREAD NOR THE CURRENT VIRTUAL ADDRESS SPACE.
 ** BE CAREFUL WHEN USING IT. YOU HAVE BEEN WARNED.
 */

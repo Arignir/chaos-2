@@ -17,7 +17,7 @@
 # include <kernel/spinlock.h>
 
 typedef int tid_t;
-typedef int (*thread_main)(void);
+typedef int (*thread_main)();
 
 # if KCONFIG_DEBUG_THREAD
 #  define assert_thread(x) assert(x)
@@ -31,7 +31,6 @@ typedef int (*thread_main)(void);
 enum			thread_state
 {
 	NONE = 0,
-	EMBRYO,
 	SUSPENDED,
 	RUNNABLE,
 	RUNNING,
@@ -46,7 +45,6 @@ enum			thread_state
 static char const *thread_state_str[] =
 {
 	[NONE]		= "NONE",
-	[EMBRYO]	= "EMBRYO",
 	[SUSPENDED]	= "SUSPENDED",
 	[RUNNABLE]	= "RUNNABLE",
 	[RUNNING]	= "RUNNING",
@@ -72,7 +70,6 @@ struct			thread
 	virtaddr_t kstack;	/* Bottom of kernel stack */
 	virtaddr_t kstack_top;	/* Top of user stack */
 
-
 	/* entry point */
 	thread_main entry;
 
@@ -87,10 +84,13 @@ extern struct thread thread_table[];
 
 void			thread_early_init(void);
 void			thread_init(void);
-status_t		thread_create_stacks(void);
+status_t		thread_create_stacks(struct thread *t);
+status_t		thread_clone(void *ip);
+void			thread_attach_vaspace(struct thread *t, struct vaspace *vaspace);
 
 /* Arch-dependant function, usually in assembly */
 void			arch_jump_to_userspace(void *stack, void (*main)(void));
 void			arch_set_kernel_stack(uintptr);
+void			arch_thread_clone(struct thread *t);
 
 #endif /* !_KERNEL_THREAD_H_ */

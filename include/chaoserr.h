@@ -44,6 +44,7 @@ enum				status
 	ERR_ALREADY_EXIST,		/* A given unique-id is already taken */
 	ERR_ACCESS_DENIED,		/* The operation couldn't be completed because it's missing privileges */
 	ERR_TARGET_BUSY,		/* The target of the operation is busy */
+	ERR_NO_MORE_ID,			/* There is no more ID available */
 
 	/* Mapping errors */
 	ERR_ALREADY_MAPPED,		/* The given virtual address is already mapped */

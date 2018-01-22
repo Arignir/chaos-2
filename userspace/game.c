@@ -11,6 +11,7 @@
 #include <arch/x86/asm.h>
 
 __optimize(0)
+__unused
 static bool
 are_interrupts_enabled(void)
 {
@@ -18,8 +19,20 @@ are_interrupts_enabled(void)
 }
 
 __optimize(0)
+static void
+thread2(void)
+{
+	putstr("Hello Threading World!\n");
+	while (42) {
+		putstr("o");
+		for (int i = 0; i < 100000000; ++i); // "Sleep" for the poors
+	}
+}
+
+__optimize(0)
 int main(void) {
 	putstr("Hello Userspace World!\n");
+	clone(&thread2);
 	while (42) {
 		putstr(".");
 		for (int i = 0; i < 100000000; ++i); // "Sleep" for the poors

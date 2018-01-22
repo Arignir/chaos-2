@@ -31,18 +31,35 @@ thread_set_name(struct thread *t, char const *name)
 }
 
 /*
-** Creates both user and kernel stacks for the current thread.
-**
-** This assumes the current thread and the current virtual address space are both
-** locked as writers.
+** Returns a thread that has the NONE state, already locked, or NULL
+** if none were found.
 */
-status_t
-thread_create_stacks(void)
+static struct thread *
+find_free_thread(void)
 {
 	struct thread *t;
 
-	t = current_cpu()->thread;
-	assert_thread(t->state == EMBRYO);
+	t = thread_table;
+	while (t < thread_table + KCONFIG_MAX_THREADS) {
+		spinlock_acquire(&t->lock);
+		if (t->state == NONE) {
+			return (t);
+		}
+		spinlock_release(&t->lock);
+		++t;
+	}
+	return (NULL);
+}
+
+/*
+** Creates both user and kernel stacks for the given thread.
+**
+** This assumes the given thread and it's virtual address space are both
+** locked as writers.
+*/
+status_t
+thread_create_stacks(struct thread *t)
+{
 	assert_thread(!t->stack);
 	assert_thread(!t->kstack);
 
@@ -59,9 +76,54 @@ thread_create_stacks(void)
 		return (ERR_NO_MEMORY);
 	}
 	t->stack_top = (uchar *)t->stack + KCONFIG_THREAD_STACK_SIZE * PAGE_SIZE;
-	t->stack_saved = t->stack_top;
 	t->kstack_top = (uchar *)t->kstack + KCONFIG_KERNEL_STACK_SIZE * PAGE_SIZE;
+	t->stack_saved = t->kstack_top;
 	return (OK);
+}
+
+/*
+** Creates a new thread starting at the given function.
+**
+** The thread will have the current virtual address space attached, and a stack
+** will be allocated.
+**
+** Current virtual address space MUST be locked as writer.
+*/
+status_t
+thread_clone(void *ip)
+{
+	status_t s;
+	struct thread *t;
+	struct vaspace *vaspace;
+
+	vaspace = current_vaspace();
+	t = find_free_thread();
+	if (!t)
+		return (ERR_NO_MORE_ID);
+
+	thread_set_name(t, current_cpu()->thread->name);
+	if ((s = thread_create_stacks(t))) {
+		goto err;
+	}
+
+	t->exit_status = 0;
+	t->state = RUNNABLE;
+	t->parent = current_cpu()->thread;
+	t->entry = ip;
+	thread_attach_vaspace(t, vaspace);
+
+	/*
+	** Sets the arch-dependant part of cloning a thread.
+	** This mainly consist on setting up a proper stack so the scheduler
+	** won't be lost when switching to the new thread.
+	*/
+	arch_thread_clone(t);
+
+	spinlock_release(&t->lock);
+	return (OK);
+err:
+	spinlock_release(&t->lock);
+	return (s);
 }
 
 /*
@@ -72,13 +134,11 @@ thread_create_stacks(void)
 ** virtual memory space 'vaspace' are locked as writers (or there is no
 ** need to do so).
 */
-static void
-thread_attach_vaspace(struct thread *t, struct vaspace *vaspace)
+void
+thread_attach_vaspace(struct thread *thread, struct vaspace *vaspace)
 {
-	assert_thread(!t->vaspace);
-
-	t->vaspace = vaspace;
-	++t->vaspace->count;
+	thread->vaspace = vaspace;
+	++vaspace->count;
 }
 
 /*
@@ -104,7 +164,7 @@ thread_early_init(void)
 	spinlock_acquire(&t->lock);
 	{
 		thread_set_name(t, "boot");
-		t->state = EMBRYO;
+		t->state = RUNNING;
 	}
 	spinlock_release(&t->lock);
 }

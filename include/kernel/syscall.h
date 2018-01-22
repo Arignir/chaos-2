@@ -11,6 +11,7 @@
 # define _KERNEL_SYSCALL_H_
 
 # include <chaosdef.h>
+# include <chaoserr.h>
 
 enum syscall_id
 {
@@ -24,6 +25,7 @@ enum syscall_id
 ** Provides implementation for all given syscalls.
 */
 
-int	sys_write(file_handler_t handler, char const *buff, size_t s);
+status_t	sys_clone(void *main);
+int		sys_write(file_handler_t handler, char const *buff, size_t s);
 
 #endif /* !_KERNEL_SYSCALL_H_ */

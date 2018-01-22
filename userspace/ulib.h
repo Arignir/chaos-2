@@ -12,6 +12,7 @@
 
 /* Some little kernel dependencies (header-only) to make things a bit easier. */
 # include <chaosdef.h>
+# include <chaoserr.h>
 # include <kernel/syscall.h>
 
 /*
@@ -32,11 +33,16 @@ syscall(uintptr eax, uintptr edi, uintptr esi, uintptr edx, uintptr ecx)
 	return (ret);
 }
 
+static status_t
+clone(void (*cb)(void))
+{
+	return (syscall(SYSCALL_CLONE, (uintptr)cb, 0, 0, 0));
+}
+
 static size_t
 write(file_handler_t handler, char const *str, size_t n)
 {
-	syscall(SYSCALL_WRITE, handler, (uintptr)str, n, 0);
-	return (0);
+	return (syscall(SYSCALL_WRITE, handler, (uintptr)str, n, 0));
 }
 
 /* C Library */

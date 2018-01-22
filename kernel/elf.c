@@ -175,7 +175,7 @@ elf_exec(uchar const *start, size_t _ __unused , void **__ __unused)
 
 	t = current_cpu()->thread;
 	header = (struct Elf32_Ehdr *)start;
-	if ((s = thread_create_stacks())) {
+	if ((s = thread_create_stacks(t))) {
 		return (s);
 	}
 

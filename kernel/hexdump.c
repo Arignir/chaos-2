@@ -20,7 +20,7 @@ hexdump_char(uchar const *start, size_t len)
 		++i;
 	}
 	while (i < HEXDUMP_WIDTH) {
-		printf("   ", start[i]);
+		printf("   ");
 		++i;
 	}
 }
