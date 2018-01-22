@@ -194,6 +194,9 @@ elf_exec(uchar const *start, size_t _ __unused , void **__ __unused)
 	arch_set_kernel_stack((uintptr)t->kstack_top);
 	stack_top = t->stack_top;
 
+	/* Set the thread as a user-space thread */
+	t->user = true;
+
 	/* Release lock of the current thread (We're about to execute it) */
 	rwlock_release_write(&t->vaspace->rwlock);
 	spinlock_release(&t->lock);

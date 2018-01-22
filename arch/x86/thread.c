@@ -56,6 +56,14 @@ arch_thread_clone(struct thread *t)
 		.__required = 0x0,	/* Required by Intel, or ret will throw */
 	};
 
+	/* If it's a kernel thread, set DPL accordingly. */
+	if (!t->user) {
+		default_stack.eflags = 0x3002;
+		default_stack.eip = (uintptr)t->entry;
+		default_stack.arg1 = 0x0;
+		default_stack.arg2 = 0x0;
+	}
+
 	t->stack_saved = (uchar *)t->stack_saved - sizeof(default_stack);
 	*(struct scheduler_stack *)t->stack_saved = default_stack;
 }

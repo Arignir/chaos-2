@@ -60,6 +60,7 @@ struct			thread
 	uchar exit_status;		/* Exit status */
 	enum thread_state state;	/* Curent thread state */
 	struct thread *parent;		/* Parent thread */
+	bool user;			/* True for user, false for kernel threads */
 
 	/* Thread stack */
 	virtaddr_t stack;	/* Bottom of user stack */

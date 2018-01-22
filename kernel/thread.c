@@ -110,6 +110,7 @@ thread_clone(void *ip)
 	t->state = RUNNABLE;
 	t->parent = current_cpu()->thread;
 	t->entry = ip;
+	t->user = t->parent->user;
 	thread_attach_vaspace(t, vaspace);
 
 	/*
