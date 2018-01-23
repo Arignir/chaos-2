@@ -24,7 +24,7 @@ status_t
 vaspace_init(struct vaspace *vaspace)
 {
 	memset(vaspace, 0, sizeof(*vaspace));
-	rwlock_init(&vaspace->rwlock);
+	spin_rwlock_init(&vaspace->rwlock);
 	return (vaspace_add_vseg(vaspace,
 		KERNEL_VIRTUAL_BASE,
 		(virtaddr_t)ROUND_DOWN(UINTPTR_MAX, PAGE_SIZE),

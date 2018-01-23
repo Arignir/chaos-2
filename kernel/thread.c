@@ -31,7 +31,7 @@ thread_set_name(struct thread *t, char const *name)
 }
 
 /*
-** Returns a thread that has the NONE state, already locked, or NULL
+** Returns a thread that has the NONE state, already locked as writer, or NULL
 ** if none were found.
 */
 static struct thread *
@@ -41,11 +41,17 @@ find_free_thread(void)
 
 	t = thread_table;
 	while (t < thread_table + KCONFIG_MAX_THREADS) {
-		spinlock_acquire(&t->lock);
+		spin_rwlock_acquire_read(&t->rwlock);
 		if (t->state == NONE) {
-			return (t);
+			spin_rwlock_release_read(&t->rwlock);
+			spin_rwlock_acquire_write(&t->rwlock);
+			if (t->state == NONE) { /* Ensure state hasn't changed */
+				return (t);
+			}
+			spin_rwlock_release_write(&t->rwlock);
+		} else {
+			spin_rwlock_release_read(&t->rwlock);
 		}
-		spinlock_release(&t->lock);
 		++t;
 	}
 	return (NULL);
@@ -72,7 +78,7 @@ thread_create_stacks(struct thread *t)
 	}
 	t->kstack = kalloc(KCONFIG_KERNEL_STACK_SIZE * PAGE_SIZE);
 	if (!t->kstack) {
-		/* TODO FIXME Free thread stack here */
+		/* TODO FIXME Free thread's user stack here */
 		return (ERR_NO_MEMORY);
 	}
 	t->stack_top = (uchar *)t->stack + KCONFIG_THREAD_STACK_SIZE * PAGE_SIZE;
@@ -101,16 +107,17 @@ thread_clone(void *ip)
 	if (!t)
 		return (ERR_NO_MORE_ID);
 
-	thread_set_name(t, current_cpu()->thread->name);
+	thread_set_name(t, current_thread()->name);
 	if ((s = thread_create_stacks(t))) {
 		goto err;
 	}
 
 	t->exit_status = 0;
 	t->state = RUNNABLE;
-	t->parent = current_cpu()->thread;
+	t->parent = current_thread();
 	t->entry = ip;
 	t->user = t->parent->user;
+
 	thread_attach_vaspace(t, vaspace);
 
 	/*
@@ -120,10 +127,10 @@ thread_clone(void *ip)
 	*/
 	arch_thread_clone(t);
 
-	spinlock_release(&t->lock);
+	spin_rwlock_release_write(&t->rwlock);
 	return (OK);
 err:
-	spinlock_release(&t->lock);
+	spin_rwlock_release_write(&t->rwlock);
 	return (s);
 }
 
@@ -155,19 +162,20 @@ thread_early_init(void)
 	/* Init thread table */
 	i = 0;
 	while (i < KCONFIG_MAX_THREADS) {
-		spinlock_init(&thread_table[i].lock);
+		spin_rwlock_init(&thread_table[i].rwlock);
 		thread_table[i].state = NONE;
 		++i;
 	}
 
+	current_cpu()->thread = thread_table;
+
 	/* Init boot thread */
-	t = thread_table;
-	spinlock_acquire(&t->lock);
+	t = current_thread_acquire_write();
 	{
 		thread_set_name(t, "boot");
 		t->state = RUNNING;
 	}
-	spinlock_release(&t->lock);
+	current_thread_release_write();
 }
 
 /*
@@ -178,18 +186,17 @@ thread_init(void)
 {
 	struct thread *t;
 
-	t = thread_table;
-	spinlock_acquire(&t->lock);
+	t = current_thread_acquire_write();
 	{
 		thread_set_name(t, "kthread");
 
 		/* Setup vaspace */
 		assert_eq(vaspace_init(&kthread_vaspace), OK);
-		rwlock_acquire_write(&kthread_vaspace.rwlock);
+		spin_rwlock_acquire_write(&kthread_vaspace.rwlock);
 		{
 			thread_attach_vaspace(t, &kthread_vaspace);
 		}
-		rwlock_release_write(&kthread_vaspace.rwlock);
+		spin_rwlock_release_write(&kthread_vaspace.rwlock);
 	}
-	spinlock_release(&t->lock);
+	current_thread_release_write();
 }

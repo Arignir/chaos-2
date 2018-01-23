@@ -10,7 +10,9 @@
 #include <kconfig.h>
 #include <arch/x86/tss.h>
 #include <arch/x86/x86.h>
+#include <arch/x86/asm.h>
 #include <kernel/cpu.h>
+#include <kernel/thread.h>
 #include <string.h>
 
 __aligned(16)

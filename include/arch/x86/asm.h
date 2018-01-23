@@ -199,10 +199,11 @@ xchg(uint *addr, uint newval)
 	return (res);
 }
 
-static inline void
-xaddl(int *addr, int value)
+static inline int
+xaddl(volatile int *ptr, int val)
 {
-	asm volatile("lock xaddl %0, %1" : "+r"(value), "+m"(*addr) : : "memory");
+	asm volatile("lock xaddl %[val], %[ptr];" : [val]"=a"(val) : "a"(val), [ptr]"m"(*ptr) : "memory");
+	return (val);
 }
 
 static inline uint64

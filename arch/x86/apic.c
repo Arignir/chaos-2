@@ -9,7 +9,7 @@
 
 #include <kernel/pmm.h>
 #include <kernel/kalloc.h>
-#include <kernel/cpu.h>
+#include <kernel/thread.h>
 #include <kernel/scheduler.h>
 #include <arch/x86/asm.h>
 #include <arch/x86/interrupts.h>
@@ -136,7 +136,7 @@ void
 apic_timer_ihandler(struct iframe *iframe __unused)
 {
 	apic_eoi();
-	if (current_cpu()->thread)
+	if (current_thread())
 		yield();
 }
 

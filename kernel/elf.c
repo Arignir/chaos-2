@@ -173,7 +173,7 @@ elf_exec(uchar const *start, size_t _ __unused , void **__ __unused)
 	virtaddr_t stack_top;
 	status_t s;
 
-	t = current_cpu()->thread;
+	t = current_thread();
 	header = (struct Elf32_Ehdr *)start;
 	if ((s = thread_create_stacks(t))) {
 		return (s);
@@ -198,8 +198,8 @@ elf_exec(uchar const *start, size_t _ __unused , void **__ __unused)
 	t->user = true;
 
 	/* Release lock of the current thread (We're about to execute it) */
-	rwlock_release_write(&t->vaspace->rwlock);
-	spinlock_release(&t->lock);
+	current_vaspace_release_write();
+	current_thread_release_write();
 
 	arch_jump_to_userspace(stack_top, (void (*)(void))header->e_entry);
 	panic("Unreachable elf_exec()\n");

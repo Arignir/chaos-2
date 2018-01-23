@@ -33,8 +33,9 @@ kmain(void)
 	printf("Welcome to ChaOS\n\n");
 
 	struct initrd_virt const *virt = initrd_get_virtual();
-	struct thread *t = current_thread_acquire();
-	rwlock_acquire_write(&t->vaspace->rwlock);
+
+	current_thread_acquire_write();
+	current_vaspace_acquire_write();
 
 	/* exec will release the virtual address space and the current thread */
 	assert_eq(exec(virt->start, virt->len), OK);
