@@ -19,30 +19,24 @@ status_t
 sys_clone(void *main)
 {
 	/* TODO FIXME We should ensure 'main' points to userspace memory */
-
-	struct vaspace *vaspace;
 	status_t s;
 
-	current_thread_acquire();
-	vaspace = current_vaspace();
-	rwlock_acquire_write(&vaspace->rwlock);
+	current_thread_acquire_write();
+	current_vaspace_acquire_write();
 	s = thread_clone(main);
-	rwlock_release_write(&vaspace->rwlock);
-	current_thread_release();
+	current_vaspace_release_write();
+	current_thread_release_write();
 	return (s);
 }
 
 void
 sys_exit(uchar status)
 {
-	struct vaspace *vaspace;
-
-	current_thread_acquire();
-	vaspace = current_vaspace();
-	rwlock_acquire_write(&vaspace->rwlock);
+	current_thread_acquire_write();
+	current_vaspace_acquire_write();
 	thread_exit(status);
-	rwlock_release_write(&vaspace->rwlock);
-	current_thread_release();
+	current_vaspace_release_write();
+	current_thread_release_write();
 }
 
 /*

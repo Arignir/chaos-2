@@ -57,12 +57,18 @@ find_next_thread(void)
 look_for_next:
 	while (t < limit)
 	{
-		spinlock_acquire(&t->lock);
+		spin_rwlock_acquire_read(&t->rwlock);
 		if (t->state == RUNNABLE) {
-			scheduler_update_next(t);
-			return (t);
+			spin_rwlock_release_read(&t->rwlock);
+			spin_rwlock_acquire_write(&t->rwlock);
+			if (t->state == RUNNABLE) { /* Ensure state hasn't changed */
+				scheduler_update_next(t);
+				return (t);
+			}
+			spin_rwlock_release_write(&t->rwlock);
+		} else {
+			spin_rwlock_release_read(&t->rwlock);
 		}
-		spinlock_release(&t->lock);
 		++t;
 	}
 	if (!pass)
@@ -90,10 +96,10 @@ reschedule(void *old_sp)
 	struct thread *old;
 
 	/* Save stack and release current thread. */
-	old = current_cpu()->thread;
+	old = current_thread();
 	if (old) {
 		old->stack_saved = old_sp;
-		current_thread_release();
+		current_thread_release_write();
 	}
 	current_cpu()->thread = NULL;
 
@@ -113,7 +119,7 @@ reschedule(void *old_sp)
 	arch_set_kernel_stack((uintptr)new->kstack_top);
 	arch_vaspace_switch(new->vaspace);
 
-	current_thread_release();
+	current_thread_release_write();
 
 #if KCONFIG_DEBUG_SCHEDULER
 	printf("Running %s on core %zu\n", new->name, current_cpu_id());
@@ -141,7 +147,7 @@ void yield()
 		disable_interrupts();
 
 		/* Set current thread as runnable */
-		t = current_thread_acquire(); /* release in scheduler() */
+		t = current_thread_acquire_write(); /* release in scheduler() */
 		assert_scheduler(t->state == RUNNING);
 		t->state = RUNNABLE;
 

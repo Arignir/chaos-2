@@ -11,7 +11,6 @@
 # define _KERNEL_SEGMENT_H_
 
 # include <kernel/memory.h>
-# include <kernel/rwlock.h>
 # include <kernel/vmm.h>
 
 /*

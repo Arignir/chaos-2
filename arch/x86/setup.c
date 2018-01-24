@@ -102,7 +102,7 @@ arch_x86_setup(void)
 	thread_init();	/* Finish setting up kthread */
 
 	/* Quickly set-up arch-dependant stuff of vaspace here */
-	current_cpu()->thread->vaspace->arch.pagedir = V2P(kthread_page_directory);
+	current_vaspace()->arch.pagedir = V2P(kthread_page_directory);
 
 #if KCONFIG_ENABLE_SMP
 	mp_start_aps();	/* Start other processors */

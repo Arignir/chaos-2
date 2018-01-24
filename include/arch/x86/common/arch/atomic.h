@@ -18,8 +18,8 @@ atomic_exchange(uint *ptr, uint value)
 	return (xchg(ptr, value));
 }
 
-static inline void
-fetch_and_add(int *variable, int value)
+static inline int
+fetch_and_add(volatile int *variable, int value)
 {
 	return (xaddl(variable, value));
 }

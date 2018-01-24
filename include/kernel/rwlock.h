@@ -26,7 +26,7 @@ struct rwlock
 
 # define RWLOCK_DEFAULT					\
 	{						\
-		.readcount = 0,			\
+		.readcount = 0,				\
 		.resource_access = MUTEX_DEFAULT,	\
 		.readcount_access = MUTEX_DEFAULT,	\
 		.service_queue = MUTEX_DEFAULT,		\
@@ -44,22 +44,23 @@ rwlock_acquire_read(struct rwlock *rw)
 	mutex_acquire(&rw->service_queue);
 	mutex_acquire(&rw->readcount_access);
 
-	if (!rw->readcount) {
+	if (fetch_and_add(&rw->readcount, 1) == 1) {
 		mutex_acquire(&rw->resource_access);
 	}
-	++rw->readcount;
 
-	mutex_release(&rw->service_queue);
 	mutex_release(&rw->readcount_access);
+	mutex_release(&rw->service_queue);
 }
 
 static inline void
 rwlock_release_read(struct rwlock *rw)
 {
-	--rw->readcount;
-	if (!rw->readcount) {
+	mutex_acquire(&rw->readcount_access);
+
+	if (fetch_and_add(&rw->readcount, -1) == 0) {
 		mutex_release(&rw->resource_access);
 	}
+
 	mutex_release(&rw->readcount_access);
 }
 

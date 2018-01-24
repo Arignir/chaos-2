@@ -16,6 +16,7 @@ extern struct exec_format const __stop_exec_format[] __weak;
 ** Tries to execute the given file content.
 **
 ** Goes through all available executable formats and tries them one by one.
+**
 ** This function assumes the current thread and the current virtual address space are
 ** already locked, both as writters.
 */

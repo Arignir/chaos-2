@@ -12,10 +12,10 @@
 
 # include <chaoserr.h>
 # include <kernel/memory.h>
-# include <kernel/rwlock.h>
+# include <kernel/spin_rwlock.h>
 # include <kernel/vseg.h>
 # include <kernel/vmm.h>
-# include <kernel/cpu.h>
+# include <kernel/thread.h>
 # include <arch/vaspace.h>
 
 /*
@@ -41,7 +41,7 @@ struct vaspace
 	struct arch_vaspace arch;
 
 	/* RWlock to lock the virtual address space */
-	struct rwlock rwlock;
+	struct spin_rwlock rwlock;
 
 	/* Number of threads sharing this address space */
 	uint count;
@@ -57,7 +57,45 @@ struct vaspace
 static inline struct vaspace *
 current_vaspace(void)
 {
-	return (current_cpu()->thread->vaspace);
+	return (current_thread()->vaspace);
+}
+
+static inline struct vaspace *
+current_vaspace_acquire_read(void)
+{
+	struct vaspace *v;
+
+	v = current_vaspace();
+	spin_rwlock_acquire_read(&v->rwlock);
+	return (v);
+}
+
+static inline struct vaspace *
+current_vaspace_acquire_write(void)
+{
+	struct vaspace *v;
+
+	v = current_vaspace();
+	spin_rwlock_acquire_write(&v->rwlock);
+	return (v);
+}
+
+static inline void
+current_vaspace_release_read(void)
+{
+	struct vaspace *v;
+
+	v = current_vaspace();
+	spin_rwlock_release_read(&v->rwlock);
+}
+
+static inline void
+current_vaspace_release_write(void)
+{
+	struct vaspace *v;
+
+	v = current_vaspace();
+	spin_rwlock_release_write(&v->rwlock);
 }
 
 /*
