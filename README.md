@@ -75,7 +75,7 @@ make run
 - [ ] Multi process / threads
   - [X] Scheduling
   - [X] User Threads
-  - [ ] Kernel threads
+  - [X] Kernel threads
   - [ ] Processes (mix of `clone()`, `exec()` and `exit()`)
 - [X] Initrd loading, reading and writing
 - [ ] Device abstraction
