@@ -32,11 +32,8 @@ typedef int (*thread_main)();
 enum			thread_state
 {
 	NONE = 0,
-	SUSPENDED,
 	RUNNABLE,
 	RUNNING,
-	BLOCKED,
-	SLEEPING,
 	ZOMBIE,
 };
 
@@ -46,11 +43,8 @@ enum			thread_state
 static char const *thread_state_str[] =
 {
 	[NONE]		= "NONE",
-	[SUSPENDED]	= "SUSPENDED",
 	[RUNNABLE]	= "RUNNABLE",
 	[RUNNING]	= "RUNNING",
-	[BLOCKED]	= "BLOCKED",
-	[SLEEPING]	= "SLEEPING",
 	[ZOMBIE]	= "ZOMBIE",
 };
 
