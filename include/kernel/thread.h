@@ -86,7 +86,7 @@ extern struct thread thread_table[];
 
 void			thread_early_init(void);
 void			thread_init(void);
-void			thread_exit(uchar status);
+__noreturn void		thread_exit(uchar status);
 status_t		thread_create_stacks(struct thread *t);
 status_t		thread_clone(void *ip);
 void			thread_attach_vaspace(struct thread *t, struct vaspace *vaspace);

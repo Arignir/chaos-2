@@ -155,3 +155,20 @@ void yield()
 	}
 	pop_interrupts_state(&state);
 }
+
+/*
+** Sets the given thread in a zombie state and yields the cpu.
+**
+** This doens't free any memory.
+** The thread must already be locked as writer.
+*/
+__noreturn
+void
+zombifie(void)
+{
+	current_thread()->state = ZOMBIE;
+	disable_interrupts();
+	current_thread_release_write();
+	enter_scheduler(current_cpu()->scheduler_stack_top);
+	panic("Leaving zombifie()\n");
+}

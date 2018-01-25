@@ -22,7 +22,7 @@ struct scheduler
 
 struct thread;
 
-# if DEBUG_SCHEDULER
+# if KCONFIG_DEBUG_SCHEDULER
 #  define assert_scheduler(x) assert(x)
 # else
 #  define assert_scheduler(x)
@@ -35,5 +35,6 @@ extern void	enter_scheduler(void *scheduler_stack);
 
 void		*reschedule(void *);
 void		yield(void);
+__noreturn void	zombifie(void);
 
 #endif /* !_KERNEL_SCHEDULER_H_ */

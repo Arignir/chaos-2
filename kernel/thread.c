@@ -141,27 +141,31 @@ err:
 ** the memory is freed.
 **
 ** This places the given thread in a ZOMBIE state, where most memory
-** is freed but there is still a little bit that needs to be free from
+** is freed but there is still a little bit that needs to be freed from
 ** a different virtual address space (kernel stack and some arch-dependant stuff).
 ** This is done when an other thread waits for this one.
 **
 ** Current thread and current virtual address space must be locked.
 */
+__noreturn
 void
 thread_exit(uchar status)
 {
 	struct thread *t;
 
 	t = current_cpu()->thread;
-	printf("Exitting %zu with status %u\n", thread_table - t, status);
 
-	/* Free user stack. We can't free kernel stack from here because we are in it. */
+	/*
+	** Free user stack.
+	** We can't free kernel stack from here because we are still in it.
+	*/
 	vaspace_remove_vseg(t->stack, MUNMAP_DEFAULT);
 
 	/* Detach (and eventually free) virtual address space */
 	thread_detach_vaspace();
-	t->state = ZOMBIE;
 	t->exit_status = status;
+	zombifie();
+	panic("Leaving thread_exit()\n");
 }
 
 /*
@@ -190,12 +194,14 @@ thread_detach_vaspace(void)
 	struct thread *t;
 	struct vaspace *vaspace;
 
-	t = current_cpu()->thread;
+	t = current_thread();
 	vaspace = current_vaspace();
 	--vaspace->count;
 	if (!vaspace->count) {
 		vaspace_free();
 		kfree(vaspace);
+	} else {
+		current_vaspace_release_write();
 	}
 	t->vaspace = NULL;
 }

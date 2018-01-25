@@ -29,14 +29,13 @@ sys_clone(void *main)
 	return (s);
 }
 
+__noreturn
 void
 sys_exit(uchar status)
 {
 	current_thread_acquire_write();
 	current_vaspace_acquire_write();
 	thread_exit(status);
-	current_vaspace_release_write();
-	current_thread_release_write();
 }
 
 /*

@@ -34,6 +34,8 @@ vaspace_init(struct vaspace *vaspace)
 
 /*
 ** Frees the current virtual address space user memory.
+**
+** This is done by iterating over all virtual segments.
 */
 void
 vaspace_free(void)
@@ -53,6 +55,7 @@ vaspace_free(void)
 			);
 		}
 	}
+	kfree(vaspace->vsegs);
 }
 
 /*
