@@ -135,9 +135,13 @@ apic_eoi(void)
 void
 apic_timer_ihandler(struct iframe *iframe __unused)
 {
+	bool b;
+
+	b = (current_thread());
 	apic_eoi();
-	if (current_thread())
+	if (b) {
 		yield();
+	}
 }
 
 /*

@@ -93,7 +93,7 @@ thread_create_stacks(struct thread *t)
 ** The thread will have the current virtual address space attached, and a stack
 ** will be allocated.
 **
-** Current thread and virtual address space MUST be locked as writer.
+** Current thread and virtual address space must /NOT/ be locked as writer.
 */
 status_t
 thread_clone(void *ip)
@@ -102,10 +102,12 @@ thread_clone(void *ip)
 	struct thread *t;
 	struct vaspace *vaspace;
 
-	vaspace = current_vaspace();
 	t = find_free_thread();
 	if (!t)
 		return (ERR_NO_MORE_ID);
+
+	current_thread_acquire_write();
+	vaspace = current_vaspace_acquire_write();
 
 	thread_set_name(t, current_thread()->name);
 	if ((s = thread_create_stacks(t))) {
@@ -127,9 +129,13 @@ thread_clone(void *ip)
 	*/
 	arch_thread_clone(t);
 
+	current_vaspace_release_write();
+	current_thread_release_write();
 	spin_rwlock_release_write(&t->rwlock);
 	return (OK);
 err:
+	current_vaspace_release_write();
+	current_thread_release_write();
 	spin_rwlock_release_write(&t->rwlock);
 	return (s);
 }
@@ -200,10 +206,10 @@ thread_detach_vaspace(void)
 	if (!vaspace->count) {
 		vaspace_free();
 		kfree(vaspace);
+		t->vaspace = NULL;
 	} else {
 		current_vaspace_release_write();
 	}
-	t->vaspace = NULL;
 }
 
 /*

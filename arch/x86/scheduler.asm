@@ -8,7 +8,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 [global enter_scheduler]
-[global switch_stack]
+[global enter_scheduler_at]
 [extern reschedule]
 
 [bits 32]
@@ -48,3 +48,22 @@ enter_scheduler:
 	popad
 	popfd
 	ret
+
+;
+; __noreturn void enter_scheduler_at(void *scheduler_stack, void (*func_ptr)(void))
+;
+; Switches to the given scheduler stack and calls the given function pointer.
+; This function never returns, and so must do the given function pointer.
+;
+; _WARNING_:
+; Interrupts must be disabled before calling this function.
+; The current thread must be locked.
+;
+enter_scheduler_at:
+	mov eax, [esp + 8]
+	mov esp, [esp + 4]	; Switch to scheduler stack
+
+	call eax		; Call given function pointer
+
+	cli			; Should never reach this
+	hlt

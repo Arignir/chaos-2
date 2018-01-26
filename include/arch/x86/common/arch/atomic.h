@@ -13,21 +13,9 @@
 # include <arch/x86/asm.h>
 
 static inline uint
-atomic_exchange(uint *ptr, uint value)
+atomic_exchange(volatile uint *ptr, uint value)
 {
 	return (xchg(ptr, value));
-}
-
-static inline int
-fetch_and_add(volatile int *variable, int value)
-{
-	return (xaddl(variable, value));
-}
-
-static inline void
-memory_barrier(void)
-{
-	asm volatile("" : : : "memory");
 }
 
 #endif /* !_ARCH_X86_COMMON_ARCH_ATOMIC_H_ */

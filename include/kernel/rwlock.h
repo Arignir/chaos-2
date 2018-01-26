@@ -44,7 +44,7 @@ rwlock_acquire_read(struct rwlock *rw)
 	mutex_acquire(&rw->service_queue);
 	mutex_acquire(&rw->readcount_access);
 
-	if (fetch_and_add(&rw->readcount, 1) == 1) {
+	if (add_and_fetch(&rw->readcount, 1) == 1) {
 		mutex_acquire(&rw->resource_access);
 	}
 
@@ -57,7 +57,7 @@ rwlock_release_read(struct rwlock *rw)
 {
 	mutex_acquire(&rw->readcount_access);
 
-	if (fetch_and_add(&rw->readcount, -1) == 0) {
+	if (add_and_fetch(&rw->readcount, -1) == 0) {
 		mutex_release(&rw->resource_access);
 	}
 

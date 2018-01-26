@@ -21,11 +21,7 @@ sys_clone(void *main)
 	/* TODO FIXME We should ensure 'main' points to userspace memory */
 	status_t s;
 
-	current_thread_acquire_write();
-	current_vaspace_acquire_write();
 	s = thread_clone(main);
-	current_vaspace_release_write();
-	current_thread_release_write();
 	return (s);
 }
 

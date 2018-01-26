@@ -113,10 +113,10 @@ idt_setup:
 
 	loop .loop
 
-	; Syscall interrupt needs to be set as a trap gate with DPL=3
+	; Syscall interrupt needs to be set with DPL=3
 	mov edi, idt
 	add edi, 0x80 * 8 + 5	; edi points to the syscall entry
-	mov byte [edi], 0xEF	; Present, DPL=3, Trap gate
+	mov byte [edi], 0xEE	; Present, DPL=3, Interrupt gate
 
 	pop ecx
 	pop edi

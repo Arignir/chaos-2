@@ -113,4 +113,8 @@ void	kmain(void);
 /* Align the given number to PAGE_SIZE */
 # define PAGE_ALIGN(x)		(ALIGN(x, PAGE_SIZE))
 
+/* GCC/clang bultins */
+# define fetch_and_add(x, y)	__sync_fetch_and_add(x, y)
+# define add_and_fetch(x, y)	__sync_add_and_fetch(x, y)
+
 #endif /* !_CHAOSDEF_H_ */

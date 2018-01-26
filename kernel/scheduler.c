@@ -10,7 +10,9 @@
 #include <kernel/interrupts.h>
 #include <kernel/scheduler.h>
 #include <kernel/vaspace.h>
+#include <kernel/kalloc.h>
 #include <stdio.h>
+#include <string.h>
 
 struct scheduler scheduler =
 {
@@ -100,13 +102,13 @@ reschedule(void *old_sp)
 	if (old) {
 		old->stack_saved = old_sp;
 		current_thread_release_write();
+		current_cpu()->thread = NULL;
 	}
-	current_cpu()->thread = NULL;
 
 	/* Find new thread or halt (to save energy) */
 	new = find_next_thread();	/* new is already locked */
 	while (!new) {
-		enable_interrupts();	/* Halt the processor until next timer */
+		enable_interrupts();	/* Halt the processor until next timer interrupt */
 		halt();
 		disable_interrupts();
 		new = find_next_thread();
@@ -125,6 +127,36 @@ reschedule(void *old_sp)
 	printf("Running %s on core %zu\n", new->name, current_cpu_id());
 #endif
 	return (new->stack_saved);
+}
+
+/*
+** This is the start point for zombie threads when entering the scheduler, instead
+** of reschedule().
+** This function will free the kernel memory for the given thread.
+*/
+static void
+reschedule_zombie(void)
+{
+	struct thread *t;
+
+	t = current_thread();
+
+	kfree(t->kstack); /* Free kernel stack now that we are in the scheduler stack */
+	if (t->vaspace) {
+		t->state = NONE;
+		t->parent = NULL;
+		t->vaspace = NULL;
+		t->stack = NULL;
+		t->stack_top = NULL;
+		t->stack_saved = NULL;
+		t->kstack = NULL;
+		t->kstack_top = NULL;
+		memset(t->name, 0, sizeof(t->name));
+	}
+	else {
+		t->state = ZOMBIE;
+	}
+	enter_scheduler(current_cpu()->scheduler_stack_top);
 }
 
 /*
@@ -160,15 +192,11 @@ void yield()
 ** Sets the given thread in a zombie state and yields the cpu.
 **
 ** This doens't free any memory.
-** The thread must already be locked as writer.
+** The thread must already be locked as writer, and interrupts must be disabled.
 */
 __noreturn
 void
 zombifie(void)
 {
-	current_thread()->state = ZOMBIE;
-	disable_interrupts();
-	current_thread_release_write();
-	enter_scheduler(current_cpu()->scheduler_stack_top);
-	panic("Leaving zombifie()\n");
+	enter_scheduler_at(current_cpu()->scheduler_stack_top, &reschedule_zombie);
 }

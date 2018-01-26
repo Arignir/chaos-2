@@ -32,6 +32,7 @@ struct thread;
 ** Arch-dependant functions that must be reimplemented for each architecture.
 */
 extern void	enter_scheduler(void *scheduler_stack);
+extern __noreturn void	enter_scheduler_at(void *scheduler_stack, void(*)(void));
 
 void		*reschedule(void *);
 void		yield(void);
