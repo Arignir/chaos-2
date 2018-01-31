@@ -7,6 +7,8 @@
 ##
 ##############################################################################
 
+RELATIVE_DIR := $(subst $(PROJECT_DIR)/,,$(shell pwd))
+
 SRC_C += $(wildcard *.c)
 
 OBJS += $(SRC_C:.c=.o)
@@ -18,7 +20,7 @@ KERNEL_OBJ = kernel.o
 all: $(KERNEL_OBJ)
 
 $(KERNEL_OBJ): $(OBJS)
-	$(Q)printf "  LD\t $@\n"
+	$(Q)printf "  LD\t $(RELATIVE_DIR)/$@\n"
 	$(Q)$(LD) $(LDFLAGS) -o $@ -r $^
 
 .PHONY: clean
@@ -27,5 +29,5 @@ clean:
 
 -include $(DEPS)
 %.o: %.c
-	$(Q)printf "  CC\t $<\n"
+	$(Q)printf "  CC\t $(RELATIVE_DIR)/$<\n"
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@

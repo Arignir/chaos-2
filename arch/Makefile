@@ -7,6 +7,8 @@
 ##
 ##############################################################################
 
+RELATIVE_DIR := $(subst $(PROJECT_DIR)/,,$(shell pwd))
+
 OBJ = arch.o
 
 .PHONY: all
@@ -18,7 +20,7 @@ check_up:
 	$(Q)$(MAKE) $(OBJ)
 
 $(OBJ): $(ARCH)/$(ARCH).o
-	$(Q)printf "  LD\t $@\n"
+	$(Q)printf "  LD\t $(RELATIVE_DIR)/$@\n"
 	$(Q)$(LD) $(LDFLAGS) -o $@ -r $^
 
 .PHONY: clean
