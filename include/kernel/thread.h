@@ -81,10 +81,12 @@ extern struct thread thread_table[];
 void			thread_early_init(void);
 void			thread_init(void);
 __noreturn void		thread_exit(uchar status);
+status_t		thread_exec(char const *path);
 status_t		thread_create_stacks(struct thread *t);
 status_t		thread_clone(void *ip);
 void			thread_attach_vaspace(struct thread *t, struct vaspace *vaspace);
 void			thread_detach_vaspace(void);
+status_t		thread_detach_and_create_vaspace(void);
 
 /* Arch-dependant function, usually in assembly */
 void			arch_jump_to_userspace(void *stack, void (*main)(void));

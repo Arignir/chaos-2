@@ -12,6 +12,7 @@
 
 struct arch_vaspace
 {
+	struct page_dir *pagedir_virt;
 	physaddr_t pagedir;
 };
 

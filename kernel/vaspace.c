@@ -34,11 +34,10 @@ vaspace_init(struct vaspace *vaspace)
 
 /*
 ** Frees the current virtual address space user memory.
-**
-** This is done by iterating over all virtual segments.
+** This is done by iterating over all user's virtual segments.
 */
 void
-vaspace_free(void)
+vaspace_cleanup(void)
 {
 	struct vaspace *vaspace;
 	struct vseg *seg;
@@ -56,6 +55,24 @@ vaspace_free(void)
 		}
 	}
 	kfree(vaspace->vsegs);
+	vaspace->vsegs = NULL;
+	vaspace->vseg_size = 0;
+}
+
+/*
+** Frees the current virtual address space and it's content.
+**
+** The kernel is in kthread's vaspace passed this function.
+*/
+void
+vaspace_free(void)
+{
+	struct vaspace *vaspace;
+
+	vaspace = current_vaspace();
+	vaspace_cleanup();
+	arch_vaspace_free();
+	kfree(vaspace);
 }
 
 /*

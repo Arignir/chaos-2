@@ -9,7 +9,6 @@
 
 #include <kernel/thread.h>
 #include <kernel/vaspace.h>
-#include <arch/x86/vmm.h>
 
 struct scheduler_stack {
 	uintptr edi;
@@ -66,15 +65,4 @@ arch_thread_clone(struct thread *t)
 
 	t->stack_saved = (uchar *)t->stack_saved - sizeof(default_stack);
 	*(struct scheduler_stack *)t->stack_saved = default_stack;
-}
-
-/*
-** Switches to the given virtual address space.
-*/
-void
-arch_vaspace_switch(struct vaspace *new)
-{
-	if (vmm_get_frame(get_pagedir()) != new->arch.pagedir) {
-		set_cr3(new->arch.pagedir);
-	}
 }

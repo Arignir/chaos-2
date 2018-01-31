@@ -12,6 +12,8 @@
 #include <kernel/vaspace.h>
 #include <kernel/rwlock.h>
 #include <kernel/kalloc.h>
+#include <kernel/initrd.h>
+#include <kernel/exec.h>
 #include <string.h>
 
 /* Thread table */
@@ -58,7 +60,9 @@ find_free_thread(void)
 }
 
 /*
-** Creates both user and kernel stacks for the given thread.
+** Creates both user and tkernel stacks for the given thread.
+** The kernel stack is created only if t->kstack == NULL, otherwise it
+** reuses the existing kernel stack.
 **
 ** This assumes the given thread and it's virtual address space are both
 ** locked as writers.
@@ -67,7 +71,6 @@ status_t
 thread_create_stacks(struct thread *t)
 {
 	assert_thread(!t->stack);
-	assert_thread(!t->kstack);
 
 	t->stack = vaspace_new_random_vseg(
 		KCONFIG_THREAD_STACK_SIZE * PAGE_SIZE,
@@ -76,13 +79,15 @@ thread_create_stacks(struct thread *t)
 	if (!t->stack) {
 		return (ERR_NO_MEMORY);
 	}
-	t->kstack = kalloc(KCONFIG_KERNEL_STACK_SIZE * PAGE_SIZE);
-	if (!t->kstack) {
-		/* TODO FIXME Free thread's user stack here */
-		return (ERR_NO_MEMORY);
-	}
 	t->stack_top = (uchar *)t->stack + KCONFIG_THREAD_STACK_SIZE * PAGE_SIZE;
-	t->kstack_top = (uchar *)t->kstack + KCONFIG_KERNEL_STACK_SIZE * PAGE_SIZE;
+	if (!t->kstack) {
+		t->kstack = kalloc(KCONFIG_KERNEL_STACK_SIZE * PAGE_SIZE);
+		if (!t->kstack) {
+			/* TODO FIXME Free thread's user stack here */
+			return (ERR_NO_MEMORY);
+		}
+		t->kstack_top = (uchar *)t->kstack + KCONFIG_KERNEL_STACK_SIZE * PAGE_SIZE;
+	}
 	t->stack_saved = t->kstack_top;
 	return (OK);
 }
@@ -161,6 +166,9 @@ thread_exit(uchar status)
 
 	t = current_cpu()->thread;
 
+	if (unlikely(t == thread_table))
+		panic("init got killed.");
+
 	/*
 	** Free user stack.
 	** We can't free kernel stack from here because we are still in it.
@@ -172,6 +180,28 @@ thread_exit(uchar status)
 	t->exit_status = status;
 	zombifie();
 	panic("Leaving thread_exit()\n");
+}
+
+/*
+** Executes the given binary, detaching iteself from the current virtual address
+** space to create a new one.
+**
+** Current thread and current virtual address space must be locked.
+*/
+status_t
+thread_exec(char const *path __unused /* TODO */)
+{
+	status_t s;
+	struct initrd_virt const *virt = initrd_get_virtual();
+
+	if ((s = thread_detach_and_create_vaspace())) {
+		return (s);
+	}
+
+	/* exec will release the virtual address space and the current thread */
+	//if (current_thread() == thread_table)
+		exec(virt->start, virt->len);
+	thread_exit(1); /* If exec failed, we have no other choice but kill the process */
 }
 
 /*
@@ -190,6 +220,8 @@ thread_attach_vaspace(struct thread *thread, struct vaspace *vaspace)
 
 /*
 ** Detaches the current thread from it's virtual space.
+** The current thread's virtual address space is set to NULL if the vaspace is released,
+** or left untouched otherwise.
 **
 ** This assumes that the current thread and it's virtual address space
 ** are both locked as writers.
@@ -204,12 +236,50 @@ thread_detach_vaspace(void)
 	vaspace = current_vaspace();
 	--vaspace->count;
 	if (!vaspace->count) {
-		vaspace_free();
-		kfree(vaspace);
+		vaspace_free(); /* Switches to a neutral vaspace */
 		t->vaspace = NULL;
 	} else {
 		current_vaspace_release_write();
 	}
+}
+
+/*
+** Detaches the current thread from it's virtual address space, and attaches it to a new
+** one.
+**
+** This assumes that the current thread and it's virtual address space
+** are both locked as writers.
+**
+** In case of error, the current virtual address space is kept untouched.
+*/
+status_t
+thread_detach_and_create_vaspace(void)
+{
+	struct thread *t;
+	struct vaspace *vaspace;
+	struct vaspace *new_vaspace;
+
+	t = current_thread();
+	vaspace = current_vaspace();
+	if (vaspace->count == 1) {
+		vaspace_cleanup();
+	} else {
+		new_vaspace = arch_new_vaspace();
+		if (!new_vaspace) {
+			return (ERR_NO_MEMORY);
+		}
+		arch_vaspace_switch(new_vaspace);
+
+		spin_rwlock_acquire_write(&new_vaspace->rwlock);
+		thread_attach_vaspace(t, new_vaspace);
+
+		--vaspace->count;
+		spin_rwlock_release_write(&vaspace->rwlock);
+	}
+	t->stack = NULL;
+	t->stack_top = NULL;
+	t->stack_saved = NULL;
+	return (OK);
 }
 
 /*

@@ -22,15 +22,18 @@ __optimize(0)
 static void
 thread2(void)
 {
-	putstr("o");
-	exit(0);
+	putstr("Hello Userspace World!\n");
+	while (42) {
+		putstr("o");
+		for (int i = 0; i < 100000000; ++i); // "Sleep" for the poors
+	}
 }
 
 __optimize(0)
 int main(void) {
 	putstr("Hello Userspace World!\n");
+	clone(&thread2);
 	while (42) {
-		clone(&thread2);
 		putstr(".");
 		for (int i = 0; i < 100000000; ++i); // "Sleep" for the poors
 	}

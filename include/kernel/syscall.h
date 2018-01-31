@@ -18,7 +18,8 @@ enum syscall_id
 	SYSCALL_UNKNOWN		= 0,
 	SYSCALL_CLONE		= 1,
 	SYSCALL_EXIT		= 2,
-	SYSCALL_WRITE		= 3,
+	SYSCALL_EXEC		= 3,
+	SYSCALL_WRITE		= 4,
 };
 
 /*
@@ -27,6 +28,7 @@ enum syscall_id
 
 status_t	sys_clone(void *main);
 void		sys_exit(uchar status);
+status_t	sys_exec(char const *path);
 int		sys_write(file_handler_t handler, char const *buff, size_t s);
 
 #endif /* !_KERNEL_SYSCALL_H_ */

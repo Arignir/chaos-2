@@ -91,7 +91,7 @@ apic_init(void)
 }
 
 /*
-** Returns the id of the current's processor local APIC.
+** Returns the id of the current processor's local APIC.
 */
 uint32
 apic_get_id(void)

@@ -31,5 +31,6 @@ physaddr_t	alloc_frame(void);
 void		free_frame(physaddr_t frame);
 void		mark_range_as_allocated(physaddr_t start, physaddr_t end);
 void		mark_range_as_free(physaddr_t start, physaddr_t end);
+size_t		pmm_count_free_frames(void);
 
 #endif /* !_KERNEL_PMM_H_ */

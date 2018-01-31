@@ -11,12 +11,9 @@
 #include <kernel/interrupts.h>
 #include <kernel/memory.h>
 #include <kernel/thread.h>
+#include <kernel/syscall.h>
 #include <arch/linker.h>
 #include <stdio.h>
-
-#include <kernel/initrd.h> /* TODO FIXME For debugging purposes */
-#include <kernel/exec.h>
-#include <kernel/vaspace.h>
 
 /*
 ** Kernel main entry point
@@ -32,15 +29,8 @@ kmain(void)
 
 	printf("Welcome to ChaOS\n\n");
 
-	struct initrd_virt const *virt = initrd_get_virtual();
-
-	current_thread_acquire_write();
-	current_vaspace_acquire_write();
-
-	/* exec will release the virtual address space and the current thread */
-	assert_eq(exec(virt->start, virt->len), OK);
-
-	panic("Leaving kmain()\n");
+	sys_exec("");
+	panic("kmain's sys_exec() failed\n");
 }
 
 /* Mark the kernel as physically reserved */
