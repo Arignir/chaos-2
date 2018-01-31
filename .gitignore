@@ -23,6 +23,9 @@
 /include/kconfig.*
 
 # Userspace programs
+/userspace/init
+/userspace/chess
+/userspace/pong
 /userspace/cat
 /userspace/touch
 /userspace/game

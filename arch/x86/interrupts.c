@@ -10,9 +10,10 @@
 #include <kernel/syscall.h>
 #include <kernel/memory.h>
 #include <arch/x86/interrupts.h>
+#include <arch/x86/ioapic.h>
 #include <arch/x86/asm.h>
 
-static ihandler_t irqhandlers[X86_INT_MAX];
+static ihandler_t irqhandlers[X86_INT_NB];
 
 /*
 **
@@ -77,6 +78,7 @@ register_int_handler(uint vector, void const *handler)
 {
 	assert(vector < X86_INT_NB);
 	irqhandlers[vector] = handler;
+	ioapic_unmask_int(vector);
 }
 
 /*
