@@ -24,12 +24,55 @@ status_t
 vaspace_init(struct vaspace *vaspace)
 {
 	memset(vaspace, 0, sizeof(*vaspace));
-	rwlock_init(&vaspace->rwlock);
+	spin_rwlock_init(&vaspace->rwlock);
 	return (vaspace_add_vseg(vaspace,
 		KERNEL_VIRTUAL_BASE,
 		(virtaddr_t)ROUND_DOWN(UINTPTR_MAX, PAGE_SIZE),
 		VSEG_DEFAULT | VSEG_WRITE | VSEG_EXEC
 	));
+}
+
+/*
+** Frees the current virtual address space user memory.
+** This is done by iterating over all user's virtual segments.
+*/
+void
+vaspace_cleanup(void)
+{
+	struct vaspace *vaspace;
+	struct vseg *seg;
+	struct vseg *end_seg;
+
+	vaspace = current_vaspace();
+	end_seg = vaspace->vsegs + vaspace->vseg_size;
+	for (seg = vaspace->vsegs; seg < end_seg; ++seg) {
+		if (seg->flags & VSEG_USER) {
+			munmap(
+				seg->start,
+				((uchar *)seg->end - (uchar *)seg->start) + PAGE_SIZE,
+				MUNMAP_DEFAULT
+			);
+		}
+	}
+	kfree(vaspace->vsegs);
+	vaspace->vsegs = NULL;
+	vaspace->vseg_size = 0;
+}
+
+/*
+** Frees the current virtual address space and it's content.
+**
+** The kernel is in kthread's vaspace passed this function.
+*/
+void
+vaspace_free(void)
+{
+	struct vaspace *vaspace;
+
+	vaspace = current_vaspace();
+	vaspace_cleanup();
+	arch_vaspace_free();
+	kfree(vaspace);
 }
 
 /*
@@ -175,18 +218,42 @@ vaspace_add_vseg(
 }
 
 /*
+** Removes and unmaps the virtual segment with given virtual adress as
+** it's start address.
+** This asserts the current virtual address space is already locked as writter.
+**
+** If the address is invalid, nothing occurs.
+**
+** Any pointer or index on the virtual segment list will be invalidate passed
+** this function.
+*/
+void
+vaspace_remove_vseg(virtaddr_t start, munmap_flags_t flags)
+{
+	size_t i;
+	struct vaspace *vaspace;
+
+	vaspace = current_vaspace();
+	for (i = 0; i < vaspace->vseg_size; ++i) {
+		if (vaspace->vsegs[i].start == start) {
+			vaspace_remove_vseg_by_idx(i, flags);
+			break;
+		}
+	}
+}
+
+/*
 ** Removes and unmaps the virtual segment with given index of the current
 ** virtual address space.
-** This asserts the current virtual address space is already locked in writting.
+** This asserts the current virtual address space is already locked as writter.
 **
 ** The index must be valid or undefined behaviour may occur.
 **
 ** Any pointer or index on the virtual segment list will be invalidate passed
 ** this function.
-** You don't need to release the writer lock of the virtual segment too.
 */
 void
-vaspace_remove_vseg(size_t idx, munmap_flags_t flags)
+vaspace_remove_vseg_by_idx(size_t idx, munmap_flags_t flags)
 {
 	struct vaspace *vaspace;
 	struct vseg const *seg;

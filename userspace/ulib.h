@@ -21,6 +21,7 @@
 */
 
 /* Syscalls */
+__unused
 static inline uintptr
 syscall(uintptr eax, uintptr edi, uintptr esi, uintptr edx, uintptr ecx)
 {
@@ -33,12 +34,28 @@ syscall(uintptr eax, uintptr edi, uintptr esi, uintptr edx, uintptr ecx)
 	return (ret);
 }
 
+__unused
 static status_t
 clone(void (*cb)(void))
 {
 	return (syscall(SYSCALL_CLONE, (uintptr)cb, 0, 0, 0));
 }
 
+__unused
+static void
+exit(uchar status)
+{
+	syscall(SYSCALL_EXIT, status, 0, 0, 0);
+}
+
+__unused
+static void
+exec(char const *path)
+{
+	syscall(SYSCALL_EXEC, (uintptr)path, 0, 0, 0);
+}
+
+__unused
 static size_t
 write(file_handler_t handler, char const *str, size_t n)
 {
@@ -47,6 +64,7 @@ write(file_handler_t handler, char const *str, size_t n)
 
 /* C Library */
 
+__unused
 static size_t strlen(char const *str)
 {
 	size_t i;
@@ -59,6 +77,7 @@ static size_t strlen(char const *str)
 	return (i);
 }
 
+__unused
 static void
 putstr(char const *str)
 {

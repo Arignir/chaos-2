@@ -145,7 +145,10 @@ syscall_handler(struct iframe *iframe)
 		);
 		break;
 	case SYSCALL_EXIT:
-		panic("exit() syscall unimplemented yet");
+		sys_exit(iframe->edi);
+		break;
+	case SYSCALL_EXEC:
+		iframe->eax = sys_exec((char const *)iframe->edi);
 		break;
 	case SYSCALL_WRITE:
 		iframe->eax = sys_write(

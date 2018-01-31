@@ -9,7 +9,7 @@
 
 #include <kernel/pmm.h>
 #include <kernel/kalloc.h>
-#include <kernel/cpu.h>
+#include <kernel/thread.h>
 #include <kernel/scheduler.h>
 #include <arch/x86/asm.h>
 #include <arch/x86/interrupts.h>
@@ -91,7 +91,7 @@ apic_init(void)
 }
 
 /*
-** Returns the id of the current's processor local APIC.
+** Returns the id of the current processor's local APIC.
 */
 uint32
 apic_get_id(void)
@@ -135,9 +135,13 @@ apic_eoi(void)
 void
 apic_timer_ihandler(struct iframe *iframe __unused)
 {
+	bool b;
+
+	b = (current_thread());
 	apic_eoi();
-	if (current_cpu()->thread)
+	if (b) {
 		yield();
+	}
 }
 
 /*

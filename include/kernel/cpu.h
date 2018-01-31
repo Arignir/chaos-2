@@ -13,8 +13,9 @@
 # include <chaosdef.h>
 # include <kconfig.h>
 # include <kernel/interrupts.h>
-# include <kernel/thread.h>
 # include <arch/cpu.h>
+
+struct thread;
 
 /* A structure representing a CPU */
 struct cpu
@@ -52,32 +53,5 @@ void		cpu_push_ints(void);
 void		cpu_pop_ints(void);
 void		cpu_remap_bsp(void);
 size_t		current_cpu_id(void);
-
-/*
-** Locks the currently running thread and returns a constant pointer to it.
-**
-** Remember to release the thread later.
-*/
-static inline struct thread *
-current_thread_acquire(void)
-{
-	struct thread *t;
-
-	t = current_cpu()->thread;
-	spinlock_acquire(&t->lock);
-	return (t);
-}
-
-/*
-** Release the currently running thread.
-*/
-static inline void
-current_thread_release(void)
-{
-	struct thread *t;
-
-	t = current_cpu()->thread;
-	spinlock_release(&t->lock);
-}
 
 #endif /* !_KERNEL_CPU_H_ */

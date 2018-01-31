@@ -191,18 +191,12 @@ interrupt(uchar v)
 }
 
 static inline uint
-xchg(uint *addr, uint newval)
+xchg(uint volatile *addr, uint newval)
 {
 	uint res;
 
-	asm volatile("lock xchgl %0, %1" : "+m"(*addr), "=a"(res) : "1"(newval) : "cc");
+	asm volatile("lock xchgl %0, %1;" : "+m"(*addr), "=a"(res) : "1"(newval) : "cc");
 	return (res);
-}
-
-static inline void
-xaddl(int *addr, int value)
-{
-	asm volatile("lock xaddl %0, %1" : "+r"(value), "+m"(*addr) : : "memory");
 }
 
 static inline uint64

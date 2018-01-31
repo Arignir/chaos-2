@@ -176,6 +176,32 @@ free_frame(physaddr_t frame)
 	spinlock_release(&frame_lock);
 }
 
+size_t
+pmm_count_free_frames(void)
+{
+	size_t c;
+	size_t i;
+
+	c = 0;
+	spinlock_acquire(&frame_lock);
+	for (i = 0; i < FRAME_BITMAP_SIZE; ++i) {
+		if (frame_bitmap[i]) {
+			c += !(frame_bitmap[i] & (1 << 0));
+			c += !(frame_bitmap[i] & (1 << 1));
+			c += !(frame_bitmap[i] & (1 << 2));
+			c += !(frame_bitmap[i] & (1 << 3));
+			c += !(frame_bitmap[i] & (1 << 4));
+			c += !(frame_bitmap[i] & (1 << 5));
+			c += !(frame_bitmap[i] & (1 << 6));
+			c += !(frame_bitmap[i] & (1 << 7));
+		} else {
+			c += 8;
+		}
+	}
+	spinlock_release(&frame_lock);
+	return (c);
+}
+
 extern struct pmm_reserved_area const __start_pmm_reserved_area[] __weak;
 extern struct pmm_reserved_area const __stop_pmm_reserved_area[] __weak;
 

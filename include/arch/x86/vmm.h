@@ -136,5 +136,8 @@ get_virtaddr(uint pdidx, uint ptidx)
 	return ((virtaddr_t)((pdidx) << 22u | (ptidx) << 12u));
 }
 
+void	vmm_unmap_pagetables(void);
+void	vmm_copy_pagetables(struct page_dir *pd);
+
 #endif /* !_ARCH_X86_VMM_H_ */
 

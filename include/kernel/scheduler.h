@@ -22,7 +22,7 @@ struct scheduler
 
 struct thread;
 
-# if DEBUG_SCHEDULER
+# if KCONFIG_DEBUG_SCHEDULER
 #  define assert_scheduler(x) assert(x)
 # else
 #  define assert_scheduler(x)
@@ -32,8 +32,10 @@ struct thread;
 ** Arch-dependant functions that must be reimplemented for each architecture.
 */
 extern void	enter_scheduler(void *scheduler_stack);
+extern __noreturn void	enter_scheduler_at(void *scheduler_stack, void(*)(void));
 
 void		*reschedule(void *);
 void		yield(void);
+__noreturn void	zombifie(void);
 
 #endif /* !_KERNEL_SCHEDULER_H_ */

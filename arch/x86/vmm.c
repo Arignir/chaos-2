@@ -264,6 +264,43 @@ vmm_unmap(virtaddr_t va, munmap_flags_t flags)
 }
 
 /*
+** Unmaps all user pagetables of the current virtual address space.
+*/
+void
+vmm_unmap_pagetables(void)
+{
+	size_t i;
+	struct page_dir *pd;
+
+	pd = get_pagedir();
+	for (i = 0; i < get_pd_idx(KERNEL_VIRTUAL_BASE); ++i)
+	{
+		if (pd->entries[i].present) {
+			free_frame(pd->entries[i].frame << 12u);
+			pd->entries[i].value = 0;
+		}
+	}
+}
+
+/*
+** Copies the page tables of current page directory to the given one.
+**
+** Also sets resurive mapping for the given page directory.
+*/
+void
+vmm_copy_pagetables(struct page_dir *pd)
+{
+	struct page_dir *cur_pd;
+	size_t i;
+
+	cur_pd = get_pagedir();
+	for (i = get_pd_idx(KERNEL_VIRTUAL_BASE); i < 1024; ++i) {
+		pd->entries[i] = cur_pd->entries[i];
+	}
+	pd->entries[1023].frame = vmm_get_frame(pd) >> 12u;
+}
+
+/*
 ** Inits the arch-dependant virtual memory manager, and then calls
 ** the arch-independant virtual memory manager init function.
 */

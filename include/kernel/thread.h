@@ -14,7 +14,8 @@
 # include <chaosdef.h>
 # include <chaoserr.h>
 # include <kernel/memory.h>
-# include <kernel/spinlock.h>
+# include <kernel/spin_rwlock.h>
+# include <kernel/cpu.h>
 
 typedef int tid_t;
 typedef int (*thread_main)();
@@ -31,11 +32,8 @@ typedef int (*thread_main)();
 enum			thread_state
 {
 	NONE = 0,
-	SUSPENDED,
 	RUNNABLE,
 	RUNNING,
-	BLOCKED,
-	SLEEPING,
 	ZOMBIE,
 };
 
@@ -45,11 +43,8 @@ enum			thread_state
 static char const *thread_state_str[] =
 {
 	[NONE]		= "NONE",
-	[SUSPENDED]	= "SUSPENDED",
 	[RUNNABLE]	= "RUNNABLE",
 	[RUNNING]	= "RUNNING",
-	[BLOCKED]	= "BLOCKED",
-	[SLEEPING]	= "SLEEPING",
 	[ZOMBIE]	= "ZOMBIE",
 };
 
@@ -78,20 +73,68 @@ struct			thread
 	struct vaspace *vaspace;
 
 	/* Locker of this thread. Ideally, this should be a spinlock based rwlock */
-	struct spinlock lock;
+	struct spin_rwlock rwlock;
 };
 
 extern struct thread thread_table[];
 
 void			thread_early_init(void);
 void			thread_init(void);
+__noreturn void		thread_exit(uchar status);
+status_t		thread_exec(char const *path);
 status_t		thread_create_stacks(struct thread *t);
 status_t		thread_clone(void *ip);
 void			thread_attach_vaspace(struct thread *t, struct vaspace *vaspace);
+void			thread_detach_vaspace(void);
+status_t		thread_detach_and_create_vaspace(void);
 
 /* Arch-dependant function, usually in assembly */
 void			arch_jump_to_userspace(void *stack, void (*main)(void));
 void			arch_set_kernel_stack(uintptr);
 void			arch_thread_clone(struct thread *t);
+
+static inline struct thread *
+current_thread(void)
+{
+	return (current_cpu()->thread);
+}
+
+static inline struct thread *
+current_thread_acquire_read(void)
+{
+	struct thread *t;
+
+	t = current_thread();
+	spin_rwlock_acquire_read(&t->rwlock);
+	return (t);
+}
+
+static inline struct thread *
+current_thread_acquire_write(void)
+{
+	struct thread *t;
+
+	t = current_thread();
+	spin_rwlock_acquire_write(&t->rwlock);
+	return (t);
+}
+
+static inline void
+current_thread_release_read(void)
+{
+	struct thread *t;
+
+	t = current_thread();
+	spin_rwlock_release_read(&t->rwlock);
+}
+
+static inline void
+current_thread_release_write(void)
+{
+	struct thread *t;
+
+	t = current_thread();
+	spin_rwlock_release_write(&t->rwlock);
+}
 
 #endif /* !_KERNEL_THREAD_H_ */
