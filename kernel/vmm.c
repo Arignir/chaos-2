@@ -14,6 +14,7 @@
 #include <kernel/vmm.h>
 #include <kernel/kalloc.h>
 #include <kernel/initrd.h>
+#include <lib/bdev/mem_bdev.h>
 #include <arch/linker.h>
 
 /*
@@ -151,8 +152,12 @@ munmap(virtaddr_t va, size_t size, munmap_flags_t flags)
 void
 vmm_init(void)
 {
+	struct initrd_virt const *virt;
+
 	kalloc_init();
 	if (initrd_is_present()) {
-		initrd_map();
+		assert_eq(initrd_map(), OK);
+		virt = initrd_get_virtual();
+		assert_eq(register_membdev("initrd", virt->start, virt->len), OK);
 	}
 }

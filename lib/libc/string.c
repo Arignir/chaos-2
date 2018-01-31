@@ -7,6 +7,7 @@
 **
 \* ------------------------------------------------------------------------ */
 
+#include <kernel/kalloc.h>
 #include <string.h>
 
 size_t
@@ -19,6 +20,20 @@ strlen(char const *str)
 		++s;
 	}
 	return ((size_t)(s - str));
+}
+
+char *
+strdup(char const *str)
+{
+	char *new_s;
+	size_t size;
+
+	size = strlen(str);
+	new_s = kalloc(sizeof(char) * (size + 1));
+	if (likely(new_s != NULL)) {
+		memcpy(new_s, str, size);
+	}
+	return (new_s);
 }
 
 char *
