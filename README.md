@@ -15,7 +15,7 @@ apt-get install qemu grub-pc-bin xorriso mtools
 
 If you are using `pacman` as your package manager (`ArchLinux`, `Manjaro` etc.), you can use this command:
 ```bash
-pacman -Sy qemu grub libisoburn mtools
+pacman -Syu dialog qemu grub libisoburn mtools
 ```
 
 If you are using `portage` as your package manager (`Gentoo`), you can use this command instead:
