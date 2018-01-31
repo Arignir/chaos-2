@@ -8,7 +8,7 @@
 ##############################################################################
 
 # Binaries
-export USERSPACE_BINS	:= game
+export USERSPACE_BINS	:= init
 
 # Flags
 CFLAGS		+= -I "$(PROJECT_DIR)/userspace"
