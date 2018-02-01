@@ -7,6 +7,8 @@
 ##
 ##############################################################################
 
+RELATIVE_DIR := $(subst $(PROJECT_DIR)/,,$(shell pwd))
+
 # Binaries
 export USERSPACE_BINS	:= init
 
@@ -22,12 +24,12 @@ KERNEL_OBJ = kernel.o
 all: $(INITRD)
 
 $(INITRD): $(USERSPACE_BINS)
-	$(Q)printf "  SHELL\t initrd.sh\n"
+	$(Q)printf "  SHELL\t scripts/initrd.sh\n"
 	../scripts/initrd.sh
 
 .SECONDEXPANSION:
 $(USERSPACE_BINS): $$(addsuffix .o, $$@)
-	$(Q)printf "  LD\t $@\n"
+	$(Q)printf "  LD\t $(RELATIVE_DIR)/$@\n"
 	$(LD) $(LDFLAGS) $< -o $@
 
 .PHONY: clean
@@ -38,5 +40,5 @@ clean:
 
 -include $(addsuffix .d, $(USERSPACE_BINS))
 %.o: %.c
-	$(Q)printf "  CC\t $<\n"
+	$(Q)printf "  CC\t $(RELATIVE_DIR)/$<\n"
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@

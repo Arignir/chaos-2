@@ -7,6 +7,8 @@
 ##
 ##############################################################################
 
+RELATIVE_DIR := $(subst $(PROJECT_DIR)/,,$(shell pwd))
+
 SRC_C += $(wildcard *.c)
 SRC_ASM += $(wildcard *.asm)
 
@@ -19,7 +21,7 @@ DRIVER_OBJ = drivers.o
 all: $(DRIVER_OBJ)
 
 $(DRIVER_OBJ): $(OBJS)
-	$(Q)printf "  LD\t $@\n"
+	$(Q)printf "  LD\t $(RELATIVE_DIR)/$@\n"
 	$(Q)$(LD) $(LDFLAGS) -o $@ -r $^
 
 .PHONY: clean
@@ -28,11 +30,11 @@ clean:
 
 -include $(DEPS)
 %.o: %.c
-	$(Q)printf "  CC\t $<\n"
+	$(Q)printf "  CC\t $(RELATIVE_DIR)/$<\n"
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@
 
 -include $(DEPS)
 %.o: %.asm
-	$(Q)printf "  NASM\t $<\n"
+	$(Q)printf "  NASM\t $(RELATIVE_DIR)/$<\n"
 	$(Q)$(NASM) $(NASMFLAGS) -M $< -o $@ > $(patsubst %.o,%.d, $@)
 	$(Q)$(NASM) $(NASMFLAGS) $< -o $@

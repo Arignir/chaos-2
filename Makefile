@@ -35,7 +35,7 @@ export CPU ?= qemu32
 arch ?= x86
 export ARCH ?= $(arch)
 
-export PROJECT_DIR = $(shell pwd)
+export PROJECT_DIR := $(shell pwd)
 export INCLUDE_DIR = $(PROJECT_DIR)/include
 
 # Flags
