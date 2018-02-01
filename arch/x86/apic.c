@@ -120,7 +120,7 @@ apic_map(physaddr_t pa)
 ** Issue an end-of-interrupt signal so that the apic can process the next
 ** interrupt.
 */
-static void
+void
 apic_eoi(void)
 {
 	apic_write(APIC_EOI, 0x0);

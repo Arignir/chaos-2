@@ -92,6 +92,7 @@ uint32	apic_get_id(void);
 void	apic_map(physaddr_t);
 void	apic_send_ipi(uint32 dest, uint32 flags);
 bool	apic_ipi_acked(void);
+void	apic_eoi(void);
 
 #if KCONFIG_ENABLE_SMP
 status_t	apic_start_ap(struct cpu *, uintptr addr);
