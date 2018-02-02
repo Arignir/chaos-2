@@ -72,6 +72,9 @@ struct			thread
 	/* virtual address space */
 	struct vaspace *vaspace;
 
+	/* Current working directory */
+	char const *cwd;
+
 	/* Locker of this thread. Ideally, this should be a spinlock based rwlock */
 	struct spin_rwlock rwlock;
 };

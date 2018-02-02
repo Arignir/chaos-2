@@ -34,7 +34,6 @@ status_t
 vseg_grow(struct vseg *seg, size_t size)
 {
 	status_t s;
-	size_t i;
 	struct vaspace *vaspace;
 	struct vseg tmp_seg;
 
@@ -45,15 +44,14 @@ vseg_grow(struct vseg *seg, size_t size)
 	tmp_seg.end = (char *)seg->end + size;
 
 	/* Tests if the new vseg interesects with an existing one */
-	for (i = 0; i < vaspace->vseg_size; ++i) {
-		if (&vaspace->vsegs[i] != seg
-			&& vseg_intersects(&vaspace->vsegs[i], &tmp_seg)) {
+	vector_foreach(&vaspace->vsegs, vseg) {
+		if (vseg != seg && vseg_intersects(vseg, &tmp_seg)) {
 			s = ERR_ALREADY_MAPPED;
 			goto end;
 		}
 	}
 
-	/* Map the new memory */
+	/* Maps the new memory */
 	if (mmap((uchar *)seg->end + PAGE_SIZE, size, seg->flags & MMAP_MASK)
 			!= (uchar *)seg->end + PAGE_SIZE) {
 		s = ERR_CANT_MAP;

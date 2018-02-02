@@ -9,24 +9,25 @@
 
 RELATIVE_DIR := $(subst $(PROJECT_DIR)/,,$(shell pwd))
 
-LIB_OBJ = lib.o
+SRC_C += $(wildcard *.c)
+
+OBJS += $(SRC_C:.c=.o)
+DEPS = $(OBJS:.o=.d)
+
+FS_OBJ = fs.o
 
 .PHONY: all
-all: check_up
+all: $(FS_OBJ)
 
-.PHONY: check_up
-check_up:
-	$(Q)$(MAKE) -C libc all
-	$(Q)$(MAKE) -C bdev all
-	$(Q)$(MAKE) -C fs all
-	$(Q)$(MAKE) $(LIB_OBJ)
-
-$(LIB_OBJ): libc/libc.o bdev/bdev.o fs/fs.o
+$(FS_OBJ): $(OBJS)
 	$(Q)printf "  LD\t $(RELATIVE_DIR)/$@\n"
 	$(Q)$(LD) $(LDFLAGS) -o $@ -r $^
 
 .PHONY: clean
 clean:
-	$(Q)$(MAKE) -C libc clean
-	$(Q)$(MAKE) -C bdev clean
-	$(Q)$(RM) $(LIB_OBJ)
+	$(Q)$(RM) $(FS_OBJ) $(OBJS) $(DEPS)
+
+-include $(DEPS)
+%.o: %.c
+	$(Q)printf "  CC\t $(RELATIVE_DIR)/$<\n"
+	$(Q)$(CC) $(CFLAGS) -c $< -o $@

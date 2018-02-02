@@ -16,7 +16,13 @@
 # include <kernel/vseg.h>
 # include <kernel/vmm.h>
 # include <kernel/thread.h>
+# include <kernel/vector.h>
 # include <arch/vaspace.h>
+
+struct vseg_vector
+{
+	NEW_VECTOR(struct vseg);
+};
 
 /*
 ** Represents the virtual address space shared by a couple of threads.
@@ -24,19 +30,16 @@
 ** The golden rule is that we must _NEVER_ have two virtual segments
 ** overlapping.
 **
-** Remeber that vsegs are inclusives, which means that a segment that is
+** Remember that vsegs are inclusives, which means that a segment that is
 ** one page long has the same 'start' and 'end' addresses.
 */
 struct vaspace
 {
 	/*
 	** All the memory segments composing this virtual address space.
-	** This array is sorted in ascending order of vseg->start.
+	** This vector is sorted in ascending order of vseg->start.
 	*/
-	struct vseg *vsegs;
-
-	/* Number of virtual segments in the array above */
-	size_t vseg_size;
+	struct vseg_vector vsegs;
 
 	struct arch_vaspace arch;
 
@@ -112,8 +115,9 @@ void		vaspace_cleanup(void);
 status_t	vaspace_new_vseg(virtaddr_t start, size_t size, mmap_flags_t flags);
 status_t	vaspace_add_vseg(struct vaspace *vaspace, virtaddr_t start, virtaddr_t end, vseg_flags_t);
 virtaddr_t	vaspace_new_random_vseg(size_t size, mmap_flags_t flags);
+status_t	vaspace_add_kernel_vseg(struct vaspace *vaspace);
 void		vaspace_remove_vseg(virtaddr_t, munmap_flags_t flags);
 void		vaspace_remove_vseg_by_idx(size_t idx, munmap_flags_t flags);
-void		vaspace_dump(struct vaspace const *vaspace);
+void		vaspace_dump(struct vaspace *vaspace);
 
 #endif /* !_KERNEL_VASPACE_H_ */

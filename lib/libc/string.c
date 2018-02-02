@@ -31,7 +31,7 @@ strdup(char const *str)
 	size = strlen(str);
 	new_s = kalloc(sizeof(char) * (size + 1));
 	if (likely(new_s != NULL)) {
-		memcpy(new_s, str, size);
+		memcpy(new_s, str, size + 1);
 	}
 	return (new_s);
 }

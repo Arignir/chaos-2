@@ -124,6 +124,7 @@ thread_clone(void *ip)
 	t->parent = current_thread();
 	t->entry = ip;
 	t->user = t->parent->user;
+	t->cwd = strdup(t->parent->cwd);
 
 	thread_attach_vaspace(t, vaspace);
 
@@ -199,9 +200,10 @@ thread_exec(char const *path __unused /* TODO */)
 	}
 
 	/* exec will release the virtual address space and the current thread */
-	//if (current_thread() == thread_table)
-		exec(virt->start, virt->len);
-	thread_exit(1); /* If exec failed, we have no other choice but kill the process */
+	exec(virt->start, virt->len);
+
+	/* If exec failed, we have no other choice but kill the process */
+	thread_exit(1);
 }
 
 /*
@@ -263,6 +265,7 @@ thread_detach_and_create_vaspace(void)
 	vaspace = current_vaspace();
 	if (vaspace->count == 1) {
 		vaspace_cleanup();
+		vaspace_add_kernel_vseg(vaspace);
 	} else {
 		new_vaspace = arch_new_vaspace();
 		if (!new_vaspace) {
@@ -322,6 +325,7 @@ thread_init(void)
 	t = current_thread_acquire_write();
 	{
 		thread_set_name(t, "kthread");
+		t->cwd = strdup("/");
 
 		/* Setup vaspace */
 		assert_eq(vaspace_init(&kthread_vaspace), OK);

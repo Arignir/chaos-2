@@ -10,7 +10,6 @@
 #include <kernel/vaspace.h>
 #include <kernel/vseg.h>
 #include <kernel/thread.h>
-#include <kernel/kalloc.h>
 #include <kernel/random.h>
 #include <stdio.h>
 #include <string.h>
@@ -18,34 +17,29 @@
 /*
 ** Initializes the given virtual address space with default values.
 **
-** Only the kernel's virtual segment is mapped.
+** Only the kernel's virtual segment is added as a virtual segment.
 */
 status_t
 vaspace_init(struct vaspace *vaspace)
 {
 	memset(vaspace, 0, sizeof(*vaspace));
 	spin_rwlock_init(&vaspace->rwlock);
-	return (vaspace_add_vseg(vaspace,
-		KERNEL_VIRTUAL_BASE,
-		(virtaddr_t)ROUND_DOWN(UINTPTR_MAX, PAGE_SIZE),
-		VSEG_DEFAULT | VSEG_WRITE | VSEG_EXEC
-	));
+	vector_init(&vaspace->vsegs);
+	return (vaspace_add_kernel_vseg(vaspace));
 }
 
 /*
-** Frees the current virtual address space user memory.
+** Removes *ALL* vsegs, but frees only the userspace ones.
+**
 ** This is done by iterating over all user's virtual segments.
 */
 void
 vaspace_cleanup(void)
 {
 	struct vaspace *vaspace;
-	struct vseg *seg;
-	struct vseg *end_seg;
 
 	vaspace = current_vaspace();
-	end_seg = vaspace->vsegs + vaspace->vseg_size;
-	for (seg = vaspace->vsegs; seg < end_seg; ++seg) {
+	vector_foreach(&vaspace->vsegs, seg) {
 		if (seg->flags & VSEG_USER) {
 			munmap(
 				seg->start,
@@ -54,9 +48,7 @@ vaspace_cleanup(void)
 			);
 		}
 	}
-	kfree(vaspace->vsegs);
-	vaspace->vsegs = NULL;
-	vaspace->vseg_size = 0;
+	vector_clear(&vaspace->vsegs);
 }
 
 /*
@@ -129,16 +121,13 @@ vaspace_new_random_vseg(size_t size, mmap_flags_t flags)
 	struct vseg null_vseg;
 	struct vseg *biggest;
 	struct vseg *prev;
-	struct vseg *seg;
-	size_t i;
 	virtaddr_t start;
 
 	biggest_length = 0;
 	vaspace = current_vaspace();
 	vseg_init(&null_vseg, NULL, NULL, VSEG_DEFAULT);
 	prev = biggest = &null_vseg;
-	for (i = 0; i < vaspace->vseg_size; ++i) {
-		seg = vaspace->vsegs + i;
+	vector_foreach(&vaspace->vsegs, seg) {
 		tmp_length = vseg_length_between(prev, seg);
 		if (tmp_length > biggest_length) {
 			biggest = prev;
@@ -177,44 +166,37 @@ vaspace_add_vseg(
 	vseg_flags_t flags
 )
 {
-	size_t i;
-	struct vseg vseg;
-	struct vseg *new_vsegs;
+	struct vseg new_vseg;
 
 	assert_vmm(IS_PAGE_ALIGNED(start));
 	assert_vmm(IS_PAGE_ALIGNED(end));
 
-	vseg_init(&vseg, start, end, flags);
-	for (i = 0; i < vaspace->vseg_size; ++i) {
-		if (vseg_intersects(vaspace->vsegs + i, &vseg)) {
+	vseg_init(&new_vseg, start, end, flags);
+	vector_foreach_count(&vaspace->vsegs, vseg, i) {
+		if (vseg_intersects(vseg, &new_vseg)) {
 			return (ERR_ALREADY_MAPPED);
 		}
-		if (vaspace->vsegs[i].start > vseg.start) {
+		if (vseg->start > new_vseg.start) {
 			break;
 		}
 	}
 
-	/* Allocates the segment space */
-	new_vsegs = krealloc(
-		vaspace->vsegs,
-		sizeof(*new_vsegs) * (vaspace->vseg_size + 1)
-	);
-	if (unlikely(new_vsegs == NULL)) {
-		return (ERR_NO_MEMORY);
-	}
+	/* Insert the new segment at given index */
+	return (vector_insert(&vaspace->vsegs, i, new_vseg));
+}
 
-	/* Insertion sort. We move old values away. */
-	memmove(
-		new_vsegs + (i + 1),
-		new_vsegs + i,
-		(vaspace->vseg_size - i) * sizeof(*new_vsegs)
-	);
-
-	/* And add the new one to the remaining 'i'. */
-	new_vsegs[i] = vseg;
-	vaspace->vsegs = new_vsegs;
-	++vaspace->vseg_size;
-	return (OK);
+/*
+** Adds the kernel as a virtual segment for the given vaspace.
+** This function assumes the given virtual address space is locked as writter.
+*/
+status_t
+vaspace_add_kernel_vseg(struct vaspace *vaspace)
+{
+	return (vaspace_add_vseg(vaspace,
+		KERNEL_VIRTUAL_BASE,
+		(virtaddr_t)ROUND_DOWN(UINTPTR_MAX, PAGE_SIZE),
+		VSEG_DEFAULT | VSEG_WRITE | VSEG_EXEC
+	));
 }
 
 /*
@@ -230,12 +212,11 @@ vaspace_add_vseg(
 void
 vaspace_remove_vseg(virtaddr_t start, munmap_flags_t flags)
 {
-	size_t i;
 	struct vaspace *vaspace;
 
 	vaspace = current_vaspace();
-	for (i = 0; i < vaspace->vseg_size; ++i) {
-		if (vaspace->vsegs[i].start == start) {
+	vector_foreach_count(&vaspace->vsegs, vseg, i) {
+		if (vseg->start == start) {
 			vaspace_remove_vseg_by_idx(i, flags);
 			break;
 		}
@@ -257,29 +238,15 @@ vaspace_remove_vseg_by_idx(size_t idx, munmap_flags_t flags)
 {
 	struct vaspace *vaspace;
 	struct vseg const *seg;
-	struct vseg *vsegs;
 
 	vaspace = current_vaspace();
-	assert_vmm(idx < vaspace->vseg_size);
-	seg = vaspace->vsegs + idx;
+	seg = vector_at(&vaspace->vsegs, idx);
 
 	/* Unmap the segment */
 	munmap(seg->start, (uchar *)seg->end - (uchar *)seg->start + PAGE_SIZE, flags);
 
-	/* Remove element but conserve order */
-	memmove(
-		vaspace->vsegs + idx,
-		vaspace->vsegs + (idx + 1),
-		(vaspace->vseg_size - idx - 1) * sizeof(*vaspace->vsegs)
-	);
-	vsegs = krealloc(
-		vaspace->vsegs,
-		sizeof(*vsegs) * (vaspace->vseg_size - 1)
-	);
-	--vaspace->vseg_size;
-	if (vsegs != NULL) {
-		vaspace->vsegs = vsegs;
-	}
+	/* Remove element and conserve order */
+	vector_remove(&vaspace->vsegs, idx);
 }
 
 /*
@@ -288,13 +255,11 @@ vaspace_remove_vseg_by_idx(size_t idx, munmap_flags_t flags)
 ** Assumes the address space is already locked.
 */
 void
-vaspace_dump(struct vaspace const *vaspace)
+vaspace_dump(struct vaspace *vaspace)
 {
-	struct vseg const *vseg;
-
 	printf("Shared by %u thread(s)\n", vaspace->count);
-	printf("Number of vsegs: %zu\n", vaspace->vseg_size);
-	for (vseg = vaspace->vsegs; vseg < vaspace->vsegs + vaspace->vseg_size; ++vseg) {
+	printf("Number of vsegs: %zu\n", vector_length(&vaspace->vsegs));
+	vector_foreach(&vaspace->vsegs, vseg) {
 		printf("\tFrom %p to %p (Size: %p) %c%c%c\n",
 			vseg->start,
 			(uchar *)vseg->end + PAGE_SIZE - 1,

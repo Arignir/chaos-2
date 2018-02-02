@@ -7,13 +7,17 @@
 **
 \* ------------------------------------------------------------------------ */
 
+#include <kernel/vector.h>
 #include <kernel/bdev.h>
-#include <kernel/kalloc.h>
 #include <string.h>
 
-static struct bdev **bdev_tab = NULL;
-static size_t bdev_tab_size = 0;
-struct rwlock bdev_tab_lock = RWLOCK_DEFAULT;
+struct bdev_vector
+{
+	NEW_VECTOR(struct bdev *);
+};
+
+static struct bdev_vector bdev_vector;
+static struct rwlock bdev_tab_lock = RWLOCK_DEFAULT;
 
 static inline void
 bdev_inc_ref(struct bdev *bdev)
@@ -24,20 +28,19 @@ bdev_inc_ref(struct bdev *bdev)
 static inline void
 bdev_dec_ref(struct bdev *bdev)
 {
-	struct bdev **tmp;
-
 	--bdev->ref_count;
 	if (bdev->ref_count == 0) {
 		rwlock_acquire_write(&bdev_tab_lock);
 		if (bdev->close) {
 			bdev->close(bdev);
 		}
-		kfree(bdev->name);
-		--bdev_tab_size;
-		tmp = krealloc(bdev_tab, sizeof(*bdev_tab) * (--bdev_tab_size));
-		if (tmp) {
-			bdev_tab = tmp;
+		vector_foreach_count(&bdev_vector, tmp, i) {
+			if (*tmp == bdev) { /* Remove it */
+				vector_remove(&bdev_vector, i);
+				break;
+			}
 		}
+		kfree(bdev->name);
 		rwlock_release_write(&bdev_tab_lock);
 	}
 }
@@ -64,12 +67,11 @@ bdev_init(struct bdev *bdev, char const *name)
 struct bdev *
 bdev_open(char const *name)
 {
-	size_t i;
 	struct bdev *bdev;
 
 	rwlock_acquire_read(&bdev_tab_lock);
-	for (i = 0; i < bdev_tab_size; ++i) {
-		bdev = bdev_tab[i];
+	vector_foreach(&bdev_vector, bdev_ptr) {
+		bdev = *bdev_ptr;
 		rwlock_acquire_read(&bdev->lock);
 		if (!strcmp(name, bdev->name)) {
 			rwlock_release_read(&bdev->lock);
@@ -106,17 +108,8 @@ bdev_close(struct bdev *bdev)
 status_t
 bdev_register(struct bdev *bdev)
 {
-	struct bdev **tmp;
-
 	rwlock_acquire_write(&bdev_tab_lock);
-	tmp = krealloc(bdev_tab, sizeof(*bdev_tab) * (bdev_tab_size + 1));
-	if (!tmp) {
-		rwlock_release_write(&bdev_tab_lock);
-		return (ERR_NO_MEMORY);
-	}
-	bdev_tab = tmp;
-	bdev_tab[bdev_tab_size] = bdev;
-	++bdev_tab_size;
+	vector_pushback(&bdev_vector, bdev);
 	bdev_inc_ref(bdev);
 	rwlock_release_write(&bdev_tab_lock);
 	return (OK);
