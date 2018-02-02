@@ -78,7 +78,7 @@ make run
   - [X] Kernel threads
   - [X] Processes (mix of `clone()`, `exec()` and `exit()`)
 - [X] Initrd loading, reading and writing
-- [ ] Device abstraction
+- [X] Device abstraction
 - [ ] Filesystem
   - [ ] Directory listing (`opendir()`, `readdir()`, `closedir()`)
   - [ ] Creating and removing files/directories (`mkfile()`, `mkdir()`, `remove()`)
