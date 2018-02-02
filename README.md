@@ -72,7 +72,7 @@ make run
   - [X] Kernel heap (`kalloc()`, `kfree()`, `krealloc()`)
 - [X] ELF Program execution (`exec()`)
 - [X] Syscall interface and userspace (ring 3)
-- [ ] Multi process / threads
+- [X] Multi process / threads
   - [X] Scheduling
   - [X] User Threads
   - [X] Kernel threads
