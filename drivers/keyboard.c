@@ -55,7 +55,7 @@ static size_t input_read_idx = 0;
 static void
 keyboard_ihandler(void)
 {
-	char code;
+	unsigned char code;
 
 	code = inb(KEYBOARD_IO_PORT);
 	if (!(code & 0x80)) { /* Only pressed keys */
