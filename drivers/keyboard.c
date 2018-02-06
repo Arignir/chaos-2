@@ -56,15 +56,17 @@ static void
 keyboard_ihandler(void)
 {
 	unsigned char code;
+	size_t check_overwrite;
 
 	code = inb(KEYBOARD_IO_PORT);
-	if (!(code & 0x80)) { /* Only pressed keys */
+	if (!(code & 0x80)) {
 		code = fr_azerty_charset[(int)code];
-		if (code != '\0')
+		check_overwrite = (input_write_idx + 1) % PAGE_SIZE;
+		if (check_overwrite != input_read_idx && code != '\0')
 		{
 			printf("%c", code);
 			input_buffer[input_write_idx] = code;
-			input_write_idx = (input_write_idx + 1) % PAGE_SIZE;
+			input_write_idx = check_overwrite;
 		}
 	}
 	apic_eoi();

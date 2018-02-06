@@ -43,7 +43,6 @@ enum x86_interrupts
 	INT_IRQ0			= 0x20,
 
 	INT_PIT				= 0x20,
-
 	INT_KEYBOARD			= 0x21,
 
 	INT_APIC_TIMER			= 0x32,
