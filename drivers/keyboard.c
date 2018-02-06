@@ -9,10 +9,10 @@
 
 #include <kernel/init.h>
 #include <kernel/interrupts.h>
+#include <arch/x86/apic.h>
 #include <arch/x86/asm.h>
 #include <drivers/keyboard.h>
 #include <stdio.h>
-#include <arch/x86/apic.h>
 
 static char const fr_azerty_charset[128] =
 {
