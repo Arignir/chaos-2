@@ -48,9 +48,9 @@ static char const fr_azerty_charset[128] =
 	[57] = ' ',
 };
 
-static volatile char input_buffer[PAGE_SIZE] = { 0 };
-static volatile size_t input_write_idx = 0;
-static volatile size_t input_read_idx = 0;
+static char input_buffer[PAGE_SIZE] = { 0 };
+static size_t input_write_idx = 0;
+static size_t input_read_idx = 0;
 
 static void
 keyboard_ihandler(void)
