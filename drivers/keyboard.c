@@ -9,6 +9,7 @@
 
 #include <kernel/init.h>
 #include <kernel/interrupts.h>
+#include <kernel/mutex.h>
 #include <arch/x86/apic.h>
 #include <arch/x86/asm.h>
 #include <drivers/keyboard.h>
@@ -51,6 +52,7 @@ static char const fr_azerty_charset[128] =
 static char input_buffer[PAGE_SIZE] = { 0 };
 static size_t input_write_idx = 0;
 static size_t input_read_idx = 0;
+static struct mutex keyboard_lock = MUTEX_DEFAULT;
 
 static void
 keyboard_ihandler(void)
@@ -61,6 +63,7 @@ keyboard_ihandler(void)
 	code = inb(KEYBOARD_IO_PORT);
 	if (!(code & 0x80)) {
 		code = fr_azerty_charset[(int)code];
+		mutex_acquire(&keyboard_lock);
 		check_overwrite = (input_write_idx + 1) % PAGE_SIZE;
 		if (check_overwrite != input_read_idx && code != '\0')
 		{
@@ -68,6 +71,7 @@ keyboard_ihandler(void)
 			input_buffer[input_write_idx] = code;
 			input_write_idx = check_overwrite;
 		}
+		mutex_release(&keyboard_lock);
 	}
 	apic_eoi();
 }
@@ -80,9 +84,11 @@ keyboard_next_input(void)
 {
 	char c;
 
+	mutex_acquire(&keyboard_lock);
 	while (input_read_idx == input_write_idx);
 	c = input_buffer[input_read_idx];
 	input_read_idx = (input_read_idx + 1) % PAGE_SIZE;
+	mutex_release(&keyboard_lock);
 	return (c);
 }
 
