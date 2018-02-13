@@ -34,7 +34,7 @@ enum				status
 	/* Parameters errors */
 	ERR_INVALID_ARGS,		/* Invaid arguments */
 	ERR_OUT_OF_RANGE,		/* One of the argument was outside the valid range for this operation */
-	ERR_BAD_HANDLER,			/* The operation is missing a handler or callback to call */
+	ERR_BAD_HANDLER,		/* The operation is missing a handler or callback to call */
 
 	/* State errors */
 	ERR_BAD_STATE,			/* Operation couldn't complete because it's current state wouldn't allow the operation to complete (eg: pre-conditions not satisfied) */
