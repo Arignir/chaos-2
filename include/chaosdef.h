@@ -58,9 +58,9 @@ typedef uint32_t		uint32;
 typedef uint64_t		uint64;
 typedef uintptr_t		uintptr;
 
-/* ChaOS Object's Handler */
-typedef uint			handler_t;
-typedef handler_t		file_handler_t;
+/* ChaOS Object's Handle */
+typedef uint			handle_t;
+typedef handle_t		file_handle_t;
 
 /* Print a message and halt the computer. */
 void				panic(char const *fmt, ...) __noreturn;

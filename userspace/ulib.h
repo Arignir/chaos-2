@@ -57,9 +57,9 @@ exec(char const *path)
 
 __unused
 static size_t
-write(file_handler_t handler, char const *str, size_t n)
+write(file_handle_t handle, char const *str, size_t n)
 {
-	return (syscall(SYSCALL_WRITE, handler, (uintptr)str, n, 0));
+	return (syscall(SYSCALL_WRITE, handle, (uintptr)str, n, 0));
 }
 
 /* C Library */

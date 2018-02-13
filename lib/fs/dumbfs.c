@@ -44,7 +44,7 @@ static status_t
 dumbfs_open(
 	void *fscookie __unused /* TODO */,
 	char const *path __unused /* TODO */,
-	struct filehandler *handler __unused /* TODO */
+	struct filehandle *handle __unused /* TODO */
 )
 {
 	/* TODO */
@@ -54,7 +54,7 @@ dumbfs_open(
 static status_t
 dumbfs_close(
 	void *fscookie __unused /* TODO */,
-	struct filehandler *handler __unused /* TODO */
+	struct filehandle *handle __unused /* TODO */
 )
 {
 	return (OK);
