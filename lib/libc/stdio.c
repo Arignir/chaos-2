@@ -109,8 +109,8 @@ vsnprintf_output(char const *buffer, size_t buffer_len, void *p)
 		if (out->pos < out->len) {
 			out->str[out->pos++] = *buffer;
 		}
-		buffer++;
-		count++;
+		++buffer;
+		++count;
 	}
 	return (out->pos);
 }

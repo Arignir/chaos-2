@@ -140,7 +140,7 @@ printf_formatter(char const *fmt, va_list va, printf_output_func out, void *para
 			if (c == '%') {
 				break;
 			}
-			string_len++;
+			++string_len;
 		}
 		out(s, string_len, params);
 		if (c == '\0') {
