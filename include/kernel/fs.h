@@ -23,7 +23,7 @@
 
 struct bdev;
 struct dirent;
-struct filehandler;
+struct filehandle;
 
 /*
 ** Api that a filesystem must (at least partialy) implement
@@ -32,13 +32,13 @@ struct fs_api
 {
 	status_t (*mount)(struct bdev *, void **);
 	status_t (*unmount)(void *);
-	status_t (*open)(void *, char const *, struct filehandler *);
-	status_t (*close)(void *, struct filehandler *);
+	status_t (*open)(void *, char const *, struct filehandle *);
+	status_t (*close)(void *, struct filehandle *);
 	status_t (*readdir)(void *, void *, struct dirent *);
 };
 
 /*
-** Handler on a mounted filesystem
+** Handle on a mounted filesystem
 */
 struct fs_mount
 {
@@ -52,10 +52,10 @@ struct fs_mount
 };
 
 /*
-** Handler on an opened file
+** Handle on an opened file
 ** Used for reading, writing etc.
 */
-struct filehandler
+struct filehandle
 {
 	struct fs_mount *mount;
 	uint type;
@@ -74,9 +74,9 @@ struct dirent
 /* Generic fs functions */
 status_t		fs_mount(char const *p, char const *fs, char const *dev);
 status_t		fs_unmount(char const *path);
-status_t		fs_open(char const *path, struct filehandler **handler);
-status_t		fs_close(struct filehandler *filehandler);
-status_t		fs_readdir(struct filehandler *handler, struct dirent *dirent);
+status_t		fs_open(char const *path, struct filehandle **handle);
+status_t		fs_close(struct filehandle *filehandle);
+status_t		fs_readdir(struct filehandle *handle, struct dirent *dirent);
 
 struct fs_hook
 {

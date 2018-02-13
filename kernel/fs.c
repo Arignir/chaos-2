@@ -375,9 +375,9 @@ fs_unmount(char const *path)
 ** Opens the file at the given path
 */
 status_t
-fs_open(char const *path, struct filehandler **handler)
+fs_open(char const *path, struct filehandle **handle)
 {
-	struct filehandler *fh;
+	struct filehandle *fh;
 	struct fs_mount *mount;
 	char *tmp;
 	char const *newpath;
@@ -395,7 +395,7 @@ fs_open(char const *path, struct filehandler **handler)
 		goto err;
 	}
 
-	if (!(fh = kalloc(sizeof(struct filehandler)))) {
+	if (!(fh = kalloc(sizeof(struct filehandle)))) {
 		err = ERR_NO_MEMORY;
 		goto err;
 	}
@@ -406,7 +406,7 @@ fs_open(char const *path, struct filehandler **handler)
 	if (err) {
 		goto err;
 	}
-	*handler = fh;
+	*handle = fh;
 	return (OK);
 
 err:
@@ -419,21 +419,21 @@ err:
 }
 
 /*
-** Closes the given handler, and kfrees it.
+** Closes the given handle, and kfrees it.
 */
 status_t
-fs_close(struct filehandler *handler)
+fs_close(struct filehandle *handle)
 {
 	status_t err;
 	struct fs_mount *mount;
 
-	mount = handler->mount;
-	err = mount->api->close(mount->fs_data, handler);
+	mount = handle->mount;
+	err = mount->api->close(mount->fs_data, handle);
 	if (err) {
 		return (err);
 	}
 	put_mount(mount);
-	kfree(handler);
+	kfree(handle);
 	return (OK);
 }
 
@@ -441,15 +441,15 @@ fs_close(struct filehandler *handler)
 ** Reads an entry in the given directory, and stores it in 'dirent'.
 */
 status_t
-fs_readdir(struct filehandler *handler, struct dirent *dirent)
+fs_readdir(struct filehandle *handle, struct dirent *dirent)
 {
 	struct fs_mount *mount;
 
-	if (!(handler->type & FS_DIRECTORY)) {
+	if (!(handle->type & FS_DIRECTORY)) {
 		return (ERR_NOT_DIRECTORY);
 	}
-	mount = handler->mount;
-	return (mount->api->readdir(mount->fs_data, handler->file_data, dirent));
+	mount = handle->mount;
+	return (mount->api->readdir(mount->fs_data, handle->file_data, dirent));
 }
 
 static void

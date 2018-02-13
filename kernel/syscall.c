@@ -58,7 +58,7 @@ sys_exec(char const *path)
 ** Writes the given buffer to the given file.
 */
 int
-sys_write(file_handler_t handler __unused /* TODO */, char const *buff, size_t s)
+sys_write(file_handle_t handle __unused /* TODO */, char const *buff, size_t s)
 {
 	/* TODO FIXME We should ensure 'buff' points to valid userspace memory. */
 	return (vga_putsn(buff, s));
