@@ -84,8 +84,14 @@ keyboard_next_input(void)
 {
 	char c;
 
-	mutex_acquire(&keyboard_lock);
-	while (input_read_idx == input_write_idx);
+	while (1)
+	{
+		mutex_acquire(&keyboard_lock);
+		if (input_read_idx == input_write_idx)
+			mutex_release(&keyboard_lock);
+		else
+			break;
+	}
 	c = input_buffer[input_read_idx];
 	input_read_idx = (input_read_idx + 1) % PAGE_SIZE;
 	mutex_release(&keyboard_lock);
