@@ -112,12 +112,12 @@ resolve_path(char *path)
 				done = true;
 			} else {
 				path[outpos++] = c;
-				pos++;
+				++pos;
 			}
 			break;
 		case SEPARATOR:
 			path[outpos++] = '/';
-			pos++;
+			++pos;
 			state = SEEN_SEPARATOR;
 			break;
 		case SEEN_SEPARATOR:
@@ -130,7 +130,7 @@ resolve_path(char *path)
 			}
 			break;
 		case DOT:
-			pos++;
+			++pos;
 			state = SEEN_DOT;
 			break;
 		case SEEN_DOT:
@@ -147,7 +147,7 @@ resolve_path(char *path)
 			}
 			break;
 		case DOTDOT:
-			pos++;
+			++pos;
 			state = SEEN_DOTDOT;
 			break;
 		case SEEN_DOTDOT:
@@ -159,7 +159,7 @@ resolve_path(char *path)
 					}
 					--outpos;
 				}
-				pos++;
+				++pos;
 				state = SEEN_SEPARATOR;
 				if (c == '\0') {
 					done = true;
@@ -218,7 +218,7 @@ find_mount(char const *path, char const **trimmed_path)
 		mount_pathlen = strlen(mount->path);
 		if (!strcmp(path, mount->path)) {
 			*trimmed_path = path + mount_pathlen;
-			mount->ref_count++;
+			++mount->ref_count;
 			rwlock_release_read(&mounts_lock);
 			return (mount);
 		}
