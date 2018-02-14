@@ -73,7 +73,7 @@ dumbfs_open(
 	offset = sizeof(uint32_t);
 	while (file_index < dumb->nb_files) {
 		if (bdev_read(mount->device, file_header, offset, sizeof(*file_header)) != sizeof(*file_header) ||
-		    bdev_read(mount->device, file_path, offset + sizeof(*file_header), path_len + 1) != (ssize_t)path_len + 1) {
+			bdev_read(mount->device, file_path, offset + sizeof(*file_header), path_len + 1) != (ssize_t)path_len + 1) {
 			err = ERR_BAD_DEVICE;
 			goto end;
 		}

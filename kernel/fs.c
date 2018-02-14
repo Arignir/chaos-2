@@ -432,7 +432,7 @@ fs_opendir(struct file_handle *file_handle, struct dir_handle **dir_handle)
 	if (!(file_handle->type & FS_DIRECTORY)) {
 		return (ERR_NOT_DIRECTORY);
 	}
-  
+
 	if (!(dh = kalloc(sizeof(*dh)))) {
 		err = ERR_NO_MEMORY;
 		goto err;
