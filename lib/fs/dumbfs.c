@@ -52,7 +52,7 @@ dumbfs_open(
 	struct fs_mount *mount;
 	struct fs_dumb *dumb;
 	uint offset;
-        size_t path_len;
+	size_t path_len;
 	char *file_path;
 	status_t err;
 	struct dumbfs_file *file;
@@ -74,13 +74,13 @@ dumbfs_open(
 	while (file_index < dumb->nb_files) {
 		if (bdev_read(mount->device, file_header, offset, sizeof(*file_header)) != sizeof(*file_header) ||
 		    bdev_read(mount->device, file_path, offset + sizeof(*file_header), path_len + 1) != (ssize_t)path_len + 1) {
-		        err = ERR_BAD_DEVICE;
+			err = ERR_BAD_DEVICE;
 			goto end;
-	        }
+		}
 		offset += sizeof(struct dumbfs_file_entry);
 		if (!strncmp(path, file_path, path_len + 1)) {
 			if (!(file = kalloc(sizeof(*file)))) {
-			        err = ERR_NO_MEMORY;
+				err = ERR_NO_MEMORY;
 				goto end;
 			}
 			memcpy(&file->header, file_header, sizeof(file->header));
@@ -109,7 +109,7 @@ dumbfs_opendir(
 	if (!(dir = kalloc(sizeof(*dir)))) {
 		return (ERR_NO_MEMORY);
 	}
-        dir->bdev_offset = sizeof(uint);
+	dir->bdev_offset = sizeof(uint);
 	dir->file_index = 0;
 	dir_handle->dir_data = dir;
 	return (OK);
@@ -141,7 +141,7 @@ dumbfs_readdir(
 	dumb = mount->fs_data;
 	if (dir->file_index == dumb->nb_files) {
 		return (ERR_DIRECTORY_END);
-        }
+	}
 	dirent->dir = false;
 	if (bdev_read(mount->device, file_header, dir->bdev_offset, sizeof(*file_header)) != sizeof(*file_header)) {
 		return (ERR_BAD_DEVICE);

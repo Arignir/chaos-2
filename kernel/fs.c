@@ -429,7 +429,7 @@ fs_opendir(struct file_handle *file_handle, struct dir_handle **dir_handle)
 	struct fs_mount *mount;
 
 	mount = file_handle->mount;
-	if (file_handle->type & FS_DIRECTORY) {
+	if (!(file_handle->type & FS_DIRECTORY)) {
 		return (ERR_NOT_DIRECTORY);
 	}
   
@@ -463,7 +463,7 @@ fs_closedir(struct dir_handle *dir_handle)
 	struct fs_mount *mount;
 
 	mount = dir_handle->file_handle->mount;
-        mount->api->closedir(dir_handle);
+	mount->api->closedir(dir_handle);
 	err = fs_close(dir_handle->file_handle);
 	kfree(dir_handle);
 	return (err);

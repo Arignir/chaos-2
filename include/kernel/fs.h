@@ -106,6 +106,4 @@ struct fs_hook
 		.api = a,						\
 	}
 
-# define IS_ROOT(path) (!path[0])
-
 #endif /* !_KERNEL_FS_H_ */
