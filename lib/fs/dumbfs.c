@@ -63,7 +63,7 @@ dumbfs_open(
 	if (!path[0]) {
 		handle->type |= FS_DIRECTORY;
 		handle->file_data = NULL;
-		return OK;
+		return (OK);
 	}
 	path_len = strlen(path);
 	if (!(file_path = kalloc(path_len + 1))) {
