@@ -440,7 +440,7 @@ fs_opendir(struct file_handle *file_handle, struct dir_handle **dir_handle)
 	memset(dh, 0, sizeof(*dh));
 	dh->file_handle = file_handle;
 
-	err = mount->api->opendir(file_handle, dh);
+	err = mount->api->opendir(dh);
 	if (err) {
 		goto err;
 	}

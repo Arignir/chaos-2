@@ -100,7 +100,6 @@ end:
 
 static status_t
 dumbfs_opendir(
-	struct file_handle *file_handle __unused,
 	struct dir_handle *dir_handle
 )
 {

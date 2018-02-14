@@ -34,7 +34,7 @@ struct fs_api
 	status_t (*unmount)(void *);
 	status_t (*open)(struct file_handle *, char const *);
 	status_t (*close)(struct file_handle *);
-	status_t (*opendir)(struct file_handle *, struct dir_handle *);
+	status_t (*opendir)(struct dir_handle *);
 	status_t (*readdir)(struct dir_handle *, struct dirent *);
 	void (*closedir)(struct dir_handle *);
 };
@@ -66,7 +66,6 @@ struct file_handle
 
 /*
 ** Handle on an opened dir
-**
 */
 struct dir_handle
 {
