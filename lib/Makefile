@@ -29,4 +29,5 @@ $(LIB_OBJ): libc/libc.o bdev/bdev.o fs/fs.o
 clean:
 	$(Q)$(MAKE) -C libc clean
 	$(Q)$(MAKE) -C bdev clean
+	$(Q)$(MAKE) -C fs clean
 	$(Q)$(RM) $(LIB_OBJ)

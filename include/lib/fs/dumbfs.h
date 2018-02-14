@@ -14,20 +14,27 @@
 
 struct dumbfs_file_entry
 {
-	uint32 file_size;
-	uchar name[16];
-} __aligned;
+	uint32 entry_size; /* size of entry, including name, but excluding this header */
+	uint32 file_size; /* size of file */
+};
 
-struct dubfs_file
+struct dumbfs_file
 {
-	struct dumbfs_file_entry;
+	struct dumbfs_file_entry header;
 	size_t bdev_offset;
+	size_t seek_offset;
+};
+
+struct dumbfs_dir
+{
+	size_t bdev_offset;
+	size_t file_index;
 };
 
 struct fs_dumb
 {
 	struct bdev *bdev;
-	uint nb_files;
+	uint32 nb_files;
 };
 
 #endif /* !_LIB_FS_DUMBFS_H_ */

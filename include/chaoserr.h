@@ -56,6 +56,7 @@ enum				status
 	ERR_BAD_DEVICE,			/* The filesystem failed to execute an important device-related operation */
 	ERR_NOT_DIRECTORY,		/* The given path isn't a directory */
 	ERR_NOT_REGULAR_FILE,		/* The given path isn't a regular file */
+	ERR_DIRECTORY_END,		/* reached en of directory */
 };
 
 typedef enum status	status_t;
