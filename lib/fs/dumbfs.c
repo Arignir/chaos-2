@@ -139,7 +139,7 @@ dumbfs_readdir(
 	mount = dir_handle->file_handle->mount;
 	dir = dir_handle->dir_data;
 	dumb = mount->fs_data;
-	if (dir->file_index == dumb->nb_files) {
+	if (dir->file_index >= dumb->nb_files) {
 		return (ERR_DIRECTORY_END);
 	}
 	dirent->dir = false;
@@ -147,7 +147,7 @@ dumbfs_readdir(
 		return (ERR_BAD_DEVICE);
 	}
 	r = bdev_read(mount->device, dirent->name, dir->bdev_offset + sizeof(file_header), sizeof(dirent->name) - 1);
-	if (r == -1) {
+	if (r < 0) {
 		return (ERR_BAD_DEVICE);
 	}
 	dir->bdev_offset += sizeof(struct dumbfs_file_entry) + file_header.entry_size;
