@@ -16,8 +16,10 @@ mem_read(struct bdev *bdev, void *buf, size_t offset, size_t len)
 {
 	struct mem_bdev *mem;
 
-	/* TODO Add bound checking */
 	mem = (struct mem_bdev *)bdev;
+	if (len > mem->len - offset) {
+		len = mem->len - offset;
+	}
 	memcpy(buf, (uint8 *)mem->ptr + offset, len);
 	return (len);
 }
@@ -27,8 +29,10 @@ mem_write(struct bdev *bdev, void const *buf, size_t offset, size_t len)
 {
 	struct mem_bdev *mem;
 
-	/* TODO Add bound checking */
 	mem = (struct mem_bdev *)bdev;
+	if (len > mem->len - offset) {
+		len = mem->len - offset;
+	}
 	memcpy((uint8 *)mem->ptr + offset, buf, len);
 	return (len);
 }
