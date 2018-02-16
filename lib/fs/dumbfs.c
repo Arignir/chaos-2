@@ -100,6 +100,54 @@ end:
 }
 
 static status_t
+dumbfs_read(
+	struct file_handle *handle,
+	void *dest,
+	size_t *size
+)
+{
+	struct fs_mount *mount;
+	struct dumbfs_file *file;
+	ssize_t r;
+
+	mount = handle->mount;
+	file = handle->file_data;
+	if (file->seek_offset + *size > file->header.file_size)
+		*size = file->header.file_size - file->seek_offset;
+	r = bdev_read(mount->device, dest, file->bdev_offset + file->seek_offset, *size);
+	if (r < 0) {
+		return (ERR_BAD_DEVICE);
+	}
+	*size = r;
+	file->seek_offset += *size;
+	return (OK);
+}
+
+static size_t
+dumbfs_seek(
+	struct file_handle *handle,
+	size_t offset
+)
+{
+	struct dumbfs_file *file;
+
+	file = handle->file_data;
+	if (offset > file->header.file_size)
+	  offset = file->header.file_size;
+	file->seek_offset = offset;
+	return offset;
+}
+
+static status_t
+dumbfs_close(
+	struct file_handle *handle
+)
+{
+	kfree(handle->file_data);
+	return (OK);
+}
+
+static status_t
 dumbfs_opendir(
 	struct dir_handle *dir_handle
 )
@@ -112,15 +160,6 @@ dumbfs_opendir(
 	dir->bdev_offset = sizeof(uint);
 	dir->file_index = 0;
 	dir_handle->dir_data = dir;
-	return (OK);
-}
-
-static status_t
-dumbfs_close(
-	struct file_handle *handle
-)
-{
-	kfree(handle->file_data);
 	return (OK);
 }
 
@@ -140,7 +179,7 @@ dumbfs_readdir(
 	dir = dir_handle->dir_data;
 	dumb = mount->fs_data;
 	if (dir->file_index >= dumb->nb_files) {
-		return (ERR_DIRECTORY_END);
+		return (ERR_END_OF_DIRECTORY);
 	}
 	dirent->dir = false;
 	if (bdev_read(mount->device, &file_header, dir->bdev_offset, sizeof(file_header)) != sizeof(file_header)) {
@@ -150,9 +189,9 @@ dumbfs_readdir(
 	if (r < 0) {
 		return (ERR_BAD_DEVICE);
 	}
+	dirent->name[r] = 0;
 	dir->bdev_offset += sizeof(struct dumbfs_file_entry) + file_header.entry_size;
 	++dir->file_index;
-	dirent->name[r] = 0;
 	return (OK);
 }
 
@@ -169,6 +208,8 @@ static struct fs_api dumbfs_api =
 	.mount = &dumbfs_mount,
 	.unmount = &dumbfs_unmount,
 	.open = &dumbfs_open,
+	.read = &dumbfs_read,
+	.seek = &dumbfs_seek,
 	.close = &dumbfs_close,
 	.opendir = &dumbfs_opendir,
 	.readdir = &dumbfs_readdir,

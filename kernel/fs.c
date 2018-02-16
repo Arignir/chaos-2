@@ -406,6 +406,8 @@ fs_open(char const *path, struct file_handle **file_handle)
 	if (err) {
 		goto err;
 	}
+	mutex_release(&mount->lock);
+	
 	*file_handle = fh;
 	return (OK);
 
@@ -453,20 +455,31 @@ err:
 }
 
 /*
-** Closes the given directory handle, and kfrees it.
-** Closing the directory itself can't fail, closing the file handle can.
+** Attemts to read *size bytes to dest.
+** On success, *size is set to the amount actually read,
+** and the seek offset is updated to the end of the read area.
+** On failure, *size is set to the amount that was actually attempted to be read.
 */
 status_t
-fs_closedir(struct dir_handle *dir_handle)
+fs_read(struct file_handle *file_handle, void *dest, size_t *size)
 {
-	status_t err;
 	struct fs_mount *mount;
 
-	mount = dir_handle->file_handle->mount;
-	mount->api->closedir(dir_handle);
-	err = fs_close(dir_handle->file_handle);
-	kfree(dir_handle);
-	return (err);
+	mount = file_handle->mount;
+	return (mount->api->read(file_handle, dest, size));
+}
+
+/*
+** Tries to set the seek offset to the specified offset
+** Returns the offset after completition (may be different on EOF)
+*/
+size_t
+fs_seek(struct file_handle *file_handle, size_t offset)
+{
+	struct fs_mount *mount;
+
+	mount = file_handle->mount;
+	return (mount->api->seek(file_handle, offset));
 }
 
 /*
@@ -488,6 +501,23 @@ fs_close(struct file_handle *file_handle)
 }
 
 /*
+** Closes the given directory handle, and kfrees it.
+** Closing the directory itself can't fail, closing the file handle can.
+*/
+status_t
+fs_closedir(struct dir_handle *dir_handle)
+{
+	status_t err;
+	struct fs_mount *mount;
+
+	mount = dir_handle->file_handle->mount;
+	mount->api->closedir(dir_handle);
+	err = fs_close(dir_handle->file_handle);
+	kfree(dir_handle);
+	return (err);
+}
+
+/*
 ** Reads an entry in the given directory, and stores it in 'dirent'.
 */
 status_t
@@ -499,12 +529,51 @@ fs_readdir(struct dir_handle *dir_handle, struct dirent *dirent)
 	return (mount->api->readdir(dir_handle, dirent));
 }
 
+/*
+** Tests for the file system.
+** Optional, can be removed.
+*/
+static void
+fs_tests(void)
+{
+	struct file_handle *fh;
+	struct dir_handle *rootdir;
+	struct dirent dirent;
+	status_t result;
+	char buff[26];
+	char name[257];
+	size_t r;
+
+	assert_eq(fs_open("/", &fh), OK);
+	assert_eq(fs_opendir(fh, &rootdir), OK);
+	while (!(result = fs_readdir(rootdir, &dirent))) {
+		printf("[dumbfs] root contains file (25 bytes max): %.25s\n", dirent.name);
+		name[0] = '/';
+		name[1] = 0;
+		strcat(name, dirent.name);
+		r = 25;
+		assert_eq(fs_open(name, &fh), OK);
+		assert_eq(fs_read(fh, buff, &r), OK);
+		assert_eq(fs_close(fh), OK);
+		buff[r] = 0;
+		printf("[dumbfs] '%.25s' contents (first 25 bytes): %s\n", dirent.name, buff);
+	}
+	assert_eq(result, ERR_END_OF_DIRECTORY);
+	assert_eq(fs_closedir(rootdir), OK);
+	printf("[Filesystem tests done]\n");
+}
+
+/*
+** Initialises file system
+** Runs some tests (removable).
+*/
 static void
 init_fs(void)
 {
 	/* Mount initrd on root */
 	assert_eq(fs_mount("/", "dumbfs", "initrd"), OK);
 	printf("Filesystem 'dumbfs' mounted on '/'.\n");
+	fs_tests();
 }
 
 NEW_INIT_HOOK(filesystem, &init_fs, INIT_LEVEL_FILESYSTEM);

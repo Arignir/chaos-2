@@ -31,6 +31,9 @@
 /userspace/game
 /userspace/test
 
+# Userspace filesystem
+/userspace/dumbfs
+
 # Editor
 *~
 *.swp

@@ -33,6 +33,8 @@ struct fs_api
 	status_t (*mount)(struct bdev *, void **);
 	status_t (*unmount)(void *);
 	status_t (*open)(struct file_handle *, char const *);
+	status_t (*read)(struct file_handle *, void *, size_t *);
+	size_t (*seek)(struct file_handle *, size_t);
 	status_t (*close)(struct file_handle *);
 	status_t (*opendir)(struct dir_handle *);
 	status_t (*readdir)(struct dir_handle *, struct dirent *);
@@ -86,6 +88,8 @@ struct dirent
 status_t		fs_mount(char const *p, char const *fs, char const *dev);
 status_t		fs_unmount(char const *path);
 status_t		fs_open(char const *path, struct file_handle **handle);
+status_t		fs_read(struct file_handle *handle, void *, size_t *size);
+size_t			fs_seek(struct file_handle *handle, size_t offset);
 status_t		fs_close(struct file_handle *file_handle);
 status_t		fs_opendir(struct file_handle *handle, struct dir_handle **dir_handle);
 status_t		fs_readdir(struct dir_handle *handle, struct dirent *dirent);
