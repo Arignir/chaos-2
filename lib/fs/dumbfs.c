@@ -48,7 +48,7 @@ dumbfs_open(
 )
 {
 	uint32 file_index;
-	struct dumbfs_file_entry file_header[1];
+	struct dumbfs_file_entry file_header;
 	struct fs_mount *mount;
 	struct fs_dumb *dumb;
 	uint offset;
@@ -72,8 +72,8 @@ dumbfs_open(
 	file_index = 0;
 	offset = sizeof(uint32_t);
 	while (file_index < dumb->nb_files) {
-		if (bdev_read(mount->device, file_header, offset, sizeof(*file_header)) != sizeof(*file_header)
-			|| bdev_read(mount->device, file_path, offset + sizeof(*file_header), path_len + 1) != (ssize_t)path_len + 1)
+		if (bdev_read(mount->device, &file_header, offset, sizeof(file_header)) != sizeof(file_header)
+			|| bdev_read(mount->device, file_path, offset + sizeof(file_header), path_len + 1) != (ssize_t)path_len + 1)
 		{
 			err = ERR_BAD_DEVICE;
 			goto end;
@@ -84,13 +84,13 @@ dumbfs_open(
 				err = ERR_NO_MEMORY;
 				goto end;
 			}
-			memcpy(&file->header, file_header, sizeof(file->header));
+			memcpy(&file->header, &file_header, sizeof(file->header));
 			file->bdev_offset = offset + path_len + 1;
 			file->seek_offset = 0;
 			handle->file_data = file;
 			goto end;
 		}
-		offset += file_header->entry_size;
+		offset += file_header.entry_size;
 		++file_index;
 	}
 	err = ERR_NOT_FOUND;
@@ -133,24 +133,24 @@ dumbfs_readdir(
 	struct dumbfs_dir *dir;
 	struct fs_mount *mount;
 	struct fs_dumb *dumb;
-	struct dumbfs_file_entry file_header[1];
+	struct dumbfs_file_entry file_header;
 	ssize_t r;
 
 	mount = dir_handle->file_handle->mount;
 	dir = dir_handle->dir_data;
 	dumb = mount->fs_data;
-	if (dir->file_index == dumb->nb_files) {
+	if (dir->file_index >= dumb->nb_files) {
 		return (ERR_DIRECTORY_END);
 	}
 	dirent->dir = false;
-	if (bdev_read(mount->device, file_header, dir->bdev_offset, sizeof(*file_header)) != sizeof(*file_header)) {
+	if (bdev_read(mount->device, &file_header, dir->bdev_offset, sizeof(file_header)) != sizeof(file_header)) {
 		return (ERR_BAD_DEVICE);
 	}
-	r = bdev_read(mount->device, file_header, dir->bdev_offset + sizeof(*file_header), sizeof(dirent->name) - 1);
-	if (r == -1) {
+	r = bdev_read(mount->device, dirent->name, dir->bdev_offset + sizeof(file_header), sizeof(dirent->name) - 1);
+	if (r < 0) {
 		return (ERR_BAD_DEVICE);
 	}
-	dir->bdev_offset += sizeof(struct dumbfs_file_entry) + file_header->entry_size;
+	dir->bdev_offset += sizeof(struct dumbfs_file_entry) + file_header.entry_size;
 	++dir->file_index;
 	dirent->name[r] = 0;
 	return (OK);
