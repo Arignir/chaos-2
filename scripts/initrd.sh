@@ -40,8 +40,8 @@ add_int() {
 add_file() {
 	echo -E "[DUMBFS_GEN]	adding ${1} to dumbfsfile system"
 
-	local file_name=${1}
-	local file_path=${DUMBFS_DATA}/${file_name}
+	local file_path=${1}
+	local file_name=${2}
 	local name_size=${#file_name}
 	local file_size=$(stat -Lc%s ${file_path})
 	local entry_size=$((file_size + name_size + 1))
@@ -52,12 +52,10 @@ add_file() {
 	cat ${file_path} >> ${OUTPUT_PATH}
 }
 
-files=(${DUMBFS_DATA}/*)
+echo -E "[DUMBFS_GEN]	found ${#USERSPACE_BINS} files"
 
-echo -E "[DUMBFS_GEN]	found ${#files[@]} files"
-
-add_int ${#files[@]}
-for file in ${files[@]}
+add_int ${#USERSPACE_BINS}
+for file in ${USERSPACE_BINS}
 do
-	add_file ${file##*/};
+	add_file ${file} ${file##*/};
 done

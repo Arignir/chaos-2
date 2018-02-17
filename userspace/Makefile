@@ -10,7 +10,6 @@
 RELATIVE_DIR := $(subst $(PROJECT_DIR)/,,$(shell pwd))
 
 # Binaries
-export DUMBFS_DATA	:= dumbfs_files
 export USERSPACE_BINS	:= init
 
 # Flags
@@ -24,9 +23,9 @@ KERNEL_OBJ = kernel.o
 .PHONY: all
 all: $(INITRD)
 
-$(INITRD): $(wildcard $(DUMBFS_DATA)/*)
+$(INITRD): $(USERSPACE_BINS)
 	$(Q)printf "  SHELL\t scripts/initrd.sh\n"
-	../scripts/initrd.sh
+	../scripts/initrd.sh $(USERSPACE_BINS)
 
 .SECONDEXPANSION:
 
@@ -40,7 +39,6 @@ clean:
 	$(Q)$(RM) $(addsuffix .o, $(USERSPACE_BINS))
 	$(Q)$(RM) $(addsuffix .d, $(USERSPACE_BINS))
 	$(Q)$(RM) $(USERSPACE_BINS)
-	$(Q)$(RM) $(DUMBFS)
 
 -include $(addsuffix .d, $(USERSPACE_BINS))
 %.o: %.c
