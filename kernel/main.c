@@ -29,7 +29,7 @@ kmain(void)
 
 	printf("Welcome to ChaOS\n\n");
 
-	sys_exec("");
+	sys_exec("/init");
 	panic("kmain's sys_exec() failed\n");
 }
 

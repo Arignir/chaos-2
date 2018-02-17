@@ -14,7 +14,9 @@
 #include <kernel/kalloc.h>
 #include <kernel/initrd.h>
 #include <kernel/exec.h>
+#include <kernel/fs.h>
 #include <string.h>
+#include <stdio.h>
 
 /* Thread table */
 struct thread thread_table[KCONFIG_MAX_THREADS] = { 0 };
@@ -190,18 +192,44 @@ thread_exit(uchar status)
 ** Current thread and current virtual address space must be locked.
 */
 status_t
-thread_exec(char const *path __unused /* TODO */)
+thread_exec(char const *path)
 {
-	status_t s;
-	struct initrd_virt const *virt = initrd_get_virtual();
+	status_t err;
+	uchar *exec_data;
+	void *tmp;
+	size_t size;
+	size_t r;
+	struct file_handle *file;
 
-	if ((s = thread_detach_and_create_vaspace())) {
-		return (s);
+	file = NULL;
+	exec_data = NULL;
+	size = 0;
+	if ((err = fs_open(path, &file))) {
+		goto err;
 	}
+	do {
+		r = PAGE_SIZE;
+		if (!(tmp = krealloc(exec_data, size + r))) {
+			goto err;
+		}
+		exec_data = tmp;
+		if ((err = fs_read(file, exec_data + size, &r))) {
+			goto err;
+		}
+		size += r;
+	} while (r);
+	fs_close(file);
+	file = NULL;
 
+	if ((err = thread_detach_and_create_vaspace())) {
+		goto err;
+	}
 	/* exec will release the virtual address space and the current thread */
-	exec(virt->start, virt->len);
-
+	exec(exec_data, size);
+err:
+	if (file)
+		fs_close(file);
+	kfree(exec_data);
 	/* If exec failed, we have no other choice but kill the process */
 	thread_exit(1);
 }

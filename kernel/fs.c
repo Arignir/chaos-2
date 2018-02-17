@@ -53,7 +53,6 @@ resolve_input(char const *cwd, char const *input)
 }
 
 /*
-**
 ** Resolves the given path, by removing double separators, '.' and '..'.
 **
 ** Inspired by lk's 'fs_normalize_path()', written by geist.
@@ -216,8 +215,9 @@ find_mount(char const *path, char const **trimmed_path)
 		mount = *mount_ptr;
 		mutex_acquire(&mount->lock);
 		mount_pathlen = strlen(mount->path);
-		if (!strcmp(path, mount->path)) {
+		if (!strncmp(path, mount->path, mount_pathlen)) {
 			*trimmed_path = path + mount_pathlen;
+			*trimmed_path += **trimmed_path == '\\';
 			++mount->ref_count;
 			rwlock_release_read(&mounts_lock);
 			return (mount);
@@ -284,7 +284,7 @@ mount(char const *path, char const *device, struct fs_api *const api)
 		goto err;
 	}
 
-	mount = kalloc(sizeof(struct fs_mount));
+	mount = kalloc(sizeof(*mount));
 	if (unlikely(!mount)) {
 		err = ERR_NO_MEMORY;
 		goto err;
@@ -375,9 +375,9 @@ fs_unmount(char const *path)
 ** Opens the file at the given path
 */
 status_t
-fs_open(char const *path, struct filehandle **handle)
+fs_open(char const *path, struct file_handle **file_handle)
 {
-	struct filehandle *fh;
+	struct file_handle *fh;
 	struct fs_mount *mount;
 	char *tmp;
 	char const *newpath;
@@ -395,18 +395,20 @@ fs_open(char const *path, struct filehandle **handle)
 		goto err;
 	}
 
-	if (!(fh = kalloc(sizeof(struct filehandle)))) {
+	if (!(fh = kalloc(sizeof(*fh)))) {
 		err = ERR_NO_MEMORY;
 		goto err;
 	}
 	memset(fh, 0, sizeof(*fh));
 	fh->mount = mount;
 
-	err = mount->api->open(mount->fs_data, newpath, fh);
+	err = mount->api->open(fh, newpath);
 	if (err) {
 		goto err;
 	}
-	*handle = fh;
+	mutex_release(&mount->lock);
+	
+	*file_handle = fh;
 	return (OK);
 
 err:
@@ -419,39 +421,118 @@ err:
 }
 
 /*
-** Closes the given handle, and kfrees it.
+** Opens a file as a directory
 */
 status_t
-fs_close(struct filehandle *handle)
+fs_opendir(struct file_handle *file_handle, struct dir_handle **dir_handle)
+{
+	struct dir_handle *dh;
+	status_t err;
+	struct fs_mount *mount;
+
+	mount = file_handle->mount;
+	if (!(file_handle->type & FS_DIRECTORY)) {
+		return (ERR_NOT_DIRECTORY);
+	}
+
+	if (!(dh = kalloc(sizeof(*dh)))) {
+		err = ERR_NO_MEMORY;
+		goto err;
+	}
+	memset(dh, 0, sizeof(*dh));
+	dh->file_handle = file_handle;
+
+	err = mount->api->opendir(dh);
+	if (err) {
+		goto err;
+	}
+	*dir_handle = dh;
+	return (OK);
+
+err:
+	kfree(dh);
+	return (err);
+}
+
+/*
+** Attemts to read *size bytes to dest.
+** On success, *size is set to the amount actually read,
+** and the seek offset is updated to the end of the read area.
+** On failure, *size is set to the amount that was actually attempted to be read.
+*/
+status_t
+fs_read(struct file_handle *file_handle, void *dest, size_t *size)
+{
+	struct fs_mount *mount;
+
+	mount = file_handle->mount;
+	return (mount->api->read(file_handle, dest, size));
+}
+
+/*
+** Tries to set the seek offset to the specified offset
+** Returns the offset after completition (may be different on EOF)
+*/
+size_t
+fs_seek(struct file_handle *file_handle, size_t offset)
+{
+	struct fs_mount *mount;
+
+	mount = file_handle->mount;
+	return (mount->api->seek(file_handle, offset));
+}
+
+/*
+** Closes the given handle, and kfrees it.
+** The file handle is closed and freed in all cases.
+** Errors indicate failure to *commit* not to *close*.
+*/
+status_t
+fs_close(struct file_handle *file_handle)
 {
 	status_t err;
 	struct fs_mount *mount;
 
-	mount = handle->mount;
-	err = mount->api->close(mount->fs_data, handle);
-	if (err) {
-		return (err);
-	}
+	mount = file_handle->mount;
+	err = mount->api->close(file_handle);
 	put_mount(mount);
-	kfree(handle);
-	return (OK);
+	kfree(file_handle);
+	return (err);
+}
+
+/*
+** Closes the given directory handle, and kfrees it.
+** Closing the directory itself can't fail, closing the file handle can.
+*/
+status_t
+fs_closedir(struct dir_handle *dir_handle)
+{
+	status_t err;
+	struct fs_mount *mount;
+
+	mount = dir_handle->file_handle->mount;
+	mount->api->closedir(dir_handle);
+	err = fs_close(dir_handle->file_handle);
+	kfree(dir_handle);
+	return (err);
 }
 
 /*
 ** Reads an entry in the given directory, and stores it in 'dirent'.
 */
 status_t
-fs_readdir(struct filehandle *handle, struct dirent *dirent)
+fs_readdir(struct dir_handle *dir_handle, struct dirent *dirent)
 {
 	struct fs_mount *mount;
 
-	if (!(handle->type & FS_DIRECTORY)) {
-		return (ERR_NOT_DIRECTORY);
-	}
-	mount = handle->mount;
-	return (mount->api->readdir(mount->fs_data, handle->file_data, dirent));
+	mount = dir_handle->file_handle->mount;
+	return (mount->api->readdir(dir_handle, dirent));
 }
 
+/*
+** Initialises file system
+** Runs some tests (removable).
+*/
 static void
 init_fs(void)
 {
