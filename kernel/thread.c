@@ -202,9 +202,6 @@ thread_exec(char const *path)
 	struct file_handle *file;
 	status_t s;
 
-	if ((s = thread_detach_and_create_vaspace())) {
-		return (s);
-	}
 	file = NULL;
 	exec_data = NULL;
 	size = 0;
@@ -225,6 +222,9 @@ thread_exec(char const *path)
 	fs_close(file);
 	file = NULL;
 
+	if ((e = thread_detach_and_create_vaspace())) {
+		goto err;
+	}
 	/* exec will release the virtual address space and the current thread */
 	exec(exec_data, size);
 err:
