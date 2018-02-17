@@ -212,7 +212,7 @@ thread_exec(char const *path)
 		goto err;
 	}
 	do {
-		r = 4096;
+		r = PAGE_SIZE;
 		if (!(tmp = krealloc(exec_data, size + r))) {
 			goto err;
 		}
