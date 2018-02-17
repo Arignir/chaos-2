@@ -80,9 +80,9 @@ make run
 - [X] Initrd loading, reading and writing
 - [X] Device abstraction
 - [ ] Filesystem
-  - [ ] Directory listing (`opendir()`, `readdir()`, `closedir()`)
+  - [X] Directory listing (`opendir()`, `readdir()`, `closedir()`)
   - [ ] Creating and removing files/directories (`mkfile()`, `mkdir()`, `remove()`)
-  - [ ] File basic IO operations (`open()`, `read()`, `write()`, `close()`)
+  - [X] File basic IO operations (`open()`, `read()`, `write()`, `close()`)
   - [ ] File advanced IO operations (`pipe()`, `dup()`)
   - [ ] File informations (`stat()`)
 - [ ] User space programs (init, tty, shell, basic binaries such as `echo`, `ls`, `rm`, `mkdir` etc.)
