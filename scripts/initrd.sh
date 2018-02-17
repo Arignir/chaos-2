@@ -10,52 +10,46 @@
 ##############################################################################
 
 set -e -u
+shopt -s nullglob
 
 declare SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 declare PROJECT_DIR="$SCRIPT_DIR/../"
 
-declare OUTPUT=initrd.img
-declare OUTPUT_PATH="$PROJECT_DIR/$OUTPUT"
+declare INITRD_PATH="$INITRD" # Define in Makefile
+touch "$INITRD_PATH"
 
-# Add root paths for distros that have a different path for the root user
-declare PATH="$PATH:/sbin:/usr/sbin/"
-
-# Check that dependencies are installed
-if ! which dd &> /dev/null; then
-	printf "You must install dd"
+if [[ $# -eq 0 ]]; then
+	echo "Usage: $0 <files>"
 	exit 1
 fi
 
-shopt -s nullglob
-
->${OUTPUT_PATH}
+declare INPUT=$@
 
 add_int() {
-	local x=${1}
+	local x="$1"
 	local out;
 	printf -v out '\\x%02x\\x%02x\\x%02x\\x%02x' $((x & 0xFF)) $((x >> 8 & 0xFF)) $((x >> 16 & 0xFF)) $((x >> 24 & 0xFF))
-	printf ${out} >> ${OUTPUT_PATH}
+	printf "$out" >> "$INITRD_PATH"
 }
 
 add_file() {
-	echo -E "[DUMBFS_GEN]	adding ${1} to dumbfsfile system"
+	printf "  INITRD $1\n"
 
-	local file_path=${1}
-	local file_name=${2}
-	local name_size=${#file_name}
-	local file_size=$(stat -Lc%s ${file_path})
+	local file_path="$1"
+	local file_name="$2"
+
+	local name_size="${#file_name}"
+	local file_size=$(stat -Lc%s "$file_path")
 	local entry_size=$((file_size + name_size + 1))
-	add_int ${entry_size}
-	add_int ${file_size}
-	echo -nE "${file_name}" >> ${OUTPUT_PATH}
-	printf '\x00' >> ${OUTPUT_PATH}
-	cat ${file_path} >> ${OUTPUT_PATH}
+	add_int "$entry_size"
+	add_int "$file_size"
+	printf "$file_name" >> "$INITRD_PATH"
+	printf '\x00' >> "${INITRD_PATH}"
+	cat "${file_path}" >> ${INITRD_PATH}
 }
 
-echo -E "[DUMBFS_GEN]	found ${#USERSPACE_BINS} files"
-
-add_int ${#USERSPACE_BINS}
-for file in ${USERSPACE_BINS}
+add_int ${#INPUT}
+for file in $INPUT
 do
-	add_file ${file} ${file##*/};
+	add_file "$file" $(basename $file)
 done

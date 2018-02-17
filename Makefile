@@ -148,7 +148,7 @@ clean:
 	$(Q)$(MAKE) -C drivers clean
 	$(Q)$(MAKE) -C lib clean
 	$(Q)$(MAKE) -C userspace clean
-	$(Q)$(RM) "$(ISO)" "$(KERNEL)"
+	$(Q)$(RM) "$(ISO)" "$(KERNEL)" "$(INITRD)"
 
 .PHONY: re
 re: clean all

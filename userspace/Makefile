@@ -25,13 +25,12 @@ all: $(INITRD)
 
 $(INITRD): $(USERSPACE_BINS)
 	$(Q)printf "  SHELL\t scripts/initrd.sh\n"
-	../scripts/initrd.sh $(USERSPACE_BINS)
+	../scripts/initrd.sh $^
 
 .SECONDEXPANSION:
 
 $(USERSPACE_BINS): $$(addsuffix .o, $$@)
 	$(Q)printf "  LD\t $(RELATIVE_DIR)/$@\n"
-	$(Q)printf "  $<\n"
 	$(LD) $(LDFLAGS) $< -o $@
 
 .PHONY: clean
