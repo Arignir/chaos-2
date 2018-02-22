@@ -138,6 +138,7 @@ keyboard_next_input(void)
 			mutex_release(&keyboard_lock);
 		else
 			break;
+		yield();
 	}
 	c = input_buffer[input_read_idx];
 	input_read_idx = (input_read_idx + 1) % PAGE_SIZE;
