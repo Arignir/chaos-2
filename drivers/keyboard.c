@@ -53,6 +53,7 @@ static char input_buffer[PAGE_SIZE] = { 0 };
 static size_t input_write_idx = 0;
 static size_t input_read_idx = 0;
 static struct mutex keyboard_lock = MUTEX_DEFAULT;
+static int caps_lock = false;
 
 static void
 keyboard_ihandler(void)
@@ -60,20 +61,27 @@ keyboard_ihandler(void)
 	unsigned char code;
 	size_t check_overwrite;
 
+	apic_eoi();
+	mutex_acquire(&keyboard_lock);
 	code = inb(KEYBOARD_IO_PORT);
-	if (!(code & 0x80)) {
+	if (!(code & 0x80))
+	{
+		if (code == 0x3A)
+		{
+			caps_lock = !caps_lock;
+		}
 		code = fr_azerty_charset[(int)code];
-		mutex_acquire(&keyboard_lock);
 		check_overwrite = (input_write_idx + 1) % PAGE_SIZE;
 		if (check_overwrite != input_read_idx && code != '\0')
 		{
-			printf("%c", code);
+			if (code >= 'a' && code <= 'z')
+			  code -= 32 * caps_lock;
+			printf("%c\n", code);
 			input_buffer[input_write_idx] = code;
 			input_write_idx = check_overwrite;
 		}
-		mutex_release(&keyboard_lock);
 	}
-	apic_eoi();
+	mutex_release(&keyboard_lock);
 }
 
 /*
@@ -102,6 +110,13 @@ static void
 keyboard_init(void)
 {
 	register_int_handler(INT_KEYBOARD, &keyboard_ihandler);
+	do
+	{
+		outb(KEYBOARD_IO_PORT, 0xF0);
+		outb(KEYBOARD_IO_PORT, 0x01);
+		printf("Keyboard set to Scancode 1");
+	}
+	while (inb(KEYBOARD_IO_PORT) == 0xFE);
 }
 
 NEW_INIT_HOOK(keyboard_init, &keyboard_init, INIT_LEVEL_DRIVERS);
