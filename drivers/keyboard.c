@@ -54,6 +54,8 @@ static size_t input_write_idx = 0;
 static size_t input_read_idx = 0;
 static struct mutex keyboard_lock = MUTEX_DEFAULT;
 
+static int leds_state = 0;
+
 static int caps_lock = false;
 static int left_shift = false;
 static int right_shift = false;
@@ -75,6 +77,14 @@ keyboard_ihandler(void)
 		{
 		case (SC1_CAPSLOCK_PRESSED):
 			caps_lock = !caps_lock;
+			leds_state ^= 4;
+			do
+			{
+				outb(KEYBOARD_IO_PORT, 0xED);
+				outb(KEYBOARD_IO_PORT, leds_state);
+				printf("CAPS LOCK PRESSED: %i\n", leds_state);
+			}
+			while (inb(KEYBOARD_IO_PORT) == 0xFE);
 			break;
 		case (SC1_LSHIFT_PRESSED):
 			left_shift = true;
