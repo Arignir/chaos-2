@@ -53,32 +53,61 @@ static char input_buffer[PAGE_SIZE] = { 0 };
 static size_t input_write_idx = 0;
 static size_t input_read_idx = 0;
 static struct mutex keyboard_lock = MUTEX_DEFAULT;
+
 static int caps_lock = false;
+static int left_shift = false;
+static int right_shift = false;
 
 static void
 keyboard_ihandler(void)
 {
 	unsigned char code;
 	size_t check_overwrite;
+	int is_pressed;
 
 	apic_eoi();
 	mutex_acquire(&keyboard_lock);
 	code = inb(KEYBOARD_IO_PORT);
-	if (!(code & 0x80))
+	is_pressed = !(code & 0x80);
+	if (is_pressed)
 	{
-		if (code == 0x3A)
+		switch (code)
 		{
+		case (SC1_CAPSLOCK_PRESSED):
 			caps_lock = !caps_lock;
+			break;
+		case (SC1_LSHIFT_PRESSED):
+			left_shift = true;
+			break;
+		case (SC1_RSHIFT_PRESSED):
+			right_shift = true;
+			break;
+		default:
+			break;
 		}
 		code = fr_azerty_charset[(int)code];
 		check_overwrite = (input_write_idx + 1) % PAGE_SIZE;
 		if (check_overwrite != input_read_idx && code != '\0')
 		{
 			if (code >= 'a' && code <= 'z')
-			  code -= 32 * caps_lock;
+			  code -= 32 * (caps_lock ^ (left_shift | right_shift));
 			printf("%c\n", code);
 			input_buffer[input_write_idx] = code;
 			input_write_idx = check_overwrite;
+		}
+	}
+	else
+	{
+		switch (code)
+		{
+		case (SC1_LSHIFT_RELEASED):
+			left_shift = false;
+			break;
+		case (SC1_RSHIFT_RELEASED):
+			right_shift = false;
+			break;
+		default:
+			break;
 		}
 	}
 	mutex_release(&keyboard_lock);
