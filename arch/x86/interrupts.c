@@ -9,6 +9,8 @@
 
 #include <kernel/syscall.h>
 #include <kernel/memory.h>
+#include <kernel/vmm.h>
+#include <kernel/thread.h>
 #include <arch/x86/interrupts.h>
 #include <arch/x86/ioapic.h>
 #include <arch/x86/asm.h>
@@ -109,24 +111,28 @@ halt()
 static void
 pagefault_handler(struct iframe *iframe)
 {
-	uintptr addr;
+	virtaddr_t addr;
 
-	addr = get_cr2();
-	panic("Page Fault at address %#p.\n"
-		"\teip: %#p\n"
-		"\tStack: %#p\n"
-		"\tPresent: %y\n"
-		"\tWrite: %y\n"
-		"\tUser-mode: %y\n"
-		"\tInstruction fetch: %y\n",
-		(void *)addr,
-		iframe->eip,
-		iframe->esp,
-		iframe->err_code & 0b00001,
-		iframe->err_code & 0b00010,
-		iframe->err_code & 0b00100,
-		iframe->err_code & 0b10000
-	);
+	addr = (virtaddr_t)get_cr2();
+	/* Page faults in kernel space are lethals */
+	if (vmm_is_mapped_in_kernelspace(addr)) {
+		panic("Page Fault in kernel space at address %#p.\n"
+			"\teip: %#p\n"
+			"\tStack: %#p\n"
+			"\tPresent: %y\n"
+			"\tWrite: %y\n"
+			"\tUser-mode: %y\n"
+			"\tInstruction fetch: %y\n",
+			(void *)addr,
+			iframe->eip,
+			iframe->esp,
+			iframe->err_code & 0b00001,
+			iframe->err_code & 0b00010,
+			iframe->err_code & 0b00100,
+			iframe->err_code & 0b10000
+		);
+	}
+	thread_exit(EXIT_PAGEFAULT);
 }
 
 /*

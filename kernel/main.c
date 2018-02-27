@@ -8,11 +8,7 @@
 \* ------------------------------------------------------------------------ */
 
 #include <kernel/init.h>
-#include <kernel/interrupts.h>
-#include <kernel/memory.h>
-#include <kernel/thread.h>
-#include <kernel/syscall.h>
-#include <arch/linker.h>
+#include <kernel/vaspace.h>
 #include <stdio.h>
 
 /*
@@ -29,8 +25,11 @@ kmain(void)
 
 	printf("Welcome to ChaOS\n\n");
 
-	sys_exec("/init");
-	panic("kmain's sys_exec() failed\n");
+	current_thread_acquire_write();
+	current_vaspace_acquire_write();
+	thread_exec("/init");
+
+	panic("kmain's sys_exec() failed.\nIs init present in the initial ramdisk?\n");
 }
 
 /* Mark the kernel as physically reserved */

@@ -29,7 +29,7 @@ typedef int (*thread_main)();
 /*
 ** An enum of all states a thread can be in.
 */
-enum			thread_state
+enum thread_state
 {
 	NONE = 0,
 	RUNNABLE,
@@ -48,7 +48,17 @@ static char const *thread_state_str[] =
 	[ZOMBIE]	= "ZOMBIE",
 };
 
-struct			thread
+/*
+** Exit status a process can exit with.
+*/
+enum exit_status
+{
+	EXIT_SUCCESS		= 0,
+	EXIT_FAILURE		= 1,
+	EXIT_PAGEFAULT		= 139,
+};
+
+struct thread
 {
 	/* Thread basic infos*/
 	char name[256];			/* Name */
@@ -90,6 +100,7 @@ status_t		thread_clone(void *ip);
 void			thread_attach_vaspace(struct thread *t, struct vaspace *vaspace);
 void			thread_detach_vaspace(void);
 status_t		thread_detach_and_create_vaspace(void);
+tid_t			thread_get_tid(void);
 
 /* Arch-dependant function, usually in assembly */
 void			arch_jump_to_userspace(void *stack, void (*main)(void));

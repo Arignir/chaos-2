@@ -54,10 +54,17 @@ typedef uint			munmap_flags_t;
 /* Used for debugging purposes. Dumps the memory state */
 void		vmm_dump_mem(void);
 void		vmm_dump_user_mem(void);
+void		vmm_dump_kern_mem(void);
 void		vmm_dump_owners(physaddr_t pa);
 
 /* Tells if the given virtual address is mapped. */
-bool		vmm_is_mapped(virtaddr_t);
+bool		vmm_is_mapped(const_virtaddr_t va);
+
+/* Tells if the given virtual address is mapped and belongs to userspace. */
+bool		vmm_is_mapped_in_userspace(const_virtaddr_t va);
+
+/* Tells if the given virtual address is mapped and belongs to kernelspace. */
+bool		vmm_is_mapped_in_kernelspace(const_virtaddr_t va);
 
 /* Returns the frame that the given address is mapped to. */
 physaddr_t	vmm_get_frame(virtaddr_t va);
@@ -80,5 +87,8 @@ void		vmm_init(void);
 virtaddr_t	mmap(virtaddr_t va, size_t size, mmap_flags_t);
 virtaddr_t	mmap_device(virtaddr_t va, physaddr_t pa, size_t size, mmap_flags_t);
 void		munmap(virtaddr_t va, size_t size, munmap_flags_t);
+bool		vmm_validate_buffer(void const *buffer, size_t len);
+bool		vmm_validate_str(char const *str, size_t *len);
+
 
 #endif /* !_KERNEL_VMM_H_ */

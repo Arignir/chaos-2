@@ -16,6 +16,7 @@
 
 typedef uintptr			physaddr_t;
 typedef void			*virtaddr_t;
+typedef void const		*const_virtaddr_t;
 
 /* Works only for kernel addresses */
 # define P2V(x)			((virtaddr_t)((x) + (uintptr)KERNEL_VIRTUAL_BASE))

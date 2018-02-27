@@ -15,10 +15,10 @@
 # include <kernel/mutex.h>
 
 /* The type a file can be */
-# define FS_REGULAR_FILE	0b0000
-# define FS_DIRECTORY		0b0001
-# define FS_CHARDEVICE		0b0010
-# define FS_BLOCKDEVICE		0b0100
+# define FS_REGULAR_FILE	0b00001
+# define FS_DIRECTORY		0b00010
+# define FS_CHARDEVICE		0b00100
+# define FS_BLOCKDEVICE		0b01000
 
 struct bdev;
 struct dirent;
@@ -71,7 +71,7 @@ struct file_handle
 */
 struct dir_handle
 {
-	struct file_handle *file_handle;
+	struct file_handle *file_handle; /* Must remain the first item */
 	void *dir_data;
 };
 

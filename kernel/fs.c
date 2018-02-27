@@ -407,7 +407,7 @@ fs_open(char const *path, struct file_handle **file_handle)
 		goto err;
 	}
 	mutex_release(&mount->lock);
-	
+
 	*file_handle = fh;
 	return (OK);
 
@@ -466,6 +466,9 @@ fs_read(struct file_handle *file_handle, void *dest, size_t *size)
 	struct fs_mount *mount;
 
 	mount = file_handle->mount;
+	if (!(file_handle->type & FS_REGULAR_FILE)) {
+		return (ERR_BAD_HANDLER);
+	}
 	return (mount->api->read(file_handle, dest, size));
 }
 
@@ -479,6 +482,9 @@ fs_seek(struct file_handle *file_handle, size_t offset)
 	struct fs_mount *mount;
 
 	mount = file_handle->mount;
+	if (!(file_handle->type & FS_REGULAR_FILE)) {
+		return (ERR_BAD_HANDLER);
+	}
 	return (mount->api->seek(file_handle, offset));
 }
 
@@ -510,6 +516,9 @@ fs_closedir(struct dir_handle *dir_handle)
 	status_t err;
 	struct fs_mount *mount;
 
+	if (!(dir_handle->file_handle->type & FS_DIRECTORY)) {
+		return (ERR_BAD_HANDLER);
+	}
 	mount = dir_handle->file_handle->mount;
 	mount->api->closedir(dir_handle);
 	err = fs_close(dir_handle->file_handle);
@@ -525,6 +534,9 @@ fs_readdir(struct dir_handle *dir_handle, struct dirent *dirent)
 {
 	struct fs_mount *mount;
 
+	if (!(dir_handle->file_handle->type & FS_DIRECTORY)) {
+		return (ERR_BAD_HANDLER);
+	}
 	mount = dir_handle->file_handle->mount;
 	return (mount->api->readdir(dir_handle, dirent));
 }

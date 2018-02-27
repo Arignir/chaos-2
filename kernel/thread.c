@@ -35,6 +35,18 @@ thread_set_name(struct thread *t, char const *name)
 }
 
 /*
+** Returns the current thread's tid.
+*/
+tid_t
+thread_get_tid(void)
+{
+	struct thread *t;
+
+	t = current_thread();
+	return ((tid_t)(thread_table - t));
+}
+
+/*
 ** Returns a thread that has the NONE state, already locked as writer, or NULL
 ** if none were found.
 */
@@ -85,7 +97,11 @@ thread_create_stacks(struct thread *t)
 	if (!t->kstack) {
 		t->kstack = kalloc(KCONFIG_KERNEL_STACK_SIZE * PAGE_SIZE);
 		if (!t->kstack) {
-			/* TODO FIXME Free thread's user stack here */
+			munmap(
+				t->stack,
+				KCONFIG_THREAD_STACK_SIZE * PAGE_SIZE,
+				MUNMAP_DEFAULT
+			);
 			return (ERR_NO_MEMORY);
 		}
 		t->kstack_top = (uchar *)t->kstack + KCONFIG_KERNEL_STACK_SIZE * PAGE_SIZE;
@@ -169,8 +185,9 @@ thread_exit(uchar status)
 
 	t = current_cpu()->thread;
 
-	if (unlikely(t == thread_table))
-		panic("init got killed.");
+	if (unlikely(t == thread_table)) {
+		panic("init got killed (exit status: %u).", status);
+	}
 
 	/*
 	** Free user stack.
@@ -205,16 +222,17 @@ thread_exec(char const *path)
 	exec_data = NULL;
 	size = 0;
 	if ((err = fs_open(path, &file))) {
-		goto err;
+		goto handled_err;
 	}
 	do {
 		r = PAGE_SIZE;
 		if (!(tmp = krealloc(exec_data, size + r))) {
-			goto err;
+			err = ERR_NO_MEMORY;
+			goto handled_err;
 		}
 		exec_data = tmp;
 		if ((err = fs_read(file, exec_data + size, &r))) {
-			goto err;
+			goto handled_err;
 		}
 		size += r;
 	} while (r);
@@ -222,16 +240,22 @@ thread_exec(char const *path)
 	file = NULL;
 
 	if ((err = thread_detach_and_create_vaspace())) {
-		goto err;
+		goto unhandled_err;
 	}
 	/* exec will release the virtual address space and the current thread */
 	exec(exec_data, size);
-err:
+unhandled_err:
 	if (file)
 		fs_close(file);
 	kfree(exec_data);
 	/* If exec failed, we have no other choice but kill the process */
 	thread_exit(1);
+
+handled_err:
+	if (file)
+		fs_close(file);
+	kfree(exec_data);
+	return (err);
 }
 
 /*

@@ -99,7 +99,7 @@ mmap_device(virtaddr_t va, physaddr_t pa, size_t size, mmap_flags_t flags)
 
 	ori_va = va;
 	if (unlikely(!va)) {
-		panic("mmap_device with a NULL address is not implemented yet.\n");
+	panic("mmap_device with a NULL address is not implemented yet.\n");
 	}
 	else {
 		while ((uchar *)va < ori_va + size)
@@ -143,6 +143,60 @@ munmap(virtaddr_t va, size_t size, munmap_flags_t flags)
 		vmm_unmap(va, flags);
 		va = (uchar *)va + PAGE_SIZE;
 	}
+}
+
+/*
+** Returns true if the given buffer is an invalid user-provided buffer
+** (Not mapped, do not belongs to user etc.)
+*/
+bool
+vmm_validate_buffer(void const *buffer, size_t len)
+{
+	uchar const *buff_start;
+	uchar const *buff_end;
+
+	buff_start = (uchar const *)ROUND_DOWN((uintptr)buffer, PAGE_SIZE);
+	buff_end = (uchar const *)ROUND_DOWN((uintptr)buffer + len, PAGE_SIZE);
+	do {
+		if (!vmm_is_mapped_in_userspace(buff_start)) {
+			return (true);
+		}
+	} while (buff_start != buff_end);
+	return (false);
+}
+
+/*
+** Calculates the length of the given string, ensuring it belongs to valid userspace
+** memory.
+** Returns true if the memory is not valid, false otherwise. Length is stored in 'len'.
+** Len can be NULL, in which case the length is not stored.
+*/
+bool
+vmm_validate_str(char const *str, size_t *len)
+{
+	char *str_align;
+	char const *str_start;
+
+	str_start = str;
+	str_align = (void *)ROUND_DOWN((uintptr)str, PAGE_SIZE);
+	while (true)
+	{
+		if (!vmm_is_mapped_in_userspace(str_align)) {
+			return (true);
+		}
+		while (str < str_align + PAGE_SIZE) {
+			if (*str == '\0') {
+				goto end;
+			}
+			++str;
+		}
+		str_align += PAGE_SIZE;
+	}
+end:
+	if (len) {
+		*len = str - str_start;
+	}
+	return (false);
 }
 
 /*

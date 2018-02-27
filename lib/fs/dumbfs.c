@@ -65,6 +65,7 @@ dumbfs_open(
 		handle->file_data = NULL;
 		return (OK);
 	}
+	handle->type |= FS_REGULAR_FILE;
 	path_len = strlen(path);
 	if (!(file_path = kalloc(path_len + 1))) {
 		return (ERR_NO_MEMORY);

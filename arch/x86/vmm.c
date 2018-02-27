@@ -9,6 +9,7 @@
 
 #include <kernel/init.h>
 #include <kernel/pmm.h>
+#include <kernel/kalloc.h>
 #include <arch/x86/vmm.h>
 #include <arch/x86/asm.h>
 #include <string.h>
@@ -44,7 +45,8 @@ vmm_dump_pagetable(uint pd_idx)
 				"-w"[pt->entries[j].wtrough],
 				"-d"[pt->entries[j].cache],
 				"-a"[pt->entries[j].accessed],
-				"-d"[pt->entries[j].dirty]);
+				"-d"[pt->entries[j].dirty]
+			);
 		}
 		++j;
 	}
@@ -73,7 +75,8 @@ vmm_dump_mem(void)
 				"-w"[pd->entries[i].wtrough],
 				"-d"[pd->entries[i].cache],
 				"-a"[pd->entries[i].accessed],
-				"-H"[pd->entries[i].size]);
+				"-H"[pd->entries[i].size]
+			);
 			if (i != 1023) {
 				vmm_dump_pagetable(i);
 			}
@@ -104,8 +107,9 @@ vmm_dump_user_mem(void)
 				"-w"[pd->entries[i].wtrough],
 				"-d"[pd->entries[i].cache],
 				"-a"[pd->entries[i].accessed],
-				"-H"[pd->entries[i].size]);
-				vmm_dump_pagetable(i);
+				"-H"[pd->entries[i].size]
+			);
+			vmm_dump_pagetable(i);
 		}
 	}
 }
@@ -133,7 +137,7 @@ vmm_dump_owners(physaddr_t pa)
 ** Tells if the given virtual address is mapped.
 */
 bool
-vmm_is_mapped(virtaddr_t va)
+vmm_is_mapped(const_virtaddr_t va)
 {
 	struct pagedir_entry const *pde;
 	struct pagetable_entry const *pte;
@@ -145,6 +149,42 @@ vmm_is_mapped(virtaddr_t va)
 	}
 	pte = get_pagetable(get_pd_idx(va))->entries + get_pt_idx(va);
 	return (pte->present);
+}
+
+/*
+** Returns true if the given virtual address is mapped and belongs to userspace.
+*/
+bool
+vmm_is_mapped_in_userspace(const_virtaddr_t va)
+{
+	struct pagedir_entry const *pde;
+	struct pagetable_entry const *pte;
+
+	assert_vmm(IS_PAGE_ALIGNED(va));
+	pde = get_pagedir()->entries + get_pd_idx(va);
+	if (!pde->present) {
+		return (false);
+	}
+	pte = get_pagetable(get_pd_idx(va))->entries + get_pt_idx(va);
+	return (pte->present && pte->user);
+}
+
+/*
+** Returns true if the given virtual address is mapped and belongs to userspace.
+*/
+bool
+vmm_is_mapped_in_kernelspace(const_virtaddr_t va)
+{
+	struct pagedir_entry const *pde;
+	struct pagetable_entry const *pte;
+
+	assert_vmm(IS_PAGE_ALIGNED(va));
+	pde = get_pagedir()->entries + get_pd_idx(va);
+	if (!pde->present) {
+		return (false);
+	}
+	pte = get_pagetable(get_pd_idx(va))->entries + get_pt_idx(va);
+	return (pte->present && !pte->user);
 }
 
 /*
@@ -186,7 +226,7 @@ vmm_map_physical(virtaddr_t va, physaddr_t pa, mmap_flags_t flags)
 		if (pde->value == NULL_FRAME) {
 			return (ERR_NO_MEMORY);
 		}
-		/* Always map page tables for user */
+		/* Always map page tables for users */
 		pde->user = true;
 		pde->present = true;
 		pde->rw = true;
@@ -307,7 +347,9 @@ vmm_copy_pagetables(struct page_dir *pd)
 static void
 arch_vmm_init(void)
 {
-	size_t j;
+	struct page_dir *pd;
+	virtaddr_t pt;
+	size_t i;
 
 	/* Some assertions that can't be static_assert() */
 	assert(IS_PAGE_ALIGNED(KERNEL_VIRTUAL_BASE));
@@ -315,14 +357,12 @@ arch_vmm_init(void)
 	assert(IS_PAGE_ALIGNED(KERNEL_PHYSICAL_END));
 
 	/* Remove mapping that is above the kernel */
-	j = get_pt_idx(KERNEL_VIRTUAL_END);
+	i = get_pt_idx(KERNEL_VIRTUAL_END);
 	munmap(
 		(uchar *)KERNEL_VIRTUAL_END + PAGE_SIZE,
-		(1024 - j - 1) * PAGE_SIZE,
+		(1024 - i - 1) * PAGE_SIZE,
 		MUNMAP_DONTFREE
 	);
-
-	/* TODO Allocate all page tables */
 
 	/* Ensure everything is fine */
 	assert(vmm_is_mapped(KERNEL_VIRTUAL_END));
@@ -331,6 +371,21 @@ arch_vmm_init(void)
 	assert(!vmm_is_mapped(get_virtaddr(get_pd_idx(KERNEL_VIRTUAL_END) + 1, 0)));
 
 	vmm_init();
+
+	/* Allocate all page tables */
+	pd = get_pagedir();
+	for (i = get_pd_idx(KERNEL_VIRTUAL_BASE); i < 1024; ++i)
+	{
+		if (!pd->entries[i].present) {
+			pt = kalloc_aligned(PAGE_SIZE);
+			assert_ne(pt, NULL);
+			memset(pt, 0, PAGE_SIZE);
+			pd->entries[i].value = (uintptr)pt;
+			pd->entries[i].present = true;
+			pd->entries[i].rw = true;
+			invlpg(get_pagetable(i));
+		}
+	}
 }
 
 NEW_INIT_HOOK(arch_vmm_init, &arch_vmm_init, INIT_LEVEL_VMM);

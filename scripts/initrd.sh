@@ -16,6 +16,7 @@ declare SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 declare PROJECT_DIR="$SCRIPT_DIR/../"
 
 declare INITRD_PATH="$INITRD" # Define in Makefile
+rm -rf "$INITRD_PATH"
 touch "$INITRD_PATH"
 
 if [[ $# -eq 0 ]]; then

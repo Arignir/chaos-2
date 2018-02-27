@@ -49,10 +49,10 @@ exit(uchar status)
 }
 
 __unused
-static void
+static status_t
 exec(char const *path)
 {
-	syscall(SYSCALL_EXEC, (uintptr)path, 0, 0, 0);
+	return (syscall(SYSCALL_EXEC, (uintptr)path, 0, 0, 0));
 }
 
 __unused

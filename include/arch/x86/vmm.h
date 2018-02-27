@@ -111,7 +111,7 @@ get_pagetable(uint x)
 ** given address.
 */
 static inline uint
-get_pd_idx(virtaddr_t va)
+get_pd_idx(const_virtaddr_t va)
 {
 	return ((uintptr)va >> 22u);
 }
@@ -121,7 +121,7 @@ get_pd_idx(virtaddr_t va)
 ** given address belongs to.
 */
 static inline uint
-get_pt_idx(virtaddr_t va)
+get_pt_idx(const_virtaddr_t va)
 {
 	return (((uintptr)(va) >> 12u) & 0x3FF);
 }

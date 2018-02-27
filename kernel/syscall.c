@@ -10,6 +10,7 @@
 #include <kernel/syscall.h>
 #include <kernel/thread.h>
 #include <kernel/vaspace.h>
+#include <kernel/vmm.h>
 #include <drivers/vga.h>
 
 /*
@@ -18,7 +19,6 @@
 status_t
 sys_clone(void *main)
 {
-	/* TODO FIXME We should ensure 'main' points to valid userspace memory */
 	status_t s;
 
 	s = thread_clone(main);
@@ -43,11 +43,13 @@ sys_exit(uchar status)
 status_t
 sys_exec(char const *path)
 {
-	/* TODO FIXME We should ensure 'path' points to valid userspace memory. */
 	status_t s;
 
 	current_thread_acquire_write();
 	current_vaspace_acquire_write();
+	if (vmm_validate_str(path, NULL)) {
+		thread_exit(EXIT_PAGEFAULT);
+	}
 	s = thread_exec(path);
 	current_vaspace_release_write();
 	current_thread_release_write();
@@ -60,6 +62,8 @@ sys_exec(char const *path)
 int
 sys_write(file_handle_t handle __unused /* TODO */, char const *buff, size_t s)
 {
-	/* TODO FIXME We should ensure 'buff' points to valid userspace memory. */
+	if (vmm_validate_buffer((uchar const *)buff, s)) {
+		thread_exit(EXIT_PAGEFAULT);
+	}
 	return (vga_putsn(buff, s));
 }
