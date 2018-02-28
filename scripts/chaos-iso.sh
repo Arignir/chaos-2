@@ -55,7 +55,8 @@ GRUB_OUTPUT=$(mktemp)
 
 printf "  GRUB\t $ISO\n"
 
-if ! grub-mkrescue -o "$PROJECT_DIR/$ISO" "$TEMP" &> "$GRUB_OUTPUT" ; then
+if ! (command -v grub-mkrescue &> /dev/null && grub-mkrescue -o "$PROJECT_DIR/$ISO" "$TEMP" &> "$GRUB_OUTPUT" ||
+     command -v grub2-mkrescue &> /dev/null && grub2-mkrescue -o "$PROJECT_DIR/$ISO" "$TEMP" &> "$GRUB_OUTPUT"); then
 	cat "$GRUB_OUTPUT"
 	exit 1
 fi
