@@ -24,8 +24,6 @@ if [[ $# -eq 0 ]]; then
 	exit 1
 fi
 
-declare INPUT=$@
-
 add_int() {
 	local x="$1"
 	local out;
@@ -49,8 +47,8 @@ add_file() {
 	cat "${file_path}" >> ${INITRD_PATH}
 }
 
-add_int ${#INPUT}
-for file in $INPUT
+add_int "$#"
+for file in "$@"
 do
 	add_file "$file" $(basename $file)
 done

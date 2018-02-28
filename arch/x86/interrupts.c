@@ -14,6 +14,7 @@
 #include <arch/x86/interrupts.h>
 #include <arch/x86/ioapic.h>
 #include <arch/x86/asm.h>
+#include <stdio.h>
 
 static ihandler_t irqhandlers[X86_INT_NB];
 
@@ -112,10 +113,12 @@ static void
 pagefault_handler(struct iframe *iframe)
 {
 	virtaddr_t addr;
+	virtaddr_t align_addr;
 
 	addr = (virtaddr_t)get_cr2();
+	align_addr = (virtaddr_t)ROUND_DOWN(get_cr2(), PAGE_SIZE);
 	/* Page faults in kernel space are lethals */
-	if (vmm_is_mapped_in_kernelspace(addr)) {
+	if (vmm_is_mapped_in_kernelspace(align_addr)) {
 		panic("Page Fault in kernel space at address %#p.\n"
 			"\teip: %#p\n"
 			"\tStack: %#p\n"
@@ -132,6 +135,7 @@ pagefault_handler(struct iframe *iframe)
 			iframe->err_code & 0b10000
 		);
 	}
+	printf("Segmentation Fault (EIP: %#p)\n", addr);
 	thread_exit(EXIT_PAGEFAULT);
 }
 
@@ -158,12 +162,48 @@ syscall_handler(struct iframe *iframe)
 	case SYSCALL_EXEC:
 		iframe->eax = sys_exec((char const *)iframe->edi);
 		break;
+	case SYSCALL_OPEN:
+		iframe->eax = sys_open(
+			(char const *)iframe->edi
+		);
+		break;
+	case SYSCALL_READ:
+		iframe->eax = sys_read(
+			(int)iframe->edi,
+			(char *)iframe->esi,
+			(size_t)iframe->edx
+		);
+		break;
 	case SYSCALL_WRITE:
 		iframe->eax = sys_write(
 			(int)iframe->edi,
 			(char const *)iframe->esi,
 			(size_t)iframe->edx
 		);
+		break;
+	case SYSCALL_CLOSE:
+		iframe->eax = sys_close(
+			(file_handle_t)iframe->edi
+		);
+		break;
+	case SYSCALL_OPENDIR:
+		iframe->eax = sys_opendir(
+			(char const *)iframe->edi
+		);
+		break;
+	case SYSCALL_READDIR:
+		iframe->eax = sys_readdir(
+			(dir_handle_t)iframe->edi,
+			(struct dirent *)iframe->esi
+		);
+		break;
+	case SYSCALL_CLOSEDIR:
+		iframe->eax = sys_closedir(
+			(dir_handle_t)iframe->edi
+		);
+		break;
+	case SYSCALL_KEYBOARD:
+		iframe->eax = sys_keyboard();
 		break;
 	default:
 		panic("Unknown syscall\n");

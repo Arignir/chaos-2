@@ -173,13 +173,16 @@ vga_puts(char const *str)
 int
 vga_putsn(char const *str, size_t n)
 {
+	size_t old_n;
+
+	old_n = n;
 	while (n) {
 		vga_naked_putchar(*str);
 		++str;
 		--n;
 	}
 	move_cursor();
-	return (n);
+	return (old_n);
 }
 
 /*

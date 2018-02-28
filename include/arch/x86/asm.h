@@ -25,14 +25,17 @@ enum msr_id
 */
 enum port
 {
-	PORT_PIC_MASTER_CMD	= 0x20,
-	PORT_PIC_MASTER_DATA	= 0x21,
-	PORT_IMCR_ADDRESS	= 0x22,
-	PORT_IMCR_DATA		= 0x23,
-	PORT_CMOS		= 0x70,
-	PORT_CMOS_RETURN	= 0x71,
-	PORT_PIC_SLAVE_CMD	= 0xA0,
-	PORT_PIC_SLAVE_DATA	= 0xA1,
+	PORT_PIC_MASTER_CMD		= 0x20,
+	PORT_PIC_MASTER_DATA		= 0x21,
+	PORT_IMCR_ADDRESS		= 0x22,
+	PORT_IMCR_DATA			= 0x23,
+	PORT_PS2_KEYBOARD_DATA		= 0x60,
+	PORT_PS2_KEYBOARD_CMD		= 0x60,
+	PORT_PS2_KEYBOARD_STATUS	= 0x64,
+	PORT_CMOS			= 0x70,
+	PORT_CMOS_RETURN		= 0x71,
+	PORT_PIC_SLAVE_CMD		= 0xA0,
+	PORT_PIC_SLAVE_DATA		= 0xA1,
 };
 
 /*
@@ -219,6 +222,12 @@ static inline void
 invlpg(void *p)
 {
 	asm volatile("invlpg (%0)" : : "r"(p) : "memory");
+}
+
+static inline void
+pause(void)
+{
+	asm volatile("pause");
 }
 
 #endif /* !_ARCH_X86_ASM_H_ */

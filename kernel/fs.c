@@ -528,6 +528,8 @@ fs_closedir(struct dir_handle *dir_handle)
 
 /*
 ** Reads an entry in the given directory, and stores it in 'dirent'.
+** Returns ERR_END_OF_DIRECTORY when there is nothing left to read.
+** Dirent->name is null-terminated.
 */
 status_t
 fs_readdir(struct dir_handle *dir_handle, struct dirent *dirent)

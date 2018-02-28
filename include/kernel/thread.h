@@ -16,6 +16,8 @@
 # include <kernel/memory.h>
 # include <kernel/spin_rwlock.h>
 # include <kernel/cpu.h>
+# include <kernel/fs.h>
+# include <kernel/vector.h>
 
 typedef int tid_t;
 typedef int (*thread_main)();
@@ -58,6 +60,17 @@ enum exit_status
 	EXIT_PAGEFAULT		= 139,
 };
 
+enum generic_handle_kind
+{
+	HANDLE_KIND_FILE 	= 0,
+	HANDLE_KIND_DIR,
+};
+
+struct handle_vector
+{
+	NEW_VECTOR(void *);
+};
+
 struct thread
 {
 	/* Thread basic infos*/
@@ -85,6 +98,9 @@ struct thread
 	/* Current working directory */
 	char const *cwd;
 
+	/* Files open by this thread */
+	struct handle_vector handles;
+
 	/* Locker of this thread. Ideally, this should be a spinlock based rwlock */
 	struct spin_rwlock rwlock;
 };
@@ -101,6 +117,7 @@ void			thread_attach_vaspace(struct thread *t, struct vaspace *vaspace);
 void			thread_detach_vaspace(void);
 status_t		thread_detach_and_create_vaspace(void);
 tid_t			thread_get_tid(void);
+handle_t		thread_find_free_handle(struct thread *t);
 
 /* Arch-dependant function, usually in assembly */
 void			arch_jump_to_userspace(void *stack, void (*main)(void));

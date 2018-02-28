@@ -13,13 +13,22 @@
 # include <chaosdef.h>
 # include <chaoserr.h>
 
+struct dirent;
+
 enum syscall_id
 {
 	SYSCALL_UNKNOWN		= 0,
-	SYSCALL_CLONE		= 1,
-	SYSCALL_EXIT		= 2,
-	SYSCALL_EXEC		= 3,
-	SYSCALL_WRITE		= 4,
+	SYSCALL_CLONE,
+	SYSCALL_EXIT,
+	SYSCALL_EXEC,
+	SYSCALL_OPEN,
+	SYSCALL_READ,
+	SYSCALL_WRITE,
+	SYSCALL_CLOSE,
+	SYSCALL_OPENDIR,
+	SYSCALL_READDIR,
+	SYSCALL_CLOSEDIR,
+	SYSCALL_KEYBOARD,
 };
 
 /*
@@ -29,6 +38,13 @@ enum syscall_id
 status_t	sys_clone(void *main);
 void		sys_exit(uchar status);
 status_t	sys_exec(char const *path);
-int		sys_write(file_handle_t handle, char const *buff, size_t s);
+file_handle_t	sys_open(char const *path);
+ssize_t		sys_read(file_handle_t handle, char *buff, size_t s);
+ssize_t		sys_write(file_handle_t handle, char const *buff, size_t s);
+status_t	sys_close(file_handle_t handle);
+dir_handle_t	sys_opendir(char const *path);
+status_t	sys_readdir(dir_handle_t, struct dirent *dirent);
+status_t	sys_closedir(dir_handle_t dir);
+char		sys_keyboard(void);
 
 #endif /* !_KERNEL_SYSCALL_H_ */

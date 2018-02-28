@@ -338,6 +338,33 @@ thread_detach_and_create_vaspace(void)
 }
 
 /*
+** Looks for a free generic_handle for the given thread.
+** Sets the used flag of the generic_handle before returning.
+** May (rarely) fail, in which case it returns a negative number.
+** Asserts thread is locked as writter.
+*/
+handle_t
+thread_find_free_handle(struct thread *t)
+{
+	status_t s;
+	void **h;
+	size_t i;
+
+	/* Look for a free one */
+	for (i = 0; i < vector_length(&t->handles); ++i) {
+		h = vector_at(&t->handles, i);
+		if (!*h) {
+			return (i);
+		}
+	}
+	/* If no match, push a new one */
+	if ((s = vector_pushback(&t->handles, NULL))) {
+		return (s);
+	}
+	return (i);
+}
+
+/*
 ** Put us in a thread context
 ** Called directly from kmain()
 */

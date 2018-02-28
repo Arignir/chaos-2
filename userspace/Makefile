@@ -23,7 +23,7 @@ KERNEL_OBJ = kernel.o
 .PHONY: all
 all: $(INITRD)
 
-$(INITRD): $(USERSPACE_BINS)
+$(INITRD): $(USERSPACE_BINS) hello_world
 	$(Q)printf "  SHELL\t scripts/initrd.sh\n"
 	../scripts/initrd.sh $^
 

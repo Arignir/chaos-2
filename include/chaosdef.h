@@ -59,8 +59,9 @@ typedef uint64_t		uint64;
 typedef uintptr_t		uintptr;
 
 /* ChaOS Object's Handle */
-typedef uint			handle_t;
+typedef int			handle_t;
 typedef handle_t		file_handle_t;
+typedef handle_t		dir_handle_t;
 
 /* Print a message and halt the computer. */
 void				panic(char const *fmt, ...) __noreturn;
@@ -68,7 +69,7 @@ void				panic(char const *fmt, ...) __noreturn;
 # define static_assert(e)	extern char (*__static_assert(void)) [sizeof(char[1 - 2 * !(e)])]
 
 /* Panics if the given expression is evaluated to false */
-# define			assert(expr)					\
+# define assert(expr)								\
 	do {									\
 		if (unlikely(!(expr))) {					\
 			panic("assert(%s) failed (in %s at line %u).\n",	\

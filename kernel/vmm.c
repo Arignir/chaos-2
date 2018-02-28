@@ -161,7 +161,8 @@ vmm_validate_buffer(void const *buffer, size_t len)
 		if (!vmm_is_mapped_in_userspace(buff_start)) {
 			return (true);
 		}
-	} while (buff_start != buff_end);
+		buff_start += PAGE_SIZE;
+	} while (buff_start < buff_end);
 	return (false);
 }
 
